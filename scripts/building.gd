@@ -248,6 +248,8 @@ func _physics_process(delta: float) -> void:
 		return
 	if spin:
 		spin.rotation.y += delta * 0.8
+	if visible and model.has("anims"):
+		_play_anims(delta)
 	var pw = powered()
 	if not queue.is_empty():
 		var speed: float = (1.0 if pw else 0.5) * Game.income_mult(owner_id)
@@ -270,6 +272,57 @@ func _physics_process(delta: float) -> void:
 		if _income_t >= 10.0:
 			_income_t = 0.0
 			Game.players[owner_id]["credits"] += 30.0
+
+## Leben im Gebäude: Lüfter, Blinklichter, Fahnen, Arbeiter, Kräne, Pressen.
+func _play_anims(delta: float) -> void:
+	var t = Game.time
+	for a in model["anims"]:
+		match a["t"]:
+			"spin":
+				a["n"].rotation.y += delta * a["s"]
+			"spin_z":
+				a["n"].rotation.z += delta * a["s"]
+			"blink":
+				a["n"].visible = fmod(t + a["o"], a["p"]) < a["p"] * 0.5
+			"wave":
+				var i = 0
+				for s in a["segs"]:
+					s.rotation.y = sin(t * 3.0 + a["o"] + i * 0.9) * (0.15 + i * 0.08) + (0.6 if i == 0 else 0.0)
+					i += 1
+			"walk":
+				var n: Node3D = a["n"]
+				var pts: Array = a["pts"]
+				var target: Vector3 = pts[a["i"]]
+				var d = target - n.position
+				d.y = 0
+				var step = a["s"] * delta
+				if d.length() <= step:
+					n.position = Vector3(target.x, n.position.y, target.z)
+					a["i"] = (a["i"] + 1) % pts.size()
+				else:
+					n.position += d.normalized() * step
+					n.rotation.y = lerp_angle(n.rotation.y, atan2(d.x, d.z), min(1.0, 6.0 * delta))
+				if not a.get("vehicle", false):
+					var sw = sin(t * a["s"] * 6.0) * 0.5
+					var ll = n.get_node_or_null("LegL")
+					var lr = n.get_node_or_null("LegR")
+					if ll:
+						ll.rotation.x = sw
+					if lr:
+						lr.rotation.x = -sw
+			"slide":
+				var k = 0.5 + 0.5 * sin(t * a["s"])
+				a["n"].position = (a["a"] as Vector3).lerp(a["b"], k)
+			"bob":
+				a["n"].position = a["base"] + Vector3(0, sin(t * a["s"]) * a["amp"], 0)
+				a["n"].rotation.y += delta * 0.3
+			"swing":
+				a["n"].rotation.z = sin(t * a["s"]) * a["amp"]
+			"sweep":
+				a["n"].rotation.y = sin(t * a["s"]) * a["amp"]
+			"weld":
+				if fmod(t, a["p"]) < delta:
+					FX.weld((a["n"] as Node3D).global_position)
 
 func _defend(delta: float) -> void:
 	cd -= delta

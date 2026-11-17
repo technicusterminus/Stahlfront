@@ -6,28 +6,29 @@ extends RefCounted
 ## Vorne (Ausgang für Einheiten) ist +Z.
 
 const M = preload("res://scripts/models.gd")
+const D = preload("res://scripts/arch_detail.gd")
 
 static func build(r: Node3D, faction: String, role: String, w: float, pc: Material, wl: Material, out: Dictionary) -> bool:
 	var fn = "_%s_%s" % [faction, role]
 	match fn:
-		"_west_hq": _west_hq(r, w, pc, wl, out)
+		"_west_hq": D.west_hq(r, w, pc, wl, out)
 		"_west_power": _west_power(r, w, pc, wl, out)
 		"_west_supply": _west_supply(r, w, pc, wl, out)
 		"_west_barracks": _west_barracks(r, w, pc, wl, out)
-		"_west_factory": _west_factory(r, w, pc, wl, out)
+		"_west_factory": D.west_factory(r, w, pc, wl, out)
 		"_west_airfield": _west_airfield(r, w, pc, wl, out)
 		"_west_tech": _west_tech(r, w, pc, wl, out)
-		"_red_hq": _red_hq(r, w, pc, wl, out)
+		"_red_hq": D.red_hq(r, w, pc, wl, out)
 		"_red_power": _red_power(r, w, pc, wl, out)
 		"_red_supply": _red_supply(r, w, pc, wl, out)
 		"_red_barracks": _red_barracks(r, w, pc, wl, out)
-		"_red_factory": _red_factory(r, w, pc, wl, out)
+		"_red_factory": D.red_factory(r, w, pc, wl, out)
 		"_red_airfield": _red_airfield(r, w, pc, wl, out)
 		"_red_tech": _red_tech(r, w, pc, wl, out)
-		"_shadow_hq": _shadow_hq(r, w, pc, wl, out)
+		"_shadow_hq": D.shadow_hq(r, w, pc, wl, out)
 		"_shadow_supply": _shadow_supply(r, w, pc, wl, out)
 		"_shadow_barracks": _shadow_barracks(r, w, pc, wl, out)
-		"_shadow_factory": _shadow_factory(r, w, pc, wl, out)
+		"_shadow_factory": D.shadow_factory(r, w, pc, wl, out)
 		"_shadow_tech": _shadow_tech(r, w, pc, wl, out)
 		_:
 			return false
@@ -103,31 +104,6 @@ static func _dish(p: Node3D, pos: Vector3, rad: float) -> Node3D:
 
 # ================================================================ WESTBUND
 
-static func _west_hq(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
-	# Gestaffelter Achteck-Turm mit Glasbändern, Dachlandeplatz und Radar
-	var R = w * 0.44
-	M.cyl(r, R, R * 1.05, 1.4, Vector3(0, 0.7, -0.3), wl, Vector3.ZERO, 8)
-	M.cyl(r, R * 0.98, R * 0.98, 0.9, Vector3(0, 1.85, -0.3), _glass(), Vector3.ZERO, 8)
-	M.cyl(r, R * 1.0, R * 1.0, 0.2, Vector3(0, 2.38, -0.3), pc, Vector3.ZERO, 8)
-	M.cyl(r, R * 0.7, R * 0.75, 1.3, Vector3(0, 3.1, -0.3), wl, Vector3.ZERO, 8)
-	M.cyl(r, R * 0.68, R * 0.68, 0.8, Vector3(0, 4.15, -0.3), _glass(), Vector3.ZERO, 8)
-	M.cyl(r, R * 0.74, R * 0.74, 0.18, Vector3(0, 4.62, -0.3), pc, Vector3.ZERO, 8)
-	M.cyl(r, R * 0.99, R * 0.99, 0.06, Vector3(0, 2.29, -0.3), _cyan(), Vector3.ZERO, 8)
-	# Landeplatz-Markierung oben
-	M.cyl(r, R * 0.55, R * 0.55, 0.04, Vector3(0, 4.73, -0.3), M.mat(Color(0.15, 0.16, 0.18), 0.2, 0.7), Vector3.ZERO, 24)
-	M.box(r, Vector3(0.18, 0.02, 1.2), Vector3(-0.35, 4.76, -0.3), M.mat(Color(0.9, 0.9, 0.9), 0, 0.6))
-	M.box(r, Vector3(0.18, 0.02, 1.2), Vector3(0.35, 4.76, -0.3), M.mat(Color(0.9, 0.9, 0.9), 0, 0.6))
-	M.box(r, Vector3(0.7, 0.02, 0.18), Vector3(0, 4.76, -0.3), M.mat(Color(0.9, 0.9, 0.9), 0, 0.6))
-	# Eingang mit Vordach
-	M.box(r, Vector3(2.6, 1.8, 0.3), Vector3(0, 0.9, R - 0.1), _glass())
-	M.box(r, Vector3(3.4, 0.12, 1.6), Vector3(0, 1.95, R + 0.5), pc)
-	for sx in [-1.5, 1.5]:
-		M.cyl(r, 0.06, 0.06, 1.9, Vector3(sx, 0.95, R + 1.2), M.steel(), Vector3.ZERO, 8)
-	out["spin"] = _dish(r, Vector3(R * 0.8, 1.4, -R * 0.6), 0.9)
-	M.cyl(r, 0.04, 0.04, 3.5, Vector3(-R * 0.4, 6.3, -0.6), M.steel(), Vector3.ZERO, 6)
-	M.sph(r, 0.1, Vector3(-R * 0.4, 8.1, -0.6), M.glow(Color(1, 0.15, 0.1), 8.0))
-	out["height"] = 5.0
-
 static func _west_power(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
 	# Fusionsreaktor: Plasmakugel in Torusring, vier Pylone, Kühlleitungen
 	M.cyl(r, w * 0.46, w * 0.5, 0.6, Vector3(0, 0.3, 0), wl, Vector3.ZERO, 8)
@@ -180,26 +156,6 @@ static func _west_barracks(r: Node3D, w: float, pc: Material, wl: Material, out:
 	M.cyl(r, 0.9, 0.9, 0.04, Vector3(0, 0.12, w * 0.38), _cyan(2.0), Vector3.ZERO, 24)
 	out["height"] = w * 0.33
 
-static func _west_factory(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
-	# Gewölbter Hangar mit Portalkran und Drohnenbucht
-	var h = M.cyl(r, w * 0.42, w * 0.42, w * 0.78, Vector3(0, 0.3, -w * 0.08), wl, Vector3(PI / 2, 0, 0), 20)
-	h.scale = Vector3(1, 1, 0.6)
-	M.box(r, Vector3(w * 0.86, 0.6, w * 0.8), Vector3(0, 0.3, -w * 0.08), wl)
-	for k in 5:
-		M.cyl(r, w * 0.425, w * 0.425, 0.12, Vector3(0, 0.3, -w * 0.45 + k * w * 0.19), pc, Vector3(PI / 2, 0, 0), 20).scale = Vector3(1, 1, 0.6)
-	M.box(r, Vector3(w * 0.5, 2.6, 0.08), Vector3(0, 1.3, w * 0.31), M.dark())
-	M.box(r, Vector3(w * 0.52, 0.1, 0.12), Vector3(0, 2.65, w * 0.32), _cyan())
-	# Drohnenbucht mit Landelichtern
-	M.cyl(r, 0.7, 0.7, 0.05, Vector3(w * 0.32, 2.6, -w * 0.3), M.dark(), Vector3.ZERO, 16)
-	for i in 6:
-		var a = TAU * i / 6.0
-		M.sph(r, 0.06, Vector3(w * 0.32 + cos(a) * 0.75, 2.63, -w * 0.3 + sin(a) * 0.75), _cyan(6.0))
-	# Portalkran vorne
-	for sx in [-1, 1]:
-		M.box(r, Vector3(0.25, 3.6, 0.25), Vector3(sx * w * 0.44, 1.8, w * 0.42), M.steel())
-	M.box(r, Vector3(w * 0.9, 0.35, 0.35), Vector3(0, 3.6, w * 0.42), M.paint(Color.WHITE))
-	out["height"] = w * 0.42
-
 static func _west_airfield(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
 	M.box(r, Vector3(w, 0.25, w), Vector3(0, 0.12, 0), M.mat(Color(0.18, 0.19, 0.21), 0.2, 0.7))
 	for pz in [-w * 0.2, w * 0.22]:
@@ -229,25 +185,6 @@ static func _west_tech(r: Node3D, w: float, pc: Material, wl: Material, out: Dic
 	out["height"] = 3.0
 
 # ================================================================ ROTE ALLIANZ
-
-static func _red_hq(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
-	# Gestufter Sichtbeton-Block mit Stern, Fahnen, Scheinwerfern
-	M.box(r, Vector3(w * 0.92, 1.6, w * 0.78), Vector3(0, 0.8, -0.3), wl)
-	M.box(r, Vector3(w * 0.7, 1.5, w * 0.6), Vector3(0, 2.35, -0.6), wl)
-	M.box(r, Vector3(w * 0.42, 1.6, w * 0.4), Vector3(0, 3.9, -0.9), wl)
-	M.box(r, Vector3(w * 0.72, 0.14, w * 0.62), Vector3(0, 3.12, -0.6), pc)
-	M.box(r, Vector3(w * 0.44, 0.14, w * 0.42), Vector3(0, 4.75, -0.9), pc)
-	for k in 7:
-		M.box(r, Vector3(0.35, 0.9, 0.05), Vector3(-w * 0.38 + k * w * 0.127, 0.9, w * 0.39 - 0.3 + 0.01), _warm(1.8))
-	# großer Stern über dem Tor
-	M.box(r, Vector3(1.9, 1.9, 0.12), Vector3(0, 2.4, w * 0.3 - 0.55), pc)
-	load("res://scripts/models.gd")._star(r, Vector3(0, 2.4, w * 0.3 - 0.48), 0.8, M.glow(Color(1.0, 0.8, 0.15), 2.0))
-	M.box(r, Vector3(2.4, 1.4, 0.2), Vector3(0, 0.7, w * 0.39 - 0.25), M.dark())
-	_searchlight(r, Vector3(-w * 0.4, 1.8, -w * 0.32))
-	_searchlight(r, Vector3(w * 0.4, 1.8, -w * 0.32))
-	M.cyl(r, 0.05, 0.05, 3.5, Vector3(0, 6.4, -0.9), M.dark(), Vector3.ZERO, 6)
-	M.box(r, Vector3(0.05, 0.8, 1.3), Vector3(0, 7.6, -0.25), pc)
-	out["height"] = 5.0
 
 static func _cooling_tower(r: Node3D, pos: Vector3, s: float) -> void:
 	var c = M.concrete()
@@ -303,21 +240,6 @@ static func _red_barracks(r: Node3D, w: float, pc: Material, wl: Material, out: 
 	_searchlight(r, Vector3(0.4, 3.75, -w * 0.4 + 0.4))
 	out["height"] = 3.2
 
-static func _red_factory(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
-	# Panzerwerk: schwere Halle, Sheddach, Doppelschlot, Rolltor
-	M.box(r, Vector3(w * 0.9, 3.6, w * 0.72), Vector3(0, 1.8, -w * 0.1), wl)
-	for k in 5:
-		var z = -w * 0.42 + k * w * 0.16
-		prism(r, 0.9, 0.9, w * 0.88, Vector3(0, 3.6, z + 0.3), pc, Vector3(0, PI / 2, 0)).scale = Vector3(1, 1, 1)
-	M.box(r, Vector3(w * 0.55, 3.0, 0.12), Vector3(0, 1.5, w * 0.26 + 0.01), M.dark())
-	for k in 10:
-		M.box(r, Vector3(w * 0.55, 0.04, 0.03), Vector3(0, 0.2 + k * 0.29, w * 0.27 + 0.03), M.steel())
-	for sx in [-1, 1]:
-		M.cyl(r, 0.4, 0.55, 7.0, Vector3(sx * w * 0.32, 3.5, -w * 0.38), M.mat(Color(0.3, 0.22, 0.18), 0, 0.9), Vector3.ZERO, 10)
-		M.cyl(r, 0.45, 0.45, 0.18, Vector3(sx * w * 0.32, 6.0, -w * 0.38), pc, Vector3.ZERO, 10)
-	out["smoke"] = [Vector3(-w * 0.32, 7.1, -w * 0.38), Vector3(w * 0.32, 7.1, -w * 0.38)]
-	out["height"] = 4.6
-
 static func _red_airfield(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
 	M.box(r, Vector3(w, 0.25, w), Vector3(0, 0.12, 0), M.concrete())
 	for k in 4:
@@ -351,25 +273,6 @@ static func _red_tech(r: Node3D, w: float, pc: Material, wl: Material, out: Dict
 
 # ================================================================ SCHATTENFRONT
 
-static func _shadow_hq(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
-	# Versteck im Fels: Felsrücken mit Tunneleingang, Tarnnetz, Zelte (Tarnung)
-	var rock = M.mat(Color(0.42, 0.38, 0.32), 0.0, 0.95)
-	var a = M.sph(r, w * 0.42, Vector3(-w * 0.05, 0.0, -w * 0.12), rock, Vector3(1.15, 0.75, 0.9), true)
-	a.rotation.y = 0.3
-	M.sph(r, w * 0.25, Vector3(w * 0.28, 0.0, -w * 0.28), rock, Vector3(1, 0.9, 1), true)
-	M.sph(r, w * 0.2, Vector3(-w * 0.35, 0.0, w * 0.05), rock, Vector3(1, 0.7, 1.1), true)
-	# Tunneleingang mit Holzrahmen
-	M.box(r, Vector3(2.4, 2.0, 1.6), Vector3(0, 1.0, w * 0.26), M.mat(Color(0.03, 0.03, 0.03), 0, 1))
-	var wood = M.mat(Color(0.35, 0.24, 0.13), 0.0, 0.9)
-	for sx in [-1.25, 1.25]:
-		M.box(r, Vector3(0.25, 2.2, 0.25), Vector3(sx, 1.1, w * 0.26 + 0.8), wood)
-	M.box(r, Vector3(2.8, 0.3, 0.3), Vector3(0, 2.25, w * 0.26 + 0.8), wood)
-	# Tarnnetz in Teamfarbe
-	M.box(r, Vector3(w * 0.7, 0.06, w * 0.45), Vector3(0, w * 0.32, 0), pc, Vector3(0.12, 0.2, -0.08))
-	prism(r, 2.2, 1.6, 2.6, Vector3(w * 0.36, 0, w * 0.25), pc, Vector3(0, 0.4, 0))
-	M.cyl(r, 0.04, 0.04, 5.0, Vector3(-w * 0.2, 4.5, -w * 0.2), M.steel(), Vector3.ZERO, 6)
-	out["height"] = w * 0.36
-
 static func _shadow_supply(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
 	# Umschlagplatz: Marktstände mit Planen, Kistenstapel, Container
 	for k in 3:
@@ -400,24 +303,6 @@ static func _shadow_barracks(r: Node3D, w: float, pc: Material, wl: Material, ou
 		M.box(r, Vector3(0.08, 1.4, 0.08), p + Vector3(0, 0.7, 0), M.mat(Color(0.35, 0.24, 0.13), 0, 0.9))
 		M.box(r, Vector3(0.45, 0.6, 0.25), p + Vector3(0, 1.1, 0), M.mat(Color(0.6, 0.55, 0.4), 0, 0.95))
 	out["height"] = 2.0
-
-static func _shadow_factory(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
-	# Schrottwerkstatt: Wellblechschuppen, Schrottberge aus Wracks, Schrottkran
-	M.box(r, Vector3(w * 0.55, 2.6, w * 0.5), Vector3(-w * 0.18, 1.3, -w * 0.18), wl)
-	var tin = M.mat(Color(0.45, 0.42, 0.38), 0.6, 0.6)
-	for k in 8:
-		M.box(r, Vector3(0.36, 0.06, w * 0.54), Vector3(-w * 0.18 - w * 0.26 + k * w * 0.075, 2.7 + (k % 2) * 0.05, -w * 0.18), tin, Vector3(0.12, 0, 0))
-	M.box(r, Vector3(w * 0.3, 2.2, 0.08), Vector3(-w * 0.18, 1.1, w * 0.07 + 0.01), M.mat(Color(0.03, 0.03, 0.03), 0, 1))
-	_wreck(r, Vector3(w * 0.28, 0, -w * 0.28), Vector3(0.1, 0.6, 0.15))
-	_wreck(r, Vector3(w * 0.3, 0.6, -w * 0.25), Vector3(-0.2, 1.8, 0.4))
-	_wreck(r, Vector3(-w * 0.32, 0, w * 0.3), Vector3(0, 2.4, -0.2))
-	# Schrottkran aus Trägern
-	M.box(r, Vector3(0.3, 4.2, 0.3), Vector3(w * 0.38, 2.1, w * 0.18), M.mat(Color(0.3, 0.17, 0.09), 0.4, 0.8))
-	M.box(r, Vector3(3.4, 0.25, 0.25), Vector3(w * 0.38 - 1.4, 4.2, w * 0.18), M.mat(Color(0.3, 0.17, 0.09), 0.4, 0.8), Vector3(0, 0, -0.1))
-	M.cyl(r, 0.02, 0.02, 2.0, Vector3(w * 0.38 - 2.8, 3.1, w * 0.18), M.dark(), Vector3.ZERO, 4)
-	M.box(r, Vector3(0.5, 0.15, 0.5), Vector3(w * 0.38 - 2.8, 2.05, w * 0.18), M.dark())
-	M.sph(r, 0.08, Vector3(-w * 0.18 + 0.6, 1.0, w * 0.08), M.glow(Color(0.7, 0.85, 1.0), 10.0))
-	out["height"] = 3.2
 
 static func _shadow_tech(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
 	# Schwarzmarkt: gestapelte Container unter Planen, Lichterketten
