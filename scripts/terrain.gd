@@ -254,6 +254,7 @@ func _build_mesh() -> void:
 	mat.set_shader_parameter("noise_tex", nt)
 	mat.set_shader_parameter("noise_n", ntn)
 	mat.set_shader_parameter("fog_tex", Game.fog_tex)
+	mat.set_shader_parameter("occ_tex", Game.occ_tex)
 	mat.set_shader_parameter("map_size", 240.0)
 
 	var mi = MeshInstance3D.new()

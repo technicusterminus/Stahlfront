@@ -50,6 +50,7 @@ var spin: Node3D
 var ring: MeshInstance3D
 var muzzle_local = Vector3.ZERO
 var _dust_t = 0.0
+var scaffold: Node3D
 
 func setup(d: Dictionary, pid: int, center: Vector2i, c: Array) -> void:
 	def = d
@@ -69,6 +70,8 @@ func setup(d: Dictionary, pid: int, center: Vector2i, c: Array) -> void:
 	muzzle_local = model["muzzle"]
 	height = model["height"]
 	body.scale = Vector3(1, 0.05, 1)
+	scaffold = Models.build_scaffold(float(d["size"]) * 2.0 - 0.4, max(height, 3.0), int(d["size"]) >= 5)
+	add_child(scaffold)
 	_make_ring()
 
 func _make_ring() -> void:
@@ -122,6 +125,9 @@ func finish(instant: bool) -> void:
 	if instant:
 		hp = max_hp
 	body.scale = Vector3.ONE
+	if scaffold != null:
+		scaffold.queue_free()
+		scaffold = null
 	for sp in model["smoke"]:
 		FX.smoke_column(body, sp, def["faction"] == "red")
 	Game.recalc_power(owner_id)

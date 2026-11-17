@@ -50,8 +50,45 @@ var occ_tex: ImageTexture
 func set_occ(cells: Array, on: bool) -> void:
 	for c in cells:
 		if in_grid(c):
-			occ_img.set_pixel(c.x, c.y, Color(1, 0, 0) if on else Color(0, 0, 0))
+			var px = occ_img.get_pixel(c.x, c.y)
+			px.a = 1.0 if on else 0.0
+			occ_img.set_pixel(c.x, c.y, px)
 	occ_tex.update(occ_img)
+
+## Basisboden der Fraktion malen (R = Westbund, G = Rote Allianz, B = Schattenfront).
+func paint_base(pid: int, cells: Array) -> void:
+	var ch = ["west", "red", "shadow"].find(faction_of(pid))
+	for c in cells:
+		if in_grid(c):
+			var px = occ_img.get_pixel(c.x, c.y)
+			px[ch] = 1.0
+			occ_img.set_pixel(c.x, c.y, px)
+	occ_tex.update(occ_img)
+
+## Vorplatz um ein Gebäude und ein Weg zum nächsten eigenen Hauptquartier.
+func pave_around(b) -> void:
+	var s: int = b.def["size"]
+	var margin = 2 if b.def["role"] == "hq" else 1
+	var cells = footprint(b.center_cell, s + margin * 2)
+	if b.def["role"] != "hq":
+		var hq = null
+		var bd = 1e9
+		for o in buildings:
+			if o.owner_id == b.owner_id and o.alive and o.def["role"] == "hq" and o != b:
+				var d = flat_dist(o.position, b.position)
+				if d < bd:
+					bd = d
+					hq = o
+		if hq != null and bd < 70.0:
+			var a: Vector2i = b.center_cell
+			var e: Vector2i = hq.center_cell
+			var steps = max(abs(e.x - a.x), abs(e.y - a.y))
+			for i in steps + 1:
+				var t = float(i) / max(steps, 1)
+				var c = Vector2i(int(round(lerp(float(a.x), float(e.x), t))), int(round(lerp(float(a.y), float(e.y), t))))
+				cells.append(c)
+				cells.append(c + Vector2i(1, 0))
+	paint_base(b.owner_id, cells)
 var _fog_t = 0.0
 var _vic_t = 0.0
 var _fog_mats = {}
@@ -67,8 +104,8 @@ func _ready() -> void:
 	fog_img = Image.create(GRID, GRID, false, Image.FORMAT_RG8)
 	fog_img.fill(Color(0, 0, 0))
 	fog_tex = ImageTexture.create_from_image(fog_img)
-	occ_img = Image.create(GRID, GRID, false, Image.FORMAT_R8)
-	occ_img.fill(Color(0, 0, 0))
+	occ_img = Image.create(GRID, GRID, false, Image.FORMAT_RGBA8)
+	occ_img.fill(Color(0, 0, 0, 0))
 	occ_tex = ImageTexture.create_from_image(occ_img)
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 
@@ -332,6 +369,7 @@ func spawn_building(def_id: String, pid: int, center: Vector2i, complete: bool):
 	buildings.append(b)
 	set_cells(b.cells, true)
 	set_occ(b.cells, true)
+	pave_around(b)
 	if complete:
 		b.finish(true)
 	return b

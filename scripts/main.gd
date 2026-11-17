@@ -215,6 +215,38 @@ func start_match(cfg: Dictionary) -> void:
 		cam.look_at_pos(base + Vector3(0, 0, 4))
 		cam.dist_target = float(args.get("camdist", "34"))
 		Game.explore(base, 30.0)
+	if args.has("basecam"):
+		# Testbasis: alle Gebäudetypen fertig, das letzte als Baustelle
+		var fac0: String = Game.players[0]["faction"]
+		var ids: Array = Defs.build_list(fac0).filter(func(i): return not i.ends_with("_hq"))
+		var hqp: Vector3 = Game.players[0]["start"]
+		var k = 0
+		for id in ids:
+			var placed = false
+			for ring in range(5, 30):
+				for j in 12:
+					var a = TAU * j / 12.0 + ring * 0.37
+					var p = hqp + Vector3(cos(a), 0, sin(a)) * ring * 2.2
+					var c = Game.world_to_cell(p)
+					var ok = Game.can_place(id, c, 0) == ""
+					if ok:
+						for fc in Game.footprint(c, int(Defs.buildings[id]["size"]) + 2):
+							if not Game.is_free(fc):
+								ok = false
+								break
+					if ok:
+						var b = Game.spawn_building(id, 0, c, k < ids.size() - 1)
+						if k == ids.size() - 1:
+							b.construct(Defs.buildings[id]["time"] * 0.45)
+						placed = true
+						break
+				if placed:
+					break
+			k += 1
+		Game.explore(hqp, 70.0)
+		Game.recalc_power(0)
+		cam.look_at_pos(hqp + Vector3(0, 0, 6))
+		cam.dist_target = float(args.get("camdist", "70"))
 	if args.has("animalcam"):
 		var an = world.get_node("Animals")
 		if not an.herds.is_empty():

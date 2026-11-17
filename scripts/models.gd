@@ -689,8 +689,12 @@ static func _build_building(d: Dictionary, col: Color) -> Dictionary:
 	var out = {"root": root, "turret": null, "muzzle": Vector3(0, 3, 0), "spin": null, "height": 4.0, "smoke": []}
 	var wl = wall(faction)
 	var pc = paint(col)
-	# Fundament (reicht in den Boden, deckt Hanglagen ab)
-	box(root, Vector3(w + 0.4, 3.0, w + 0.4), Vector3(0, -1.3, 0), concrete())
+	# Fundament (reicht in den Boden, deckt Hanglagen ab) mit Sockelkante
+	if faction == "shadow":
+		box(root, Vector3(w + 0.2, 3.0, w + 0.2), Vector3(0, -1.4, 0), wall(faction))
+	else:
+		box(root, Vector3(w + 0.4, 3.0, w + 0.4), Vector3(0, -1.3, 0), concrete())
+		box(root, Vector3(w + 0.9, 0.14, w + 0.9), Vector3(0, 0.02, 0), dark())
 	match role:
 		"hq":
 			_hq(root, w, wl, pc, faction, out)
@@ -710,7 +714,132 @@ static func _build_building(d: Dictionary, col: Color) -> Dictionary:
 			_tech(root, w, wl, pc, faction, out)
 		"super":
 			_super(root, w, wl, pc, faction, out)
+	_dress(root, w, faction, role, out)
 	return out
+
+## Fraktionstypische Ausstattung rund um das Gebäude.
+static func _dress(r: Node3D, w: float, faction: String, role: String, out: Dictionary) -> void:
+	var e = w * 0.5 + 0.25
+	var team = mat(_team, 0.1, 0.6)
+	match faction:
+		"west":
+			# Leuchtband am Sockel
+			var gm = glow(Color(0.35, 0.75, 1.0), 3.0)
+			for sx in [-1, 1]:
+				box(r, Vector3(0.05, 0.05, w + 0.5), Vector3(sx * (e + 0.2), 0.12, 0), gm)
+				box(r, Vector3(w + 0.5, 0.05, 0.05), Vector3(0, 0.12, sx * (e + 0.2)), gm)
+			# Lichtmasten vorne
+			for sx in [-1, 1]:
+				var p = Vector3(sx * (e + 0.1), 0, e + 0.1)
+				cyl(r, 0.05, 0.08, 3.4, p + Vector3(0, 1.7, 0), steel(), Vector3.ZERO, 8)
+				box(r, Vector3(0.6, 0.08, 0.2), p + Vector3(-sx * 0.25, 3.4, 0), steel())
+				box(r, Vector3(0.5, 0.03, 0.14), p + Vector3(-sx * 0.25, 3.35, 0), glow(Color(0.92, 0.97, 1.0), 6.0))
+			# Technikschrank mit Statusleuchte
+			box(r, Vector3(0.6, 0.9, 0.4), Vector3(-e + 0.1, 0.45, -e + 0.2), steel())
+			sph(r, 0.05, Vector3(-e + 0.1, 0.95, -e + 0.42), glow(Color(0.3, 1.0, 0.5), 6.0))
+		"red":
+			# Banner in Teamfarbe
+			for sx in [-1, 1]:
+				var p = Vector3(sx * (e + 0.05), 0, e + 0.05)
+				cyl(r, 0.06, 0.06, 4.5, p + Vector3(0, 2.25, 0), dark(), Vector3.ZERO, 6)
+				box(r, Vector3(0.9, 0.05, 0.05), p + Vector3(0, 4.4, 0), dark())
+				box(r, Vector3(0.75, 2.0, 0.03), p + Vector3(0, 3.35, 0.05), team)
+				_star(r, p + Vector3(0, 3.7, 0.08), 0.22, glow(Color(1.0, 0.85, 0.2), 1.5))
+			# Betonsperren hinten
+			var n = int(w / 1.6)
+			for i in n:
+				var x = -w * 0.5 + 0.8 + i * 1.6
+				box(r, Vector3(1.4, 0.7, 0.45), Vector3(x, 0.35, -e - 0.1), concrete())
+				box(r, Vector3(1.4, 0.12, 0.25), Vector3(x, 0.76, -e - 0.1), concrete())
+			# Lautsprecher
+			cyl(r, 0.05, 0.05, 3.0, Vector3(-e, 1.5, 0), dark(), Vector3.ZERO, 6)
+			cyl(r, 0.08, 0.22, 0.35, Vector3(-e, 3.0, 0.15), steel(), Vector3(PI / 2, 0, 0), 8)
+		"shadow":
+			# Sandsackwälle an den vorderen Ecken
+			var sand = mat(Color(0.52, 0.45, 0.3), 0.0, 1.0)
+			for sx in [-1, 1]:
+				for row in 2:
+					for i in 3:
+						box(r, Vector3(0.7, 0.32, 0.42), Vector3(sx * (e - 0.4 - i * 0.65 - row * 0.3), 0.16 + row * 0.3, e + 0.05), sand, Vector3(0, 0.08 * (i - 1), 0))
+			# Ölfässer
+			var rust = mat(Color(0.35, 0.18, 0.08), 0.5, 0.7)
+			var blue = mat(Color(0.12, 0.2, 0.35), 0.5, 0.6)
+			for i in 4:
+				cyl(r, 0.28, 0.28, 0.85, Vector3(e - 0.3 - (i % 2) * 0.6, 0.42, -e + 0.3 + (i / 2) * 0.6), rust if i % 3 != 0 else blue, Vector3.ZERO, 12)
+			# Reifenstapel
+			for i in 3:
+				_tire(r, Vector3(-e + 0.4, 0.15 + i * 0.28, -e + 0.5))
+			# Tarnnetz-Fetzen in Teamfarbe
+			box(r, Vector3(1.2, 0.04, 0.8), Vector3(-e + 0.6, 2.2, e - 0.3), team, Vector3(0.2, 0.3, 0.1))
+
+static func _star(p: Node3D, pos: Vector3, r: float, m: Material) -> void:
+	var st = SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i in 10:
+		var a0 = PI / 2 + i * TAU / 10.0
+		var a1 = PI / 2 + (i + 1) * TAU / 10.0
+		var r0 = r if i % 2 == 0 else r * 0.42
+		var r1 = r if (i + 1) % 2 == 0 else r * 0.42
+		st.set_normal(Vector3(0, 0, 1))
+		st.add_vertex(Vector3.ZERO)
+		st.add_vertex(Vector3(cos(a0) * r0, sin(a0) * r0, 0))
+		st.add_vertex(Vector3(cos(a1) * r1, sin(a1) * r1, 0))
+	var mi = MeshInstance3D.new()
+	mi.mesh = st.commit()
+	mi.material_override = m
+	mi.position = pos
+	p.add_child(mi)
+
+static func _tire(p: Node3D, pos: Vector3) -> void:
+	if not _meshes.has("tire"):
+		var tm = TorusMesh.new()
+		tm.inner_radius = 0.18
+		tm.outer_radius = 0.38
+		tm.rings = 14
+		tm.ring_segments = 8
+		_meshes["tire"] = tm
+	_mi(p, _meshes["tire"], pos, mat(Color(0.05, 0.05, 0.05), 0.0, 0.85), Vector3.ZERO).scale = Vector3(1, 1.3, 1)
+
+## Baugerüst mit Gerüststangen, Laufbrettern, Warnbaken und (bei großen Gebäuden) Baukran.
+static func build_scaffold(w: float, h: float, crane: bool) -> Node3D:
+	var r = Node3D.new()
+	var pole = mat(Color(0.55, 0.56, 0.58), 0.8, 0.4)
+	var plank = mat(Color(0.5, 0.38, 0.22), 0.0, 0.9)
+	var hazard = mat(Color(0.95, 0.72, 0.08), 0.2, 0.5)
+	var half = w * 0.5
+	var n = max(2, int(w / 2.0))
+	for side in 4:
+		var rot = side * PI / 2
+		var b = Basis(Vector3.UP, rot)
+		for i in n + 1:
+			var x = -half + i * w / n
+			var p = b * Vector3(x, h * 0.5, half + 0.3)
+			cyl(r, 0.04, 0.04, h, p, pole, Vector3.ZERO, 6)
+		for lvl in range(1, int(h / 1.6) + 1):
+			var y = lvl * 1.6
+			var pr = b * Vector3(0, y, half + 0.3)
+			_mi(r, _boxmesh(Vector3(w, 0.04, 0.04)), pr, pole, Vector3(0, rot, 0))
+			var pp = b * Vector3(0, y - 0.05, half + 0.55)
+			_mi(r, _boxmesh(Vector3(w, 0.05, 0.4)), pp, plank, Vector3(0, rot, 0))
+	for sx in [-1, 1]:
+		for sz in [-1, 1]:
+			cyl(r, 0.18, 0.25, 0.7, Vector3(sx * (half + 0.9), 0.35, sz * (half + 0.9)), hazard, Vector3.ZERO, 8)
+	if crane:
+		var cx = half + 1.6
+		var top = h + 5.0
+		box(r, Vector3(0.5, top, 0.5), Vector3(cx, top * 0.5, -half), hazard)
+		box(r, Vector3(w + 4.0, 0.4, 0.4), Vector3(cx - (w + 4.0) * 0.5 + 1.2, top, -half), hazard)
+		box(r, Vector3(1.2, 0.8, 0.8), Vector3(cx + 1.4, top - 0.2, -half), dark())
+		cyl(r, 0.02, 0.02, 3.5, Vector3(cx - w * 0.5, top - 1.75, -half), dark(), Vector3.ZERO, 4)
+	return r
+
+static func _boxmesh(size: Vector3) -> Mesh:
+	var key = "b%s" % size
+	if not _meshes.has(key):
+		var bm = BoxMesh.new()
+		bm.size = size
+		_meshes[key] = bm
+	return _meshes[key]
 
 static func _windows(p: Node3D, w: float, y: float, z: float, n: int, col := Color(1.0, 0.85, 0.55)) -> void:
 	for i in n:

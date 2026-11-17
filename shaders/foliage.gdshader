@@ -22,7 +22,8 @@ void vertex() {
 	vec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	hf = clamp(VERTEX.y / sway_h, 0.0, 1.0);
 	vec2 uv = origin.xz / 240.0 + 0.5;
-	float occ = use_occ ? texture(occ_tex, uv).r : 0.0;
+	vec4 oc = texture(occ_tex, uv);
+	float occ = use_occ ? clamp(max(max(oc.r, oc.g), max(oc.b, oc.a)) * 1.6 - 0.3, 0.0, 1.0) : 0.0;
 	float ph = TIME * 1.6 + origin.x * 0.13 + origin.z * 0.11;
 	float gust = 0.6 + 0.4 * sin(TIME * 0.35 + origin.x * 0.02);
 	vec2 sw = vec2(sin(ph), cos(ph * 0.8 + 1.3) * 0.6) * wind * gust * hf * hf;

@@ -4,6 +4,7 @@ uniform sampler2D noise_tex : repeat_enable, filter_linear_mipmap;
 uniform sampler2D noise_n : hint_normal, repeat_enable, filter_linear_mipmap;
 uniform sampler2D fog_tex : filter_linear, repeat_disable;
 uniform float map_size = 240.0;
+uniform sampler2D occ_tex : filter_linear, repeat_disable;
 
 varying vec3 wpos;
 float fog_at(vec2 uv) {
@@ -35,9 +36,36 @@ void fragment() {
 	col = mix(col, rock, smoothstep(0.07, 0.2, slope));
 	col = mix(sand, col, smoothstep(-1.0, 0.1, wpos.y));
 	col *= 0.93 + 0.14 * n3;
+	float rough = 0.93;
+
+	// Basisboden je Fraktion (aus der Belegungs-Textur, Rand mit Rauschen aufgebrochen)
+	vec4 base = texture(occ_tex, wpos.xz / 240.0 + 0.5);
+	float edge = (n2 - 0.5) * 0.35 + (n3 - 0.5) * 0.15;
+	float mw = smoothstep(0.38, 0.62, base.r + edge);
+	float mr = smoothstep(0.38, 0.62, base.g + edge);
+	float ms = smoothstep(0.38, 0.62, base.b + edge);
+	// Westbund: helle Betonplatten 2 m mit Fugen
+	vec2 tw = abs(fract(wpos.xz / 2.0) - 0.5);
+	float jw = smoothstep(0.475, 0.49, max(tw.x, tw.y));
+	vec3 cw = vec3(0.56, 0.57, 0.57) * (0.9 + 0.2 * n2) * (1.0 - jw * 0.45);
+	cw = mix(cw, vec3(0.3, 0.3, 0.28), smoothstep(0.62, 0.75, n1) * 0.4);
+	// Rote Allianz: grobe Platten 4 m, Risse, Ölflecken
+	vec2 tr = abs(fract(wpos.xz / 4.0 + 0.5) - 0.5);
+	float jr = smoothstep(0.47, 0.49, max(tr.x, tr.y));
+	float crack = smoothstep(0.495, 0.5, n3) * smoothstep(0.505, 0.5, n3);
+	vec3 cr = vec3(0.4, 0.38, 0.35) * (0.85 + 0.25 * n2) * (1.0 - jr * 0.5) * (1.0 - crack * 0.6);
+	cr = mix(cr, vec3(0.08, 0.07, 0.06), smoothstep(0.66, 0.72, n1 * 0.6 + n3 * 0.4) * 0.7);
+	// Schattenfront: festgefahrene Erde mit Reifenspuren
+	float tracks = smoothstep(0.75, 0.95, sin(wpos.x * 1.7 + n1 * 8.0)) * 0.5 + smoothstep(0.75, 0.95, sin(wpos.z * 1.7 + n2 * 8.0)) * 0.5;
+	vec3 cs = mix(vec3(0.4, 0.32, 0.22), vec3(0.5, 0.42, 0.3), n2) * (1.0 - tracks * 0.25) * (0.9 + 0.2 * n3);
+	col = mix(col, cw, mw);
+	col = mix(col, cr, mr * (1.0 - mw));
+	col = mix(col, cs, ms * (1.0 - mw) * (1.0 - mr));
+	rough = mix(rough, 0.78, max(mw, mr));
+
 	float vis = fog_at(wpos.xz / 240.0 + 0.5);
 	ALBEDO = col * vis;
-	ROUGHNESS = 0.93;
+	ROUGHNESS = rough;
 	SPECULAR = 0.25 * vis;
 	NORMAL_MAP = texture(noise_n, wpos.xz * 0.11).rgb;
 	NORMAL_MAP_DEPTH = 0.45;
