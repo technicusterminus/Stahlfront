@@ -10,6 +10,7 @@ var next_attack = 0.0
 var attackers: Array = []
 var rng = RandomNumberGenerator.new()
 var hq_pos = Vector3.ZERO
+var target_pid = -1
 
 func setup(p: int) -> void:
 	pid = p
@@ -239,11 +240,30 @@ func _production() -> void:
 func _army() -> Array:
 	return _mine_units().filter(func(u): return u.def["role"] == "combat")
 
+## Gegner für die nächste Welle: der stärkste (mit etwas Zufall), damit nicht der
+## geografisch nächste Spieler von allen zugleich überrannt wird.
+func _repick_target() -> void:
+	var best = -1
+	var bs = -1.0
+	for q in Game.players:
+		if q["id"] != pid and q["alive"]:
+			var s = float(Game.player_strength(q["id"])) * rng.randf_range(0.7, 1.3)
+			if s > bs:
+				bs = s
+				best = q["id"]
+	target_pid = best
+
+func _target_player() -> int:
+	if target_pid < 0 or not Game.players[target_pid]["alive"]:
+		_repick_target()
+	return target_pid
+
 func _enemy_target():
 	var best = null
 	var bd = 1e9
+	var tp = _target_player()
 	for b in Game.buildings:
-		if b.alive and Game.enemies(pid, b.owner_id):
+		if b.alive and Game.enemies(pid, b.owner_id) and (tp < 0 or b.owner_id == tp):
 			var d = Game.flat_dist(b.position, hq_pos)
 			if d < bd:
 				bd = d
@@ -272,6 +292,7 @@ func _military() -> void:
 	var home: Array = army.filter(func(u): return not attackers.has(u))
 	var need: int = [5, 7, 9][Game.difficulty] + min(wave * 2, 14)
 	if Game.time >= next_attack and home.size() >= need:
+		_repick_target()
 		var t = _enemy_target()
 		if t != null:
 			wave += 1
@@ -280,16 +301,24 @@ func _military() -> void:
 				attackers.append(u)
 				u.cmd_move(t.position, true)
 	# Angreifer, die nichts mehr zu tun haben, zum nächsten Ziel schicken
+	var tp2 = _target_player()
 	for u in attackers:
 		if u.order == "idle" and u.target == null:
 			var best = null
 			var bd = 1e9
 			for b in Game.buildings:
-				if b.alive and Game.enemies(pid, b.owner_id):
+				if b.alive and Game.enemies(pid, b.owner_id) and (tp2 < 0 or b.owner_id == tp2):
 					var d = Game.flat_dist(b.position, u.position)
 					if d < bd:
 						bd = d
 						best = b
+			if best == null:
+				for b in Game.buildings:
+					if b.alive and Game.enemies(pid, b.owner_id):
+						var d2 = Game.flat_dist(b.position, u.position)
+						if d2 < bd:
+							bd = d2
+							best = b
 			if best != null:
 				u.cmd_move(best.position, true)
 	# Sammelpunkt vor der Basis
