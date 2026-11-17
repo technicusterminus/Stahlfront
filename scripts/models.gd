@@ -703,6 +703,8 @@ static func _build_building(d: Dictionary, col: Color) -> Dictionary:
 			[Vector3(-ce, 0, ce), Vector3(ce, 0, ce), Vector3(ce, 0, -ce), Vector3(-ce, 0, -ce)], custom, 1.1)
 		if d["faction"] == "shadow" and d["role"] == "hq":
 			load("res://scripts/fx.gd").flame(custom["root"], Vector3(-2.3, 0.15, 3.1), 1.0)
+		if d["faction"] == "shadow" and d["role"] == "barracks":
+			load("res://scripts/fx.gd").flame(custom["root"], Vector3(0.0, 0.12, 1.4), 0.9)
 		return custom
 	var root = Node3D.new()
 	var faction: String = d["faction"]
