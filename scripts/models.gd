@@ -695,6 +695,9 @@ static func _build_building(d: Dictionary, col: Color) -> Dictionary:
 	else:
 		box(root, Vector3(w + 0.4, 3.0, w + 0.4), Vector3(0, -1.3, 0), concrete())
 		box(root, Vector3(w + 0.9, 0.14, w + 0.9), Vector3(0, 0.02, 0), dark())
+	if load("res://scripts/arch.gd").build(root, faction, role, w, pc, wl, out):
+		_dress(root, w, faction, role, out)
+		return out
 	match role:
 		"hq":
 			_hq(root, w, wl, pc, faction, out)
@@ -772,7 +775,7 @@ static func _dress(r: Node3D, w: float, faction: String, role: String, out: Dict
 			# Tarnnetz-Fetzen in Teamfarbe
 			box(r, Vector3(1.2, 0.04, 0.8), Vector3(-e + 0.6, 2.2, e - 0.3), team, Vector3(0.2, 0.3, 0.1))
 
-static func _star(p: Node3D, pos: Vector3, r: float, m: Material) -> void:
+static func _star(p: Node3D, pos: Vector3, r: float, m: Material) -> MeshInstance3D:
 	var st = SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for i in 10:
@@ -789,6 +792,7 @@ static func _star(p: Node3D, pos: Vector3, r: float, m: Material) -> void:
 	mi.material_override = m
 	mi.position = pos
 	p.add_child(mi)
+	return mi
 
 static func _tire(p: Node3D, pos: Vector3) -> void:
 	if not _meshes.has("tire"):
@@ -800,11 +804,77 @@ static func _tire(p: Node3D, pos: Vector3) -> void:
 		_meshes["tire"] = tm
 	_mi(p, _meshes["tire"], pos, mat(Color(0.05, 0.05, 0.05), 0.0, 0.85), Vector3.ZERO).scale = Vector3(1, 1.3, 1)
 
-## Baugerüst mit Gerüststangen, Laufbrettern, Warnbaken und (bei großen Gebäuden) Baukran.
-static func build_scaffold(w: float, h: float, crane: bool) -> Node3D:
+## Baustelle je Fraktion: Westbund Hologramm mit Drohnen, Rote Allianz Stahlgerüst mit
+## Gitterturmkran, Schattenfront Holzgerüst mit Seilen.
+static func build_construction(d: Dictionary, col: Color, w: float, h: float) -> Node3D:
+	var faction: String = d["faction"]
+	if faction == "west":
+		var r = Node3D.new()
+		var holo = build_building(d, col)["root"]
+		var hm = StandardMaterial3D.new()
+		hm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		hm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		hm.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		hm.albedo_color = Color(0.25, 0.65, 1.0, 0.22)
+		hm.cull_mode = BaseMaterial3D.CULL_DISABLED
+		_holo(holo, hm)
+		r.add_child(holo)
+		var orbit = node(r)
+		orbit.name = "Orbit"
+		for i in 2:
+			var dr = build_unit("drone", col, "west")["root"]
+			dr.position = Vector3(cos(i * PI) * (w * 0.55), h + 1.5, sin(i * PI) * (w * 0.55))
+			dr.scale = Vector3.ONE * 0.8
+			orbit.add_child(dr)
+		return r
+	if faction == "red":
+		return _scaffold(w, h, true, mat(Color(0.55, 0.56, 0.58), 0.8, 0.4), mat(Color(0.5, 0.38, 0.22), 0.0, 0.9))
+	return _scaffold(w, h, false, mat(Color(0.38, 0.27, 0.15), 0.0, 0.9), mat(Color(0.5, 0.4, 0.25), 0.0, 0.95), true)
+
+static func _holo(n: Node, m: Material) -> void:
+	if n is MeshInstance3D:
+		(n as MeshInstance3D).material_override = m
+		(n as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	for c in n.get_children():
+		_holo(c, m)
+
+## Gittermast entlang Y (vier Eckstiele, Diagonalen je Feld).
+static func _lattice_mast(p: Node3D, base: Vector3, height: float, s: float, m: Material) -> void:
+	var hs = s * 0.5
+	for cx in [-hs, hs]:
+		for cz in [-hs, hs]:
+			box(p, Vector3(0.09, height, 0.09), base + Vector3(cx, height * 0.5, cz), m)
+	var seg = s * 1.4
+	var n = int(height / seg)
+	var diag = sqrt(s * s + seg * seg)
+	var ang = atan2(seg, s)
+	for i in n:
+		var y = base.y + i * seg + seg * 0.5
+		for face in 4:
+			var rot = face * PI / 2
+			var b = Basis(Vector3.UP, rot)
+			var c = b * Vector3(0, 0, hs)
+			var mi = box(p, Vector3(diag, 0.05, 0.05), Vector3(base.x, y, base.z) + c, m, Vector3(0, rot, (ang if i % 2 == 0 else -ang)))
+			mi.rotation = Vector3(0, rot, 0)
+			mi.rotate_object_local(Vector3(0, 0, 1), ang if i % 2 == 0 else -ang)
+		box(p, Vector3(s, 0.05, s), Vector3(base.x, base.y + (i + 1) * seg, base.z), m)
+
+## Gitterausleger entlang X.
+static func _lattice_jib(p: Node3D, start: Vector3, length: float, s: float, m: Material) -> void:
+	for cz in [-s * 0.5, s * 0.5]:
+		box(p, Vector3(length, 0.08, 0.08), start + Vector3(length * 0.5, 0, cz), m)
+	box(p, Vector3(length, 0.08, 0.08), start + Vector3(length * 0.5, s * 0.8, 0), m)
+	var seg = s * 1.2
+	var n = int(length / seg)
+	for i in n:
+		var x = start.x + i * seg + seg * 0.5
+		for cz in [-s * 0.25, s * 0.25]:
+			var mi = box(p, Vector3(0.05, sqrt(seg * seg * 0.25 + s * s * 0.64), 0.05), Vector3(x, start.y + s * 0.4, start.z + cz), m)
+			mi.rotation = Vector3(0, 0, (0.55 if i % 2 == 0 else -0.55))
+
+## Gerüst mit Stangen, Laufbrettern, Warnbaken; optional Gitterturmkran oder Holzgerüst-Seile.
+static func _scaffold(w: float, h: float, crane: bool, pole: Material, plank: Material, wooden := false) -> Node3D:
 	var r = Node3D.new()
-	var pole = mat(Color(0.55, 0.56, 0.58), 0.8, 0.4)
-	var plank = mat(Color(0.5, 0.38, 0.22), 0.0, 0.9)
 	var hazard = mat(Color(0.95, 0.72, 0.08), 0.2, 0.5)
 	var half = w * 0.5
 	var n = max(2, int(w / 2.0))
@@ -821,16 +891,39 @@ static func build_scaffold(w: float, h: float, crane: bool) -> Node3D:
 			_mi(r, _boxmesh(Vector3(w, 0.04, 0.04)), pr, pole, Vector3(0, rot, 0))
 			var pp = b * Vector3(0, y - 0.05, half + 0.55)
 			_mi(r, _boxmesh(Vector3(w, 0.05, 0.4)), pp, plank, Vector3(0, rot, 0))
-	for sx in [-1, 1]:
-		for sz in [-1, 1]:
-			cyl(r, 0.18, 0.25, 0.7, Vector3(sx * (half + 0.9), 0.35, sz * (half + 0.9)), hazard, Vector3.ZERO, 8)
+		if wooden:
+			# Diagonale Holzstreben und Seile
+			var dg = sqrt(w * w + h * h)
+			var mi = _mi(r, _boxmesh(Vector3(dg, 0.08, 0.08)), b * Vector3(0, h * 0.5, half + 0.32), pole, Vector3.ZERO)
+			mi.rotation = Vector3(0, rot, atan2(h, w) * (1 if side % 2 == 0 else -1))
+			cyl(r, 0.012, 0.012, h + 1.0, b * Vector3(half * 0.6, (h + 1.0) * 0.5, half + 0.7), dark(), Vector3(0.12, 0, 0), 4)
+	if not wooden:
+		for sx in [-1, 1]:
+			for sz in [-1, 1]:
+				cyl(r, 0.18, 0.25, 0.7, Vector3(sx * (half + 0.9), 0.35, sz * (half + 0.9)), hazard, Vector3.ZERO, 8)
 	if crane:
-		var cx = half + 1.6
-		var top = h + 5.0
-		box(r, Vector3(0.5, top, 0.5), Vector3(cx, top * 0.5, -half), hazard)
-		box(r, Vector3(w + 4.0, 0.4, 0.4), Vector3(cx - (w + 4.0) * 0.5 + 1.2, top, -half), hazard)
-		box(r, Vector3(1.2, 0.8, 0.8), Vector3(cx + 1.4, top - 0.2, -half), dark())
-		cyl(r, 0.02, 0.02, 3.5, Vector3(cx - w * 0.5, top - 1.75, -half), dark(), Vector3.ZERO, 4)
+		# Gitterturmkran: Mast, Ausleger, Gegenausleger mit Gewichten, Führerhaus, Laufkatze, Haken
+		var cx = half + 1.8
+		var cz = -half - 0.5
+		var top = h + 6.0
+		box(r, Vector3(2.0, 0.6, 2.0), Vector3(cx, 0.3, cz), concrete())
+		_lattice_mast(r, Vector3(cx, 0.6, cz), top - 0.6, 1.0, hazard)
+		var jl = w + 5.0
+		_lattice_jib(r, Vector3(cx - jl, top, cz), jl, 0.8, hazard)
+		_lattice_jib(r, Vector3(cx, top, cz), 4.0, 0.8, hazard)
+		for k in 3:
+			box(r, Vector3(0.6, 0.9, 1.0), Vector3(cx + 2.8 + k * 0.4, top - 0.2, cz), concrete())
+		box(r, Vector3(0.6, 2.2, 0.6), Vector3(cx, top + 1.5, cz), hazard)
+		cyl(r, 0.015, 0.015, 4.8, Vector3(cx - jl * 0.5, top + 1.3, cz), dark(), Vector3(0, 0, 1.3), 4)
+		cyl(r, 0.015, 0.015, 2.6, Vector3(cx + 1.5, top + 1.3, cz), dark(), Vector3(0, 0, -1.1), 4)
+		box(r, Vector3(1.1, 1.0, 1.1), Vector3(cx - 0.9, top - 0.6, cz + 0.6), mat(Color(0.85, 0.85, 0.82), 0.3, 0.5))
+		box(r, Vector3(1.0, 0.5, 0.05), Vector3(cx - 0.9, top - 0.45, cz + 1.16), glass())
+		var tx = cx - jl * 0.55
+		box(r, Vector3(0.7, 0.3, 0.9), Vector3(tx, top - 0.15, cz), dark())
+		cyl(r, 0.015, 0.015, top - 2.6, Vector3(tx, (top + 2.4) * 0.5, cz), dark(), Vector3.ZERO, 4)
+		box(r, Vector3(0.35, 0.4, 0.2), Vector3(tx, 2.4, cz), hazard)
+		cyl(r, 0.12, 0.12, 0.06, Vector3(tx, 2.15, cz), dark(), Vector3(PI / 2, 0, 0), 8)
+		sph(r, 0.1, Vector3(cx - jl, top + 0.2, cz), glow(Color(1, 0.15, 0.1), 8.0))
 	return r
 
 static func _boxmesh(size: Vector3) -> Mesh:

@@ -70,7 +70,7 @@ func setup(d: Dictionary, pid: int, center: Vector2i, c: Array) -> void:
 	muzzle_local = model["muzzle"]
 	height = model["height"]
 	body.scale = Vector3(1, 0.05, 1)
-	scaffold = Models.build_scaffold(float(d["size"]) * 2.0 - 0.4, max(height, 3.0), int(d["size"]) >= 5)
+	scaffold = Models.build_construction(d, Game.players[pid]["color"], float(d["size"]) * 2.0 - 0.4, max(height, 3.0))
 	add_child(scaffold)
 	_make_ring()
 
@@ -112,6 +112,12 @@ func construct(delta: float) -> void:
 	progress = min(1.0, progress + step)
 	hp = min(max_hp, hp + max_hp * 0.9 * step)
 	body.scale = Vector3(1, lerp(0.05, 1.0, progress), 1)
+	if scaffold != null and scaffold.has_node("Orbit"):
+		var orb: Node3D = scaffold.get_node("Orbit")
+		orb.rotation.y += delta * 1.4
+		if _dust_t <= 0.1:
+			for dr in orb.get_children():
+				FX.weld((dr as Node3D).global_position - Vector3(0, 0.6, 0))
 	_dust_t -= delta
 	if _dust_t <= 0.0:
 		_dust_t = 1.2
