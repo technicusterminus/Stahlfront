@@ -16,6 +16,10 @@ godot --path .
 - **Rote Allianz** – Masse: Infanterie paarweise, Hordenbonus, schnellere Beförderung, Propaganda-Aura, Atomsilo.
 - **Schattenfront** – Guerilla: Tarnung, Schrottbergung, Kopfgeld, kein Strom, Sprengwagen, Giftraketen.
 
+## Story
+
+Drei Erzählungen derselben Ereignisse, jeweils mit eigenen Helden und besonderen Charakteren; in jeder gewinnt die erzählende Fraktion: [Welt](docs/story/00_welt.md) · [Westbund](docs/story/01_westbund.md) · [Rote Allianz](docs/story/02_rote_allianz.md) · [Schattenfront](docs/story/03_schattenfront.md)
+
 ## Steuerung
 
 Linksklick wählen · Ziehen Rahmen · Rechtsklick Befehl · A Angriffsbewegung · S Stopp ·
