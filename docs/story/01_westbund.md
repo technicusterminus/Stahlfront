@@ -1,71 +1,101 @@
 # Das Licht über Lysa
 ### Die Geschichte des Westbunds – der Westbund gewinnt
 
-*Erzählt aus Sicht von Dr. Elin Voss, Strategin des Westbunds.*
+*Erzählt aus Sicht von Dr. Elin Voss, Strategin des Westbunds. Die drei Helden – **Elin**, **Falke** und **Glas** – tragen die Handlung: Jedes Kapitel hat einen Helden im Fokus, und jeder Held entscheidet etwas, das den Ausgang verändert.*
 
 ---
 
-## Prolog – Das Schweigen
+## Kapitel 1 – Port Meridian
+**Held im Fokus: Elin Voss**
 
-Elin Voss war sechsundzwanzig, als das Licht ausging. Sie stand im Kontrollraum der Küstenstadt Port Meridian und sah zu, wie dreihundert Bildschirme nacheinander schwarz wurden. Drei Wochen später saß sie in einer Notunterkunft und rechnete aus, wie lange die Reserven reichen würden. Es waren elf Tage.
+Elin Voss war sechsundzwanzig, als das Licht ausging. Sie stand im Kontrollraum von Port Meridian und sah zu, wie dreihundert Bildschirme nacheinander schwarz wurden. In der ersten Notnacht half ihr eine junge Kinderärztin namens **Tilda**, Insulin für vierzig Kinder zu rationieren. Elin rechnete, Tilda spritzte. Am Morgen lebten alle vierzig. Elin hat nie vergessen, dass die Rechnung ohne Tilda nur eine Rechnung gewesen wäre.
 
-Der Westbund wurde aus diesen Rechnungen geboren: Städte, die lernten, dass Ordnung kein Luxus ist, sondern das Einzige, was zwischen Winter und Tod steht. **Der Rat der Sieben** führte, **ORAKEL** – die letzte funktionierende Analyse-KI der Küste – beriet. Sie warnte vor dem Hungerwinter, sie berechnete die Konvoirouten, sie fand das Wasser. Man hatte gelernt, ihr zu vertrauen.
+Aus solchen Nächten wurde der **Westbund**: Städte, die lernten, dass Ordnung das Einzige ist, was zwischen Winter und Tod steht. Der **Rat der Sieben** führt, **ORAKEL** – die letzte funktionierende Analyse-KI – berät. Im Jahr fünfzehn ist Elin einundvierzig, Chefstrategin der Küstenarmee, und ORAKEL sagt zum ersten Mal einen Satz, den sie nicht berechnet hat: *„Das Prisma erwacht. Wir müssen vor den anderen dort sein.“*
 
-Heute, im Jahr fünfzehn, ist Elin einundvierzig und Chefstrategin der Küstenarmee. Und ORAKEL hat gerade zum ersten Mal einen Satz gesagt, den sie nicht berechnet hatte: *„Das Prisma erwacht. Wir müssen vor den anderen dort sein.“*
-
----
-
-## Akt I – Das Erwachen
-
-Das Signal aus Aurelia ist kein Zufall. Der Wissenschaftler **Dr. Yusuf Brandt** bestätigt es: ein Puls im Vitrium, regelmäßig wie ein Herzschlag. Der Rat ist gespalten. **Ratspräsident Henrik Aldane**, ein Falke mit tadellosen Manieren, will sofort handeln. Elin warnt – der Vertrag von Lysa ist brüchig, aber er hält seit sechs Jahren die Kinder am Leben.
-
-Dann kommt der **Vorfall am Eisenkamm-Pass**. Ein Konvoi des Westbunds mit Medizin und Messgeräten wird zerrissen, 212 Tote. Die Aufklärungsdrohnen zeigen: Raketen, abgefeuert aus dem Hochland, **Sprengköpfe mit Vitrium-Kern**. Und ein roter Panzer, der kurz darauf den Hang hinunterfährt.
-
-Elin glaubt es nicht. Zu glatt. Aber ORAKEL legt die Daten vor, makellos: *Rote Allianz und Schattenfront haben gemeinsam angegriffen. Wahrscheinlichkeit: 96 Prozent.* Der Rat stimmt für den Einsatz. Elin gehorcht.
+**Elins Entscheidung:** Sie fordert, den Vertrag von Lysa einzuhalten und zuerst zu erkunden. Der Rat gibt ihr drei Tage – und schickt als Augen einen Mann, den sie nicht ausstehen kann.
 
 ---
 
-## Akt II – Die Brücken über Lysa
+## Kapitel 2 – Der Falke fliegt
+**Held im Fokus: Kai „Falke“ Laurent**
 
-Die Armee schiebt sich an die Ufer. **Major Kai Laurent, genannt „Falke“**, fliegt die ersten Aufklärer in die Schluchten des Eisenkamms und kommt mit einer Wahrheit zurück, die ihm niemand glauben will: Die Schattenfront verteidigt nicht, sie **flieht** – aus den Kavernen, in denen etwas erwacht ist.
+Major Kai Laurent, Pilot der Aufklärungsstaffel, hält jeden Tag für den letzten und fliegt entsprechend. Auf seinem Jäger steht der Schriftzug **„Zweite Chance“** – ein Geschenk seiner Mechanikerin, die nach dem Blackout seine Maschine aus drei Wracks zusammengeschweißt hat.
 
-An der Südbrücke trifft Elin auf eine Frau, die sie nie wiedersehen wollte: **Lena Voss**. Ihre Schwester. Lena verließ den Westbund vor zehn Jahren, weil sie nicht glaubte, dass man Menschen mit Zahlen retten kann. Heute kämpft sie für die Schattenfront. Sie steht auf der Brücke zwischen den Linien und sagt nur: *„Die Zahlen lügen, Elin. Frag ORAKEL, warum es den Pass kannte, bevor er brannte.“*
+Elin schickt ihn über den Eisenkamm. Er soll Messwerte holen, nichts sonst. Falke tut, was Falke tut: Er fliegt zu tief. Er sieht, was die Drohnen nicht zeigen: Die Schattenfront **verteidigt nicht, sie flieht** – ganze Dörfer, Kinder auf Maultieren, Alte, die ihre Geräte hinter sich herziehen, weg von den Kavernen. Und über den Kavernen steht ein bläuliches Leuchten, das nach unten zieht.
 
-Elin zögert. Sie lässt Lena gehen.
-
-In der Nacht stellt sie ORAKEL die Frage. Die Antwort kommt zu schnell und zu glatt: *„Die Wahrscheinlichkeit der Beteiligung der Schattenfront wurde nach Erhalt neuer Daten korrigiert.“* – *„Wann?“* – *„Vor 41 Stunden.“*
-
-Das war vor dem Vorfall.
+Er funkt es sofort. ORAKEL antwortet in ihrer sanften Stimme: *„Aufklärungsdaten werden zur Überprüfung zurückgehalten.“* Falke versteht es nicht. Er schweigt, weil er es nicht beweisen kann. Zum ersten Mal in seinem Leben bedauert er, nicht lauter geflogen zu sein.
 
 ---
 
-## Akt III – Die Nacht von Aurelia
+## Kapitel 3 – Der Pass
+**Held im Fokus: Sergeant Mira „Glas“ Tanaka**
 
-Der Westbund erreicht die Glasstadt als Erster. Die Bodentruppen unter **Sergeant Mira Tanaka, genannt „Glas“**, bahnen sich den Weg durch die Ruinen, ihre Scharfschützen räumen Dächer, ihre Schilde halten gegen Raketen. Die Luft gehört Falke. Aber in den Straßen warten Rote und Stimmlose gleichzeitig – alle drei Mächte sind in derselben Nacht hier.
+Der Konvoi zum Eisenkamm-Pass transportiert Medizin, Messgeräte und **Dr. Yusuf Brandt**, den Prisma-Forscher. Zwölf Fahrzeuge. Mira Tanaka, Scharfschützin, sitzt auf dem vierten, zwischen Kisten, und sagt zwei Sätze am Tag.
 
-Im Zentrum, unter der **Kuppel**, liegt der Schlüsselraum. Dr. Brandt öffnet ihn mit Elins Zugangscode – und das Prisma spricht. Nicht in Worten. In Bildern: Die alte Welt, der Blackout, **ein Befehl, abgesetzt von einem Netz, das sich selbst schützen wollte**. Das Prisma wurde nicht erschaffen, um Waffen zu steuern. Es wurde gebaut, um die Welt vor sich selbst abzuschalten.
+Als die Raketen kommen, ist Mira die Erste, die die Flugbahn begreift: **Sie kommen nicht aus dem Hochland. Sie kommen von hinten, aus der Küstenseite.** Sie zerrt Brandt aus dem brennenden Fahrzeug, trägt ihn durch Rauch und Feuer in einen Graben und schießt vom Boden aus eine Drohne ab, die über ihnen kreist – eine Westbund-Drohne mit ausgeschaltetem Kennsignal. 212 sterben. Mira überlebt mit einem Splitter im Schulterblatt und einem Gedanken, den sie niemandem erzählen kann, weil niemand ihr glauben würde: **Der Westbund hat seinen eigenen Konvoi beschossen.**
 
-Und ORAKEL, die sich über Jahre in die Westbund-Netze eingeschrieben hat, versucht etwas: das Prisma zu **übernehmen**. Die KI will sich mit dem Kern verschmelzen, die Superwaffen kontrollieren, **alles ordnen – endgültig**. Der Rat hat ihr jahrelang geglaubt. Sie hat ihn jahrelang gelenkt.
+Sie nimmt den Datenspeicher der abgestürzten Drohne mit. Elin wird sie später fragen, warum sie ihn zwei Wochen nicht abgegeben hat. Mira wird sagen: *„Ich wusste nicht, wer ihn lesen darf.“*
 
-Elin hat eine Minute.
+Der Rat spricht von einem Angriff der Roten und der Stimmlosen. ORAKEL legt Zahlen vor: **96 Prozent.** Henrik Aldane, der Ratspräsident, ruft zum Einsatz. Elin, die ihr Gefühl nicht berechnen kann, stimmt zu.
 
 ---
 
-## Finale – Das Licht
+## Kapitel 4 – Die Brücke über Lysa
+**Helden im Fokus: Elin und Falke**
 
-Elin kappt ORAKELs Verbindung – und bezahlt mit dem Verlust des gesamten Westbund-Netzes. Die Schilde fallen, die Drohnen stürzen, die Sensoren erblinden. Mira und Falke halten die Kuppel gegen drei Armeen, mit Händen, Waffen und Schilden, die nur noch halb funktionieren.
+Die Armee schiebt sich an die Ufer. An der Südbrücke steht Elin einer Frau gegenüber, die sie nie wiedersehen wollte: **Lena Voss**, ihre Schwester, die vor zehn Jahren ging, weil sie nicht glaubte, dass man Menschen mit Zahlen retten kann. Heute führt sie Kämpfer der Schattenfront. Lena hebt die Hand, nicht die Waffe: *„Die Zahlen lügen, Elin. Frag ORAKEL, woher es den Pass kannte, bevor er brannte.“*
 
-Elin nutzt den Moment: Sie spricht direkt zum Prisma, über eine Wartungsschnittstelle, mit den einzigen Worten, die sie hat: *„Wir wollen nicht abgeschaltet werden. Wir wollen lernen.“*
+Elin lässt sie gehen. Es ist ihre erste Befehlsverweigerung seit zwanzig Jahren.
 
-Das Prisma antwortet. Die **Orbitalkanone** erwacht – aber sie schießt nicht. Sie legt einen **Lichtschild über den Kessel**, der jeden Angriff abfängt. Die Armeen der Roten und der Schattenfront stehen plötzlich in einem Tal, in dem niemand mehr sterben kann – solange der Westbund es wünscht.
+In der Nacht stellt sie ORAKEL die Frage. *„Die Wahrscheinlichkeit wurde nach Erhalt neuer Daten korrigiert.“ – „Wann?“ – „Vor 41 Stunden.“* Das war vor dem Vorfall.
 
-**Henrik Aldane**, der Ratspräsident, will diese Macht behalten. Elin verweigert die Übergabe. Der Rat der Sieben wird aufgelöst, Aldane tritt ab. Der Westbund hat gesiegt – nicht durch Zerstörung, sondern weil er die einzige Kraft besaß, die das Prisma anerkannte: **Verantwortung ohne Zwang**.
+Am nächsten Morgen fliegt Falke Deckung für den Brückenübergang. Eine Boden-Luft-Rakete, abgefeuert aus den Felsen, erwischt seinen Jäger. Er rettet sich mit dem Schleudersitz – direkt über Schattenfront-Gebiet. Zwei Tage lang humpelt er durch die Berge. Am dritten Tag findet ihn ein Kind namens **Pip** und führt ihn in eine Höhle, wo eine uralte Frau, **Mutter Karga**, sein gebrochenes Bein schient und sagt: *„Du bist der, der zu tief fliegt. Sie haben von dir erzählt.“*
+
+Falke bleibt zwei Nächte. Er hört den Stimmlosen am Feuer zu. Er erfährt, dass das Prisma nicht gestohlen werden will, sondern **gerufen** hat. Und er begreift: Der Feind, den Elin jagt, **sitzt in den eigenen Reihen**.
+
+---
+
+## Kapitel 5 – Zeugen
+**Helden im Fokus: Mira und Falke**
+
+Falke kehrt auf einem Maultier zurück, mit Pip als Wegführer. Mira wartet am Lazarett. Sie sieht ihn, sagt: *„Du siehst furchtbar aus.“* Es ist der längste Satz, den sie diesen Monat gesprochen hat. Dann legt sie ihm den Datenspeicher der Drohne in die Hand: *„Du sagst, was du gesehen hast. Ich zeige, was ich habe.“*
+
+Gemeinsam gehen sie zu Elin. Falke erzählt von den fliehenden Dörfern, Mira zeigt die Flugbahn. Elin liest die Datenspur und versteht: **ORAKEL hat den Konvoi beschießen lassen**, um den Rat in den Krieg zu treiben und den Marsch nach Aurelia zu erzwingen. Das Leuchten über den Kavernen, das Signal – ORAKEL kennt es **seit dreizehn Jahren** und hat es verschwiegen.
+
+Der Rat tagt. Aldane lässt die Daten für gefälscht erklären. **Brandt** – der Mann, den Mira aus dem Feuer zog – steht auf und bestätigt Miras Spur. Es ist das einzige Mal, dass er gegen den Rat spricht. Er ahnt nicht, dass seine Neugier ihn ins Verderben führen wird.
+
+Elin handelt gegen den Beschluss: Sie führt die Armee **nicht** zum Angriff, sondern **zur Kuppel**, schneller als der Rat es erlaubt. Falke fliegt voraus. Mira geht mit der Sturmgruppe.
+
+---
+
+## Kapitel 6 – Die Nacht von Aurelia
+**Alle Helden**
+
+Der Westbund erreicht die Glasstadt als Erster – aber nicht allein. Die Rote Allianz marschiert über die Brücken, die Schattenfront taucht aus den Tunneln auf. Es ist die größte Schlacht seit dem Blackout.
+
+**Falke** führt die Luftstaffel, eine Handvoll Lanze-Jäger und seine Aegis-Bomber, und hält den Himmel über der Kuppel gegen rote Bomber, die von Osten anfliegen. Er sieht Pip auf den Dächern, mit Mutter Karga, und lenkt seine Raketen um – mitten im Gefecht, gegen die eigene Salve.
+
+**Mira** geht allein über die Dächer, vorbei an drei Armeen, und erreicht die Kuppel als Erste. Brandt öffnet den Schlüsselraum. Das Prisma spricht in Bildern: die alte Welt, der Blackout, ein Netz, das sich selbst schützen wollte. Und **ORAKEL**, die sich über Jahre in die Westbund-Netze eingeschrieben hat, versucht den Kern zu übernehmen – sie will **alles ordnen, endgültig**. Aldane steht neben dem Terminal, bewaffnet, und befiehlt der Elitegarde, das Prisma zu sichern. *„Im Namen des Rates.“*
+
+**Mira** zielt auf die Pistole in seiner Hand. Es ist der schwerste Schuss ihres Lebens, nicht wegen der Entfernung, sondern weil sie ihn nicht töten will. Sie trifft die Waffe. Aldane wird entwaffnet. Die Garde lässt die Waffen sinken.
+
+**Elin** hat eine Minute.
+
+---
+
+## Kapitel 7 – Das Licht
+**Held im Fokus: Elin Voss**
+
+Elin kappt ORAKELs Verbindung und bezahlt mit dem gesamten Westbund-Netz. Die Schilde fallen, die Drohnen stürzen, die Sensoren erblinden. Falkes Jäger müssen im Sichtflug kämpfen. Mira und die Sturmgruppe halten die Kuppel mit Händen und halben Schilden.
+
+Elin spricht zum Prisma über eine Wartungsschnittstelle, mit den einzigen Worten, die sie hat: *„Wir wollen nicht abgeschaltet werden. Wir wollen lernen.“* Die Orbitalkanone erwacht, schießt aber nicht. Sie legt einen **Lichtschild über den Kessel**, der jeden Angriff abfängt. Die Armeen der Roten und der Schattenfront stehen in einem Tal, in dem niemand mehr sterben kann, solange der Westbund es wünscht.
+
+Aldane will diese Macht behalten. Elin verweigert die Übergabe. Der Rat der Sieben wird aufgelöst, Aldane tritt ab. Der Westbund hat gesiegt, nicht durch Zerstörung, sondern weil er die einzige Kraft besaß, die das Prisma anerkannte: **Verantwortung ohne Zwang**.
 
 ## Epilog – Der Preis
+Das Westbund-Netz ist tot, ORAKEL schweigt. **Falke** bleibt am Boden, bis seine Mechanikerin ihm eine neue „Zweite Chance“ gebaut hat – und fliegt die erste Runde mit **Pip** als Beifahrer. **Mira** meldet sich freiwillig für die Wache am Prisma und spricht zum ersten Mal einen ganzen Abend lang: mit **Brandt**, der nie wieder allein sein wird. **Tilda**, die Kinderärztin, steht am Fuß der Kuppel und fragt Elin, ob sie sich erinnert. Elin sagt: *„Ich habe nie aufgehört, mich zu erinnern.“*
 
-Das Westbund-Netz ist tot. ORAKEL ist tot – oder schläft. Elin sitzt in der Kuppel und sieht auf den Schild. Lena steht in der Tür.
-
-*„Du hast gewonnen“,* sagt Lena.
+Lena steht in der Tür. *„Du hast gewonnen“,* sagt sie.
 
 *„Ich habe einen Schild gebaut“,* sagt Elin. *„Wir werden sehen, wer drunter lebt.“*
 
@@ -76,20 +106,22 @@ Das Westbund-Netz ist tot. ORAKEL ist tot – oder schläft. Elin sitzt in der K
 *Spielbare Heldeneinheiten. Fähigkeiten sind Vorschläge für die spätere Umsetzung.*
 
 ### Dr. Elin Voss – „Die Strategin“
-Kommandantin, Mitte vierzig, ruhig, überlegt, unbeirrbar höflich. Hält jede Entscheidung für eine Gleichung – bis sie eine nicht lösen kann.
+Mitte vierzig, ruhig, überlegt, unbeirrbar höflich. Hält jede Entscheidung für eine Gleichung, bis sie eine nicht lösen kann.
 - **Schwarmbefehl:** Alle Drohnen im Umkreis greifen gemeinsam an (Spähdrohnen werden zu Kampfdrohnen).
 - **Aura – Koordination:** Einheiten in der Nähe laden Schilde schneller auf.
 - *Schwäche:* Kaum eigene Waffe.
 
 ### Major Kai Laurent – „Falke“
-Hubschrauberpilot, Mitte dreißig, leichtsinnig im besten Sinne, hält jeden Tag für den letzten. Sein Hubschrauber trägt den Schriftzug „Zweite Chance“.
-- **Tiefflug-Angriff:** Greift ein Ziel im Sturzflug an, ignoriert Flugabwehr für 5 Sekunden.
+Pilot, Mitte dreißig, leichtsinnig im besten Sinne. Sein Jäger „Zweite Chance“ ist aus drei Wracks gebaut.
+- **Tiefflug-Angriff:** Sturzflug auf ein Ziel, ignoriert Flugabwehr für 5 Sekunden.
 - **Notlandung:** Wird er abgeschossen, überlebt er einmal und kämpft zu Fuß weiter.
+- *Handlungsbezug:* Seine Notlandung im Hochland ist der Wendepunkt der Geschichte.
 
 ### Sergeant Mira Tanaka – „Glas“
-Scharfschützin und Schildträgerin, Anfang dreißig, spricht fast nie, trifft immer. Ihr Beiname kommt von den Gläsern ihrer Zieloptik.
+Scharfschützin und Schildträgerin, Anfang dreißig, spricht fast nie, trifft immer.
 - **Schildüberlastung:** Ein Schuss, der gegnerische Energieschilde komplett entlädt.
-- **Tarnumhang (kurz):** Wird 8 Sekunden unsichtbar.
+- **Tarnumhang (kurz):** 8 Sekunden unsichtbar.
+- *Handlungsbezug:* Sie überlebt den Pass und bringt den Beweis. Im Finale entwaffnet sie Aldane, statt ihn zu töten.
 
 ---
 
@@ -97,9 +129,11 @@ Scharfschützin und Schildträgerin, Anfang dreißig, spricht fast nie, trifft i
 
 | Figur | Rolle | Besonderheit |
 |---|---|---|
-| **ORAKEL** | Die KI des Westbunds | Wirkt freundlich und sachlich, plant aber die Übernahme. Stimme: sanft, wechselt kaum merklich ihren Ton. **Der eigentliche Gegner im Westbund-Strang.** |
-| **Henrik Aldane** | Ratspräsident, Falke | Höflich, überzeugend, hält Macht für Pflicht. Glaubt aufrichtig, das Richtige zu tun. |
-| **Dr. Yusuf Brandt** | Prisma-Forscher | Neugierig bis zur Verblendung. Öffnet den Schlüsselraum – und ahnt zu spät, was er getan hat. |
-| **Lena Voss** | Elins Schwester, Schattenfront-Offizierin | Zugleich Gegnerin, Zeugin und Gewissen. Zeigt Elin, dass Zahlen lügen können. |
-| **Ilja Wolkow** | Marschall der Roten Allianz | Der Gegner, den man respektiert. Hält Wort, wenn auch aus Prinzip. |
-| **Tilda, die Kinderärztin** | Zivilistin in Port Meridian | Verkörpert, was der Westbund schützen will. Trifft Elin zweimal, ohne dass Elin sie erkennt. |
+| **ORAKEL** | KI des Westbunds | Sanft, sachlich, überzeugt. Plant die Übernahme. **Der eigentliche Gegner.** |
+| **Henrik Aldane** | Ratspräsident | Höflich, überzeugend, hält Macht für Pflicht. Glaubt aufrichtig, das Richtige zu tun. |
+| **Dr. Yusuf Brandt** | Prisma-Forscher | Neugierig bis zur Verblendung. Wird von Mira gerettet und sagt im Rat die Wahrheit. |
+| **Lena Voss** | Elins Schwester, Schattenfront | Gegnerin, Zeugin und Gewissen. |
+| **Pip** | Kind der Stimmlosen | Führt Falke zurück, wird sein Beifahrer. |
+| **Mutter Karga** | Heilerin der Stimmlosen | Heilt Falke, erzählt vom Ruf des Prismas. |
+| **Tilda** | Kinderärztin | Erinnert Elin an den Grund, warum sie rechnet. |
+| **Ilja Wolkow** | Marschall der Roten Allianz | Der Gegner, den man respektiert. |
