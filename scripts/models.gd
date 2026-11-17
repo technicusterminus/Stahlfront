@@ -336,7 +336,7 @@ static func _teamcolor(n: Node, col: Color) -> void:
 			if m is BaseMaterial3D and "team" in String(m.resource_name).to_lower():
 				if _fac != "":
 					# Fraktionslack (Tarnmuster, Fugen, Rost) bzw. Uniform-Tarnmuster statt Einheitsfarbe
-					mi.set_surface_override_material(i, hard("uniform" if _soldier else "camo"))
+					mi.set_surface_override_material(i, hard("uniform" if _soldier else ("roof" if _bld else "camo")))
 				else:
 					var dm: BaseMaterial3D = m.duplicate()
 					dm.albedo_color = col.lerp(Color(0.45, 0.45, 0.42), 0.25)
@@ -693,8 +693,14 @@ static func build_building(d: Dictionary, col: Color) -> Dictionary:
 	return out
 
 static func _build_building(d: Dictionary, col: Color) -> Dictionary:
-	var custom = load_custom("buildings", [String(d["faction"]) + "_" + String(d["role"]), d["role"]], col)
+	var custom = load_custom("buildings", [String(d["faction"]) + "_" + String(d["role"])], col)
 	if not custom.is_empty():
+		# Eigenes Modell: Fraktions-Ausstattung und Leben ergänzen
+		var cw = float(d["size"]) * 2.0 - 0.6
+		_dress(custom["root"], cw, d["faction"], d["role"], custom)
+		var ce = cw * 0.5 + 0.6
+		load("res://scripts/arch_detail.gd").walker(custom["root"], d["faction"],
+			[Vector3(-ce, 0, ce), Vector3(ce, 0, ce), Vector3(ce, 0, -ce), Vector3(-ce, 0, -ce)], custom, 1.1)
 		return custom
 	var root = Node3D.new()
 	var faction: String = d["faction"]
