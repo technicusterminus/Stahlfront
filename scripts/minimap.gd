@@ -6,6 +6,7 @@ var fog_img: Image
 var fog_tex: ImageTexture
 var _t = 0.0
 var _drag = false
+var frame_style = "west"
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(212, 212)
@@ -85,7 +86,7 @@ func _draw() -> void:
 	# Alarm
 	if Game.time - Game._alert_t < 4.0 and int(Game.time * 4) % 2 == 0:
 		draw_arc(w2m(Game.last_alert_pos), 9.0, 0, TAU, 20, Color(1, 0.3, 0.2), 2.0)
-	draw_rect(r, Color(0.4, 0.55, 0.7, 0.6), false, 1.0)
+	_frame(r)
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -115,3 +116,25 @@ func _gui_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion and _drag:
 		Game.cam.look_at_pos(m2w((event as InputEventMouseMotion).position))
 		accept_event()
+
+## Kartenrahmen im Stil der Fraktion.
+func _frame(r: Rect2) -> void:
+	match frame_style:
+		"red":
+			draw_rect(r, Color(0.8, 0.62, 0.3), false, 3.5)
+			draw_rect(r.grow(-3.0), Color(0.4, 0.07, 0.05), false, 1.5)
+			for p in [r.position + Vector2(6, 6), Vector2(r.end.x - 6, r.position.y + 6), Vector2(r.position.x + 6, r.end.y - 6), r.end - Vector2(6, 6)]:
+				draw_circle(p, 3.0, Color(0.85, 0.66, 0.32))
+		"shadow":
+			draw_rect(r, Color(0.16, 0.1, 0.05), false, 6.0)
+			draw_rect(r.grow(-3.0), Color(0.45, 0.3, 0.15), false, 1.5)
+			for p in [r.position + Vector2(5, 5), Vector2(r.end.x - 5, r.position.y + 5), Vector2(r.position.x + 5, r.end.y - 5), r.end - Vector2(5, 5)]:
+				draw_circle(p, 2.4, Color(0.3, 0.29, 0.28))
+		_:
+			draw_rect(r, Color(0.3, 0.7, 0.95, 0.45), false, 1.5)
+			var l = 18.0
+			var c = Color(0.55, 0.95, 1.0)
+			for corner in [[r.position, 1, 1], [Vector2(r.end.x, r.position.y), -1, 1], [Vector2(r.position.x, r.end.y), 1, -1], [r.end, -1, -1]]:
+				var p: Vector2 = corner[0]
+				draw_line(p, p + Vector2(l * corner[1], 0), c, 2.5)
+				draw_line(p, p + Vector2(0, l * corner[2]), c, 2.5)

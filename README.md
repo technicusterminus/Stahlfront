@@ -189,6 +189,7 @@ Missionen und spielbare Helden sind noch nicht umgesetzt.
 - **Wasser:** Tiefenfarbe, Lichtbrechung, Uferschaum, Wellen.
 - **Tiere:** Hirschherden grasen und fliehen vor Einheiten und Gefechten; Vogelschwärme kreisen und fliegen bei Lärm auf.
 - **Material-Shader:** `shaders/hardsurface.gdshader` projiziert Tarnmuster, Blechfugen, Nieten, Rost, Schmutz und Mikro-Normalen im Objektraum; jede Fraktion hat eigene Parameter.
+- **Oberflächen:** jede Fraktion hat eine eigene, im Code erzeugte Oberfläche: Westbund Milchglas mit Cyan-Leuchtrand, Rote Allianz gebürstetes Metall mit Nieten und Messing, Schattenfront Holzbretter mit Nägeln und Leinenflicken mit Nähten; eigene Schrift, Emblem, Minikartenrahmen und Wortschatz (Mittel / Volkskasse / Beute usw.).
 - **Effekte:** Flammen aus einer prozeduralen Flammentextur (Turbulenz, Funken, Rauch, flackerndes Licht), Explosionen, Leuchtspuren, Laser, Rauchsäulen, Einschlagkrater (Decals).
 - **KI:** Basisbau nach Fraktions-Bauordnung, Wirtschaft, gewichtete Produktion, Angriffswellen, Verteidigung, Generalsfähigkeiten, Superwaffen. Drei Schwierigkeitsstufen.
 - **Wegfindung:** A* auf einem 2-m-Raster mit Sichtlinienglättung, Trennkräften und Festsitz-Erkennung.
@@ -276,7 +277,7 @@ Schalter folgen auf `--` hinter dem Godot-Aufruf, z. B. `godot --path . -- --aut
 **Balance-Messreihe:** `tools/balance_test.ps1` simuliert KI-Gefechte ohne Fenster, rotiert Fraktionen und Startpositionen über mehrere Karten und fasst Überlebensquote, Abschüsse, Verluste und Skriptfehler je Fraktion zusammen:
 
 ```
-powershell -File tools/balance_test.ps1 -Godot <pfad\zu\godot_console.exe> -Seeds 7,31,55 -Quit 650 -Out ergebnis.txt
+powershell -File tools/balance_test.ps1 -Godot <pfad\zu\godot_console.exe> -Seeds "7,31,55" -Quit 650 -Out ergebnis.txt
 ```
 
 ---

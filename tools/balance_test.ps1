@@ -1,8 +1,8 @@
 # Balance-Messreihe: KI gegen KI, jede Fraktion an jeder Startposition.
-# Aufruf: powershell -File tools/balance_test.ps1 -Godot <pfad> -Seeds 7,31,55 -Quit 650 -Out ergebnis.txt
+# Aufruf: powershell -File tools/balance_test.ps1 -Godot <pfad> -Seeds "7,31,55" -Quit 650 -Out ergebnis.txt
 param(
     [string]$Godot,
-    [int[]]$Seeds = @(7, 31, 55),
+    [string]$Seeds = "7,31,55",
     [int]$Quit = 650,
     [int]$Speed = 6,
     [string]$Out = "balance_result.txt"
@@ -11,7 +11,7 @@ $proj = Split-Path -Parent $PSScriptRoot
 Set-Location $proj
 "" | Set-Content $Out
 $rows = @()
-foreach ($s in $Seeds) {
+foreach ($s in ($Seeds -split "," | ForEach-Object { [int]$_ })) {
     foreach ($f in "west", "red", "shadow") {
         $o = & $Godot --headless --path . -- --demo --enemies=2 --seed=$s --faction=$f --speed=$Speed --quit=$Quit 2>&1
         $err = ($o | Select-String -Pattern "SCRIPT ERROR").Count

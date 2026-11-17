@@ -2,6 +2,8 @@ extends CanvasLayer
 ## Benutzeroberfläche: Kopfleiste, Kommandoleiste, Minikarte, Meldungen, Menüs.
 
 const MinimapScript = preload("res://scripts/minimap.gd")
+const UITheme = preload("res://scripts/ui_theme.gd")
+const EmblemScript = preload("res://scripts/emblem.gd")
 
 signal start_requested(cfg: Dictionary)
 
@@ -33,6 +35,11 @@ var help_panel: PanelContainer
 var menu_layer: Control
 var end_layer: Control
 var thm: Theme
+var ui = {}
+var cur_faction = "west"
+var emblem
+var btn_help: Button
+var btn_menu: Button
 var accent = Color(0.35, 0.65, 1.0)
 
 var _sig = ""
@@ -81,33 +88,29 @@ func _sb(bg: Color, border := Color(0, 0, 0, 0), radius := 6, bw := 1, margin :=
 	return s
 
 func _make_theme() -> void:
-	thm = Theme.new()
-	thm.set_stylebox("panel", "PanelContainer", _sb(Color(0.045, 0.06, 0.08, 0.92), Color(0.3, 0.45, 0.6, 0.45), 8, 1, 10.0))
-	thm.set_stylebox("normal", "Button", _sb(Color(0.11, 0.14, 0.18), Color(0.25, 0.32, 0.4), 6))
-	thm.set_stylebox("hover", "Button", _sb(Color(0.16, 0.22, 0.3), Color(0.45, 0.65, 0.9), 6))
-	thm.set_stylebox("pressed", "Button", _sb(Color(0.2, 0.3, 0.42), Color(0.55, 0.75, 1.0), 6))
-	thm.set_stylebox("disabled", "Button", _sb(Color(0.07, 0.08, 0.1), Color(0.15, 0.17, 0.2), 6))
-	thm.set_stylebox("focus", "Button", StyleBoxEmpty.new())
-	thm.set_color("font_color", "Button", Color(0.9, 0.94, 1.0))
-	thm.set_color("font_hover_color", "Button", Color(1, 1, 1))
-	thm.set_color("font_disabled_color", "Button", Color(0.48, 0.52, 0.58))
-	thm.set_font_size("font_size", "Button", 13)
-	thm.set_color("font_color", "Label", Color(0.88, 0.92, 0.97))
-	thm.set_font_size("font_size", "Label", 14)
-	thm.set_stylebox("panel", "TooltipPanel", _sb(Color(0.03, 0.04, 0.05, 0.96), Color(0.4, 0.55, 0.7), 6, 1, 10.0))
-	thm.set_color("font_color", "TooltipLabel", Color(0.92, 0.95, 1.0))
-	thm.set_font_size("font_size", "TooltipLabel", 13)
-	thm.set_stylebox("background", "ProgressBar", _sb(Color(0.1, 0.12, 0.14), Color(0, 0, 0, 0), 3, 0, 0.0))
-	thm.set_stylebox("fill", "ProgressBar", _sb(Color(0.3, 0.8, 0.4), Color(0, 0, 0, 0), 3, 0, 0.0))
-	thm.set_color("font_color", "ProgressBar", Color(1, 1, 1, 0))
-	thm.set_stylebox("normal", "OptionButton", _sb(Color(0.11, 0.14, 0.18), Color(0.25, 0.32, 0.4), 6))
-	thm.set_stylebox("hover", "OptionButton", _sb(Color(0.16, 0.22, 0.3), Color(0.45, 0.65, 0.9), 6))
+	apply_faction("west")
 
-func _label(text: String, size := 14, col := Color(0.88, 0.92, 0.97)) -> Label:
+## Wechselt die gesamte Oberfläche (Texturen, Schrift, Wortschatz, Emblem, Kartenrahmen).
+func apply_faction(fid: String) -> void:
+	cur_faction = fid
+	ui = UITheme.vocab(fid)
+	thm = UITheme.build(fid)
+	if root != null:
+		root.theme = thm
+	if emblem != null:
+		emblem.set_faction(fid, Defs.factions[fid]["color"])
+	if btn_help != null:
+		btn_help.text = ui["help"]
+		btn_menu.text = ui["menu"]
+	if minimap != null:
+		minimap.frame_style = fid
+
+func _label(text: String, size := 14, col := Color(0, 0, 0, 0)) -> Label:
 	var l = Label.new()
 	l.text = text
 	l.add_theme_font_size_override("font_size", size)
-	l.add_theme_color_override("font_color", col)
+	if col.a > 0.0:
+		l.add_theme_color_override("font_color", col)
 	return l
 
 func _button(text: String, cb: Callable, min_size := Vector2(0, 0)) -> Button:
@@ -131,7 +134,9 @@ func _build_top() -> void:
 	var h = HBoxContainer.new()
 	h.add_theme_constant_override("separation", 22)
 	top.add_child(h)
-	lbl_faction = _label("STAHLFRONT", 16, Color(1, 1, 1))
+	emblem = EmblemScript.new()
+	h.add_child(emblem)
+	lbl_faction = _label("STAHLFRONT", 17, Color(1, 1, 1))
 	h.add_child(lbl_faction)
 	lbl_credits = _label("Credits 0", 16, Color(1.0, 0.86, 0.4))
 	lbl_credits.tooltip_text = "Credits: Sammler holen Nachschub aus Depots und liefern ihn am Nachschubzentrum ab."
@@ -159,8 +164,10 @@ func _build_top() -> void:
 	h.add_child(sp)
 	lbl_time = _label("00:00", 15, Color(0.7, 0.78, 0.85))
 	h.add_child(lbl_time)
-	h.add_child(_button("Hilfe (F1)", toggle_help))
-	h.add_child(_button("Menü (Esc)", toggle_pause))
+	btn_help = _button("Hilfe (F1)", toggle_help)
+	h.add_child(btn_help)
+	btn_menu = _button("Menü (Esc)", toggle_pause)
+	h.add_child(btn_menu)
 
 func _build_bottom() -> void:
 	bottom = PanelContainer.new()
@@ -345,6 +352,7 @@ func show_menu() -> void:
 		fbtns[fid] = b
 	var pick_faction = func(fid: String):
 		_cfg["faction"] = fid
+		apply_faction(fid)
 		for k in fbtns:
 			fbtns[k].button_pressed = k == fid
 		var ft: String = Defs.factions[fid]["desc"]
@@ -396,6 +404,7 @@ func on_match_started() -> void:
 	set_game_ui(true)
 	var p: Dictionary = Game.players[Game.human]
 	accent = p["color"]
+	apply_faction(p["faction"] if not Game.spectator else "west")
 	lbl_faction.text = p["name"].to_upper() if not Game.spectator else "ZUSCHAUER"
 	lbl_faction.add_theme_color_override("font_color", accent.lightened(0.3))
 	minimap.set_terrain(Game.terrain.minimap_image(212))
@@ -443,17 +452,17 @@ func _process(delta: float) -> void:
 	if not Game.running or Game.players.is_empty():
 		return
 	var p: Dictionary = Game.players[Game.human]
-	lbl_credits.text = "Credits %s" % _fmt(int(p["credits"]))
+	lbl_credits.text = "%s %s" % [ui["credits"], _fmt(int(p["credits"]))]
 	var uses_power: bool = Defs.factions[p["faction"]]["uses_power"]
 	lbl_power.visible = uses_power
 	power_bar.visible = uses_power
 	if uses_power:
-		lbl_power.text = "Strom %d / %d" % [p["power_prod"], p["power_use"]]
+		lbl_power.text = "%s %d / %d" % [ui["power"], p["power_prod"], p["power_use"]]
 		var ok = Game.has_power(Game.human)
 		lbl_power.add_theme_color_override("font_color", Color(0.6, 1.0, 0.7) if ok else Color(1.0, 0.4, 0.35))
 		power_bar.max_value = max(1, p["power_prod"])
 		power_bar.value = min(p["power_use"], p["power_prod"])
-	btn_rank.text = "General Rang %d · %d Punkt%s" % [p["rank"], p["points"], "" if p["points"] == 1 else "e"]
+	btn_rank.text = (ui["rank"] % p["rank"]) + " · %d %s" % [p["points"], ui["point"][0 if p["points"] == 1 else 1]]
 	var st = ""
 	for b in Game.buildings:
 		if b.owner_id == Game.human and b.complete and b.def["role"] == "super":
@@ -799,7 +808,7 @@ func _refresh_powers() -> void:
 		return
 	var p: Dictionary = Game.players[Game.human]
 	var f: Dictionary = Defs.factions[p["faction"]]
-	powers_list.add_child(_label("Generalsfähigkeiten · Rang %d · %d freie Punkte" % [p["rank"], p["points"]], 18, Color(1, 0.9, 0.5)))
+	powers_list.add_child(_label("%s · Rang %d · %d freie %s" % [ui["powers"], p["rank"], p["points"], ui["point"][1]], 19, Color(1, 0.9, 0.5)))
 	var nxt = ""
 	if p["rank"] < Game.RANK_XP.size():
 		nxt = "Nächster Rang bei %s Erfahrung (aktuell %s)." % [_fmt(int(Game.RANK_XP[p["rank"]])), _fmt(int(p["xp"]))]
