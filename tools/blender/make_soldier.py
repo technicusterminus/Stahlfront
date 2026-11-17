@@ -57,26 +57,66 @@ EDGES = [("pelvis", "spine"), ("spine", "chest"), ("chest", "neck"), ("neck", "h
          ("chest", "shoulder.L"), ("shoulder.L", "elbow.L"), ("elbow.L", "wrist.L"), ("wrist.L", "hand.L"),
          ("chest", "shoulder.R"), ("shoulder.R", "elbow.R"), ("elbow.R", "wrist.R"), ("wrist.R", "hand.R")]
 
+# Gliedmaßen werden fein unterteilt, damit Knie und Ellbogen sauber knicken.
+# Profil: (t entlang des Knochens, Radiusfaktor, Vorschub nach vorne in m)
+PROFILES = {
+    ("hip", "knee"):       [(0.2, 1.02, 0.0), (0.45, 0.98, -0.008), (0.7, 0.88, -0.004), (0.88, 0.8, 0.0)],
+    ("knee", "ankle"):     [(0.08, 0.98, -0.012), (0.3, 1.04, 0.012), (0.55, 0.92, 0.01), (0.8, 0.78, 0.0)],
+    ("shoulder", "elbow"): [(0.25, 1.0, 0.0), (0.5, 1.03, -0.006), (0.82, 0.86, 0.0)],
+    ("elbow", "wrist"):    [(0.12, 1.0, 0.008), (0.4, 1.02, 0.0), (0.75, 0.86, 0.0)],
+}
+
+def _limb_kind(a, b):
+    for (ka, kb), prof in PROFILES.items():
+        if a.startswith(ka) and b.startswith(kb):
+            return prof
+    return None
+
 def build_body(mat_uniform, mat_skin, mat_boot):
-    names = list(J.keys())
+    verts = []
+    radii = []
+    index = {}
+    for n, (p, r) in J.items():
+        index[n] = len(verts)
+        q = Vector(p)
+        if n.startswith("knee"):
+            q += Vector((0, -0.018, 0))      # Kniescheibe
+        if n.startswith("elbow"):
+            q += Vector((0, 0.012, 0))       # Ellbogenspitze
+        verts.append(q)
+        if n in ("chest", "spine"):
+            radii.append((r * 1.25, r * 0.85))
+        elif n == "pelvis":
+            radii.append((r * 1.15, r * 0.9))
+        else:
+            radii.append((r, r))
+    edges = []
+    for a, b in EDGES:
+        prof = _limb_kind(a, b)
+        if prof is None:
+            edges.append((index[a], index[b]))
+            continue
+        pa, ra = Vector(J[a][0]), J[a][1]
+        pb, rb = Vector(J[b][0]), J[b][1]
+        prev = index[a]
+        for t, k, fwd in prof:
+            v = pa.lerp(pb, t) + Vector((0, fwd, 0))
+            rr = (ra + (rb - ra) * t) * k
+            verts.append(v)
+            radii.append((rr, rr))
+            edges.append((prev, len(verts) - 1))
+            prev = len(verts) - 1
+        edges.append((prev, index[b]))
     me = bpy.data.meshes.new("Body")
-    me.from_pydata([J[n][0] for n in names], [(names.index(a), names.index(b)) for a, b in EDGES], [])
+    me.from_pydata([tuple(v) for v in verts], edges, [])
     ob = bpy.data.objects.new("Body", me)
     bpy.context.scene.collection.objects.link(ob)
     activate(ob)
     sk = ob.modifiers.new("Skin", "SKIN")
     sk.use_smooth_shade = True
-    for i, n in enumerate(names):
-        r = J[n][1]
-        sv = me.skin_vertices[0].data[i]
-        # Brust und Becken etwas breiter als tief
-        if n in ("chest", "spine"):
-            sv.radius = (r * 1.25, r * 0.85)
-        elif n == "pelvis":
-            sv.radius = (r * 1.15, r * 0.9)
-        else:
-            sv.radius = (r, r)
-    me.skin_vertices[0].data[names.index("pelvis")].use_root = True
+    for i, rr in enumerate(radii):
+        me.skin_vertices[0].data[i].radius = rr
+    me.skin_vertices[0].data[index["pelvis"]].use_root = True
     sub = ob.modifiers.new("Sub", "SUBSURF")
     sub.levels = 1
     sub.render_levels = 1
@@ -221,18 +261,29 @@ def gear(faction, variant, rig, M):
     return [o for o, b in objs]
 
 # ------------------------------------------------------------------ Animationen
-def key_pose(rig, frame, pose):
-    for bname, rot in pose.items():
-        pb = rig.pose.bones[bname]
-        pb.rotation_mode = "XYZ"
-        if bname == "root" and isinstance(rot, tuple) and len(rot) == 2:
-            pb.location = Vector(rot[1])
-            pb.keyframe_insert("location", frame=frame)
-            rot = rot[0]
-        pb.rotation_euler = Euler([math.radians(a) for a in rot])
-        pb.keyframe_insert("rotation_euler", frame=frame)
-
+# Posen in Armature-Achsen (Grad): um X = Scharnier vorne/hinten, um Y = seitlich kippen, um Z = drehen.
+#   Oberschenkel/Oberarm um -X: nach vorne, um +X: nach hinten.
+#   Unterschenkel um +X: Knie beugt (Ferse nach hinten) – nie negativ.
+#   Unterarm um -X: Ellbogen beugt (Hand nach oben/vorne).
+#   Fuß um +X: Spitze nach unten, um -X: Spitze nach oben.
 ALL_BONES = [b[0] for b in BONES]
+
+def _q(rig, bname, deg):
+    pb = rig.pose.bones[bname]
+    rest = pb.bone.matrix_local.to_quaternion()
+    q = Euler([math.radians(a) for a in deg], "XYZ").to_quaternion()
+    return rest.inverted() @ q @ rest
+
+def key_pose(rig, frame, pose, root_loc=(0, 0, 0)):
+    for b in ALL_BONES:
+        pb = rig.pose.bones[b]
+        pb.rotation_mode = "QUATERNION"
+        pb.rotation_quaternion = _q(rig, b, pose.get(b, (0, 0, 0)))
+        pb.keyframe_insert("rotation_quaternion", frame=frame)
+    root = rig.pose.bones["root"]
+    rest = root.bone.matrix_local.to_quaternion()
+    root.location = rest.inverted() @ Vector(root_loc)
+    root.keyframe_insert("location", frame=frame)
 
 def new_action(rig, name):
     rig.animation_data_create()
@@ -241,55 +292,99 @@ def new_action(rig, name):
     rig.animation_data.action = act
     return act
 
-def rest(extra=None):
-    p = {b: (0, 0, 0) for b in ALL_BONES}
-    p["root"] = ((0, 0, 0), (0, 0, 0))
-    if extra:
-        p.update(extra)
-    return p
+def _leg(t):
+    """Ein Bein im Gangzyklus (t in Radiant). Gibt (Oberschenkel, Knie, Fuß) zurück."""
+    thigh = -24.0 * math.sin(t)
+    swing = max(0.0, math.cos(t + 0.3)) ** 1.5           # Schwungphase: Knie stark gebeugt
+    load = max(0.0, math.sin(t)) * max(0.0, -math.cos(t))  # nach Fersenaufsatz: leichte Federung
+    knee = 5.0 + 55.0 * swing + 14.0 * load
+    toe_off = max(0.0, -math.sin(t)) * max(0.0, math.cos(t)) # Abstoßen mit dem Ballen
+    foot = -(thigh + knee) * 0.9 + 22.0 * toe_off - 6.0 * swing
+    return thigh, knee, foot
 
 def make_anims(rig, variant):
-    # Grundhaltung der Arme: Waffe vor dem Körper
-    hold = {} if variant == "worker" else {"upperarm.R": (-25, 0, 10), "forearm.R": (-30, 0, 0), "upperarm.L": (-20, 0, -5)}
+    worker = variant == "worker"
     acts = []
-    # Idle: leichtes Atmen, Kopf schaut sich um
+
+    # ---------- Idle: Atmen, Gewicht verlagern, Umschauen (2 s)
     a = new_action(rig, "Idle")
-    for f, k in [(1, 0), (24, 1), (48, 0)]:
-        key_pose(rig, f, rest({**hold, "chest": (2 * k, 0, 0), "head": (0, 0, 12 * math.sin(k * 2)), "root": ((0, 0, 0), (0, 0, -0.01 * k))}))
+    for f in range(1, 50, 4):
+        t = (f - 1) / 48.0 * math.tau
+        shift = math.sin(t)
+        pose = {
+            "root": (0, 2.0 * shift, 0),
+            "thigh.L": (-3, -2.0 * shift, 0), "shin.L": (4 + 2 * max(0, shift), 0, 0), "foot.L": (-1, 0, 0),
+            "thigh.R": (3, -2.0 * shift, 0), "shin.R": (4 + 2 * max(0, -shift), 0, 0), "foot.R": (-7, 0, 0),
+            "spine": (1.5 * math.sin(2 * t), -1.5 * shift, 0), "chest": (1.5 * math.sin(2 * t), 0, 0),
+            "head": (2 * math.sin(2 * t + 1), 0, 18 * math.sin(t * 0.5 + 0.4)),
+        }
+        if worker:
+            pose.update({"upperarm.L": (4, 0, 4), "upperarm.R": (4, 0, -4), "forearm.L": (-10, 0, 0), "forearm.R": (-10, 0, 0)})
+        key_pose(rig, f, pose, (0.006 * shift, 0, -0.006 + 0.004 * math.sin(2 * t)))
     acts.append(a)
-    # Walk: Beine, Gegenschwung, Becken-Wippen (1 s)
+
+    # ---------- Walk: 13 Posen pro Schritt-Paar (1 s)
     a = new_action(rig, "Walk")
-    for i, f in enumerate([1, 7, 13, 19, 25]):
-        s = [1, 0, -1, 0, 1][i]
-        up = [0, 1, 0, 1, 0][i]
-        pose = rest({**hold,
-                     "thigh.L": (32 * s, 0, 0), "shin.L": (-40 * max(0, -s) - 15 * up, 0, 0),
-                     "thigh.R": (-32 * s, 0, 0), "shin.R": (-40 * max(0, s) - 15 * up, 0, 0),
-                     "foot.L": (10 * s, 0, 0), "foot.R": (-10 * s, 0, 0),
-                     "spine": (5, 0, 4 * s), "root": ((0, 0, 0), (0, 0, 0.03 * up))})
-        if variant == "worker":
-            pose["upperarm.L"] = (-25 * s, 0, 0)
-            pose["upperarm.R"] = (25 * s, 0, 0)
-        key_pose(rig, f, pose)
+    for f in range(1, 26, 2):
+        t = (f - 1) / 24.0 * math.tau
+        tl, kl, fl = _leg(t)
+        tr, kr, fr = _leg(t + math.pi)
+        pose = {
+            "thigh.L": (tl, 0, 0), "shin.L": (kl, 0, 0), "foot.L": (fl, 0, 0),
+            "thigh.R": (tr, 0, 0), "shin.R": (kr, 0, 0), "foot.R": (fr, 0, 0),
+            "root": (3, 3.0 * math.sin(t), 6.0 * math.sin(t)),
+            "spine": (4, 0, -5.0 * math.sin(t)), "chest": (2, 0, -3.0 * math.sin(t)),
+            "neck": (0, 0, 3.0 * math.sin(t)), "head": (-3 + 2 * math.cos(2 * t), 0, 2.0 * math.sin(t)),
+        }
+        if worker:
+            pose.update({"upperarm.L": (22 * math.sin(t), 0, 5), "upperarm.R": (-22 * math.sin(t), 0, -5),
+                         "forearm.L": (-12 - 10 * max(0, -math.sin(t)), 0, 0), "forearm.R": (-12 - 10 * max(0, math.sin(t)), 0, 0)})
+        else:
+            pose.update({"upperarm.R": (-3 * math.sin(t), 0, 0), "upperarm.L": (3 * math.sin(t), 0, 0)})
+        key_pose(rig, f, pose, (0, 0, 0.022 * math.cos(2 * t) - 0.012))
     acts.append(a)
-    # Shoot: Anschlag, Rückstoß
+
+    # ---------- Shoot: Gewehr an die Schulter, Rückstoß (0,5 s)
     a = new_action(rig, "Shoot")
-    aim = {"upperarm.R": (-75, 0, 15), "forearm.R": (-20, 0, 0), "upperarm.L": (-70, 0, -25), "forearm.L": (-15, 0, 0), "head": (5, 0, 0), "spine": (6, 0, 0)}
+    stance = {"thigh.L": (-14, 0, 0), "shin.L": (14, 0, 0), "foot.L": (0, 0, 0),
+              "thigh.R": (10, 0, 0), "shin.R": (12, 0, 0), "foot.R": (-22, 0, 0),
+              "root": (0, 0, -12), "spine": (6, 0, 6), "chest": (2, 0, 8)}
     if variant == "inf_at":
-        aim = {"upperarm.R": (-60, 0, 20), "forearm.R": (-60, 0, 0), "upperarm.L": (-55, 0, -10), "head": (-5, 0, -8)}
-    key_pose(rig, 1, rest(aim))
-    key_pose(rig, 3, rest({**aim, "chest": (-6, 0, 0), "upperarm.R": (aim["upperarm.R"][0] + 8, 0, aim["upperarm.R"][2])}))
-    key_pose(rig, 10, rest(aim))
+        aim = {"upperarm.R": (-70, 0, 15), "forearm.R": (-60, 0, 0), "upperarm.L": (-80, 0, -15), "forearm.L": (-30, 0, 0), "head": (6, 8, 4)}
+        kick = 9
+    else:
+        aim = {"upperarm.R": (-40, 0, 18), "forearm.R": (-38, 0, 0), "hand.R": (78, 0, 0),
+               "upperarm.L": (-58, 0, -22), "forearm.L": (-22, 0, 0), "head": (8, 6, 4)}
+        kick = 5
+    base = {**stance, **aim}
+    key_pose(rig, 1, base, (0, 0, -0.04))
+    recoil = dict(base)
+    recoil["chest"] = (2 + kick, 0, 8)
+    recoil["upperarm.R"] = (aim["upperarm.R"][0] + kick * 0.6, aim["upperarm.R"][1], aim["upperarm.R"][2])
+    key_pose(rig, 3, recoil, (0, 0.02, -0.04))
+    key_pose(rig, 7, base, (0, 0, -0.04))
+    key_pose(rig, 13, base, (0, 0, -0.04))
     acts.append(a)
-    # Die: nach hinten fallen
+
+    # ---------- Die: Knie knicken ein, Fall nach hinten (1 s)
     a = new_action(rig, "Die")
-    key_pose(rig, 1, rest(hold))
-    key_pose(rig, 8, rest({"root": ((-30, 0, 5), (0, 0.05, -0.15)), "spine": (-15, 0, 0), "head": (-20, 0, 0), "upperarm.R": (-90, 0, 40), "upperarm.L": (-80, 0, -50), "thigh.L": (25, 0, 0), "shin.L": (-50, 0, 0)}))
-    key_pose(rig, 18, rest({"root": ((-88, 0, 8), (0, 0.45, -0.78)), "spine": (-5, 0, 0), "head": (15, 0, 25), "upperarm.R": (-150, 0, 50), "upperarm.L": (-140, 0, -60), "thigh.L": (35, 0, 0), "shin.L": (-60, 0, 0), "thigh.R": (10, 0, 0)}))
+    key_pose(rig, 1, {}, (0, 0, 0))
+    key_pose(rig, 7, {"thigh.L": (-38, 0, 0), "shin.L": (72, 0, 0), "foot.L": (-30, 0, 0),
+                      "thigh.R": (-30, 0, 0), "shin.R": (64, 0, 0), "foot.R": (-30, 0, 0),
+                      "spine": (18, 0, 6), "chest": (10, 0, 0), "head": (20, 0, 0),
+                      "upperarm.L": (12, 0, -10), "upperarm.R": (12, 0, 10)}, (0, 0, -0.3))
+    lie = {"root": (-82, 0, 6), "thigh.L": (58, 0, 6), "shin.L": (22, 0, 0), "foot.L": (-25, 0, 0),
+           "thigh.R": (48, 0, -8), "shin.R": (38, 0, 0), "foot.R": (-25, 0, 0),
+           "spine": (-6, 0, 0), "head": (-12, 0, 28),
+           "upperarm.L": (-120, 0, -45), "forearm.L": (-20, 0, 0), "upperarm.R": (-100, 0, 55), "forearm.R": (-40, 0, 0)}
+    key_pose(rig, 15, lie, (0, 0.35, -0.8))
+    bounce = dict(lie)
+    bounce["root"] = (-86, 0, 6)
+    key_pose(rig, 18, bounce, (0, 0.38, -0.76))
+    key_pose(rig, 24, lie, (0, 0.38, -0.8))
     acts.append(a)
     rig.animation_data.action = acts[0]
     return acts
-
 # ------------------------------------------------------------------ Aufbau je Fraktion/Variante
 def build(faction, variant):
     reset()
@@ -359,5 +454,38 @@ os.makedirs(os.path.join(root_dir, "models", "units"), exist_ok=True)
 for f in FACTIONS:
     for v in VARIANTS:
         build(f, v)
-for f in FACTIONS:
-    preview(f)
+def anim_sheet(faction):
+    """Seitenansicht mehrerer Bilder je Animation nach shots/anim/."""
+    rig = build(faction, "inf")
+    sc = bpy.context.scene
+    sun = bpy.data.objects.new("Sun", bpy.data.lights.new("Sun", "SUN"))
+    sun.data.energy = 4
+    sun.rotation_euler = (math.radians(45), 0, math.radians(60))
+    sc.collection.objects.link(sun)
+    cam = bpy.data.objects.new("Cam", bpy.data.cameras.new("Cam"))
+    sc.collection.objects.link(cam)
+    cam.location = (5.2, -1.6, 1.3)
+    cam.rotation_euler = (Vector((0, 0, 1.1)) - cam.location).to_track_quat("-Z", "Y").to_euler()
+    cam.data.lens = 50
+    sc.camera = cam
+    w = bpy.data.worlds.new("W")
+    w.use_nodes = True
+    w.node_tree.nodes["Background"].inputs["Color"].default_value = (0.55, 0.62, 0.7, 1)
+    sc.world = w
+    sc.render.engine = "BLENDER_EEVEE"
+    sc.render.resolution_x = 300
+    sc.render.resolution_y = 420
+    out = os.path.join(root_dir, "shots", "anim")
+    os.makedirs(out, exist_ok=True)
+    for act, frames in (("Walk", [1, 4, 7, 10, 13, 16, 19, 22]), ("Shoot", [1, 3]), ("Die", [7, 15]), ("Idle", [1])):
+        rig.animation_data.action = bpy.data.actions[act]
+        for fr in frames:
+            sc.frame_set(fr)
+            sc.render.filepath = os.path.join(out, "%s_%02d.png" % (act, fr))
+            bpy.ops.render.render(write_still=True)
+
+if "--sheet" in sys.argv:
+    anim_sheet("west")
+else:
+    for f in FACTIONS:
+        preview(f)
