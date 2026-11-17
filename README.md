@@ -183,7 +183,7 @@ Missionen und spielbare Helden sind noch nicht umgesetzt.
 
 ## Grafik und Technik
 
-- **Rendering:** Forward+ mit SDFGI-freiem Aufbau, SSAO, SSIL, Glow, ACES-Tonemapping, Volumennebel, 4-stufige Sonnenschatten.
+- **Rendering:** Forward+ mit SSAO, SSIL, Glow, ACES-Tonemapping, Volumennebel, 4-stufige Sonnenschatten.
 - **Gelände:** prozedural aus Rauschfeldern (Seen, Grate, Täler), Begehbarkeitsraster und Erreichbarkeitsprüfung; Material mit Gras, Erde, Fels, Sand und fraktionsspezifischen Basisböden (Betonplatten, Risse und Öl, festgefahrene Erde).
 - **Vegetation:** Wind-animiertes Gras in Kacheln mit Sichtweiten-Ausblendung, Blumen, Büsche, Schilf, Nadel- und Laubbäume, verformte Felsen mit Moos. Gras verschwindet unter Gebäuden.
 - **Wasser:** Tiefenfarbe, Lichtbrechung, Uferschaum, Wellen.
