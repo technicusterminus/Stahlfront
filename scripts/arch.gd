@@ -28,6 +28,7 @@ static func build(r: Node3D, faction: String, role: String, w: float, pc: Materi
 		"_shadow_hq": D.shadow_hq(r, w, pc, wl, out)
 		"_shadow_supply": _shadow_supply(r, w, pc, wl, out)
 		"_shadow_barracks": _shadow_barracks(r, w, pc, wl, out)
+		"_shadow_airfield": _shadow_airfield(r, w, pc, wl, out)
 		"_shadow_factory": D.shadow_factory(r, w, pc, wl, out)
 		"_shadow_tech": _shadow_tech(r, w, pc, wl, out)
 		_:
@@ -304,6 +305,30 @@ static func _shadow_barracks(r: Node3D, w: float, pc: Material, wl: Material, ou
 		M.box(r, Vector3(0.45, 0.6, 0.25), p + Vector3(0, 1.1, 0), M.mat(Color(0.6, 0.55, 0.4), 0, 0.95))
 	out["height"] = 2.0
 
+static func _shadow_airfield(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
+	# Schotterpiste mit Markierungssteinen, Windsack, Zelthalle, Fassdepot und Wachhütte
+	var dirt = M.mat(Color(0.5, 0.42, 0.3), 0.0, 1.0)
+	var wood = M.mat(Color(0.4, 0.28, 0.16), 0.0, 0.9)
+	M.box(r, Vector3(w * 0.5, 0.12, w * 0.95), Vector3(-w * 0.12, 0.05, 0), dirt)
+	for k in 8:
+		var z = -w * 0.42 + k * w * 0.12
+		M.box(r, Vector3(0.22, 0.14, 0.34), Vector3(-w * 0.12 - w * 0.22, 0.12, z), M.mat(Color(0.8, 0.78, 0.7), 0, 0.9), Vector3(0, 0.2 * k, 0))
+		M.box(r, Vector3(0.22, 0.14, 0.34), Vector3(-w * 0.12 + w * 0.22, 0.12, z), M.mat(Color(0.8, 0.78, 0.7), 0, 0.9), Vector3(0, 0.2 * k, 0))
+	for k in 4:
+		M.box(r, Vector3(0.18, 0.04, 0.7), Vector3(-w * 0.12, 0.13, -w * 0.3 + k * w * 0.2), M.mat(Color(0.85, 0.85, 0.8), 0, 0.8))
+	# Windsack
+	M.cyl(r, 0.04, 0.04, 2.4, Vector3(w * 0.32, 1.2, -w * 0.38), wood, Vector3.ZERO, 6)
+	M.cyl(r, 0.22, 0.22, 0.9, Vector3(w * 0.32 + 0.4, 2.3, -w * 0.38), M.mat(Color(0.95, 0.4, 0.1), 0, 0.8), Vector3(0, 0, PI / 2), 10)
+	# Zelthalle
+	load("res://scripts/arch.gd").prism(r, 3.0, 2.0, 3.6, Vector3(w * 0.3, 0, w * 0.12), M.mat(Color(0.5, 0.45, 0.3), 0, 0.95))
+	M.box(r, Vector3(1.8, 1.5, 0.05), Vector3(w * 0.3, 0.75, w * 0.12 - 1.8), M.mat(Color(0.02, 0.02, 0.02), 0, 1))
+	M.box(r, Vector3(3.0, 0.05, 2.2), Vector3(w * 0.3, 2.3, w * 0.12 - 0.6), pc, Vector3(0.2, 0, 0))
+	# Fassdepot und Wachhütte
+	for i in 5:
+		M.cyl(r, 0.27, 0.27, 0.9, Vector3(w * 0.38 + (i % 3) * 0.6, 0.45, -w * 0.15 + (i / 3) * 0.6), M.mat(Color(0.4, 0.2, 0.09) if i % 2 else Color(0.12, 0.2, 0.35), 0.5, 0.7), Vector3.ZERO, 12)
+	M.box(r, Vector3(1.2, 1.4, 1.2), Vector3(-w * 0.42, 0.7, w * 0.3), wood)
+	load("res://scripts/arch.gd").prism(r, 1.6, 0.6, 1.6, Vector3(-w * 0.42, 1.4, w * 0.3), pc)
+	out["height"] = 2.4
 static func _shadow_tech(r: Node3D, w: float, pc: Material, wl: Material, out: Dictionary) -> void:
 	# Schwarzmarkt: gestapelte Container unter Planen, Lichterketten
 	_container(r, Vector3(-w * 0.2, 0, -w * 0.15), 0.0, Color(0.55, 0.2, 0.12))

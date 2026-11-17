@@ -388,6 +388,12 @@ static func _build_unit(model: String, col: Color, faction: String) -> Dictionar
 			_drone(root, pc, model == "builddrone", out)
 		"bombtruck":
 			_bombtruck(root, pc, out)
+		"jet":
+			_jet(root, pc, faction, out)
+		"bomber":
+			_bomber(root, pc, faction, out)
+		"glider", "sprayer":
+			_biplane(root, pc, model == "sprayer", out)
 		_:
 			box(root, Vector3(2, 1, 3), Vector3(0, 0.5, 0), pc)
 	return out
@@ -670,6 +676,89 @@ static func _bombtruck(r: Node3D, pc: Material, out: Dictionary) -> void:
 	sph(r, 0.12, Vector3(0, 2.2, 1.6), glow(Color(1, 0.1, 0.05), 8.0))
 	out["height"] = 2.4
 
+## Düsenjäger: Westbund spitz und schlank (Tarnkappenform), Rote Allianz mit Doppelleitwerk.
+static func _jet(r: Node3D, pc: Material, faction: String, out: Dictionary) -> void:
+	var b = node(r)
+	var west = faction == "west"
+	sph(b, 1.0, Vector3(0, 0, 0), pc, Vector3(0.55, 0.5, 3.0))
+	cyl(b, 0.02, 0.5, 2.0, Vector3(0, 0, 3.4), pc, Vector3(PI / 2, 0, 0), 12)
+	sph(b, 0.4, Vector3(0, 0.38, 1.1), glass(), Vector3(0.7, 0.65, 2.1))
+	var sweep = 0.5 if west else 0.35
+	for sx in [-1.0, 1.0]:
+		box(b, Vector3(2.9, 0.08, 1.7 if west else 1.3), Vector3(sx * 1.75, -0.06, -0.4), pc, Vector3(0, -sx * sweep, sx * 0.04))
+		box(b, Vector3(0.06, 0.06, 1.1), Vector3(sx * 2.2, -0.12, -0.2), steel())
+		cyl(b, 0.07, 0.07, 1.3, Vector3(sx * 1.7, -0.3, 0.1), steel(), Vector3(PI / 2, 0, 0), 8)
+		cyl(b, 0.0, 0.07, 0.3, Vector3(sx * 1.7, -0.3, 0.85), dark(), Vector3(PI / 2, 0, 0), 8)
+		if west:
+			box(b, Vector3(0.07, 0.8, 1.0), Vector3(sx * 0.4, 0.5, -2.3), pc, Vector3(0, 0, sx * 0.55))
+			box(b, Vector3(1.3, 0.06, 0.8), Vector3(sx * 0.9, 0.0, -2.6), pc, Vector3(0, -sx * 0.4, 0))
+		else:
+			box(b, Vector3(0.07, 1.0, 1.2), Vector3(sx * 0.55, 0.6, -2.3), pc)
+			box(b, Vector3(1.4, 0.06, 0.8), Vector3(sx * 0.9, 0.0, -2.6), pc, Vector3(0, -sx * 0.25, 0))
+		sph(b, 0.26, Vector3(sx * 0.3, -0.05, -3.1), glow(Color(0.5, 0.8, 1.0) if west else Color(1.0, 0.55, 0.15), 7.0), Vector3(1, 1, 1.4))
+		cyl(b, 0.3, 0.3, 1.2, Vector3(sx * 0.3, -0.05, -2.4), dark(), Vector3(PI / 2, 0, 0), 12)
+	box(b, Vector3(0.6, 0.07, 0.3), Vector3(0, 0.05, 1.7), dark())
+	out["muzzle"] = Vector3(0, -0.3, 2.4)
+	out["height"] = 1.0
+
+## Bomber: Westbund als Nurflügler, Rote Allianz viermotorig mit Doppelleitwerk.
+static func _bomber(r: Node3D, pc: Material, faction: String, out: Dictionary) -> void:
+	var b = node(r)
+	var west = faction == "west"
+	if west:
+		sph(b, 1.0, Vector3(0, 0, 0.3), pc, Vector3(1.0, 0.45, 2.6))
+		for sx in [-1.0, 1.0]:
+			box(b, Vector3(4.6, 0.14, 2.9), Vector3(sx * 2.7, -0.05, -0.7), pc, Vector3(0, -sx * 0.5, sx * 0.03))
+			sph(b, 0.3, Vector3(sx * 1.1, 0.0, -1.7), glow(Color(0.5, 0.8, 1.0), 6.0), Vector3(1, 1, 1.5))
+		sph(b, 0.45, Vector3(0, 0.3, 1.4), glass(), Vector3(0.9, 0.6, 1.5))
+		box(b, Vector3(1.3, 0.06, 2.0), Vector3(0, -0.45, -0.2), dark())
+	else:
+		sph(b, 1.0, Vector3(0, 0, 0), pc, Vector3(0.95, 0.9, 4.4))
+		cyl(b, 0.03, 0.8, 2.0, Vector3(0, 0, 4.5), pc, Vector3(PI / 2, 0, 0), 14)
+		sph(b, 0.5, Vector3(0, 0.55, 2.4), glass(), Vector3(0.9, 0.7, 1.6))
+		for sx in [-1.0, 1.0]:
+			box(b, Vector3(4.2, 0.16, 2.0), Vector3(sx * 2.8, -0.1, -0.3), pc, Vector3(0, -sx * 0.12, sx * 0.04))
+			for ex in [1.6, 3.4]:
+				cyl(b, 0.34, 0.34, 1.6, Vector3(sx * ex, -0.2, 0.3), dark(), Vector3(PI / 2, 0, 0), 14)
+				cyl(b, 0.45, 0.45, 0.04, Vector3(sx * ex, -0.2, 1.15), steel(), Vector3(PI / 2, 0, 0), 14)
+				sph(b, 0.16, Vector3(sx * ex, -0.2, -0.55), glow(Color(1.0, 0.5, 0.15), 5.0))
+			box(b, Vector3(0.09, 1.6, 1.4), Vector3(sx * 1.0, 1.0, -4.2), pc)
+			box(b, Vector3(2.4, 0.08, 1.0), Vector3(sx * 1.2, 0.15, -4.3), pc)
+		box(b, Vector3(1.0, 0.07, 3.0), Vector3(0, -0.8, 0.0), dark())
+	out["muzzle"] = Vector3(0, -0.8, 0.0)
+	out["height"] = 1.2
+
+## Doppeldecker (Schattenfront): Gleiter mit MG, Sprüher mit Tank und Sprühbalken.
+static func _biplane(r: Node3D, pc: Material, sprayer: bool, out: Dictionary) -> void:
+	var b = node(r)
+	var wood = mat(Color(0.4, 0.28, 0.16), 0.0, 0.9)
+	var canvas = mat(Color(0.55, 0.5, 0.35), 0.0, 0.95)
+	box(b, Vector3(0.55, 0.55, 2.8), Vector3(0, 0.3, 0), pc, Vector3.ZERO)
+	box(b, Vector3(0.4, 0.4, 0.9), Vector3(0, 0.3, 1.6), dark())
+	box(b, Vector3(0.12, 0.8, 0.9), Vector3(0, 0.75, -1.7), pc)
+	box(b, Vector3(1.6, 0.05, 0.6), Vector3(0, 0.45, -1.7), canvas)
+	for y in [0.0, 0.95]:
+		box(b, Vector3(4.2, 0.07, 1.0), Vector3(0, y + 0.1, 0.2), canvas if y == 0.0 else pc)
+	for sx in [-1.5, 1.5]:
+		box(b, Vector3(0.05, 0.95, 0.05), Vector3(sx, 0.55, 0.1), wood)
+		box(b, Vector3(0.05, 0.95, 0.05), Vector3(sx, 0.55, 0.45), wood)
+	var prop = node(b, Vector3(0, 0.3, 2.1))
+	box(prop, Vector3(1.5, 0.08, 0.06), Vector3.ZERO, wood)
+	sph(b, 0.12, Vector3(0, 0.3, 2.1), steel())
+	box(b, Vector3(0.3, 0.3, 0.5), Vector3(0, 0.75, 0.6), dark())
+	for sx in [-0.35, 0.35]:
+		cyl(b, 0.14, 0.14, 0.12, Vector3(sx, -0.1, 0.0), dark(), Vector3(0, 0, PI / 2), 8)
+	if sprayer:
+		cyl(b, 0.45, 0.45, 1.4, Vector3(0, -0.45, 0.2), mat(Color(0.35, 0.7, 0.2), 0.3, 0.5), Vector3(PI / 2, 0, 0), 14)
+		box(b, Vector3(4.0, 0.06, 0.06), Vector3(0, -0.85, -0.2), steel())
+		for k in 7:
+			cyl(b, 0.03, 0.03, 0.2, Vector3(-1.8 + k * 0.6, -1.0, -0.2), steel(), Vector3.ZERO, 6)
+		out["muzzle"] = Vector3(0, -1.0, -0.2)
+	else:
+		box(b, Vector3(0.08, 0.08, 1.0), Vector3(0.0, 0.7, 1.0), dark())
+		out["muzzle"] = Vector3(0.0, 0.7, 1.7)
+	out["prop"] = prop
+	out["height"] = 1.4
 # ---------------------------------------------------------------- Flugzeug für Fähigkeiten
 
 static func build_plane(col: Color) -> Node3D:

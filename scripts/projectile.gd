@@ -43,6 +43,9 @@ func launch(s, p: int, weapon: Dictionary, from: Vector3, tgt, to: Vector3, dama
 		"artillery":
 			speed = 32.0
 			arc = clamp(dist * 0.35, 6.0, 22.0)
+		"bomb":
+			speed = 15.0
+			arc = 0.0
 		_:
 			speed = 70.0
 	dur = max(dist / speed, 0.05)
@@ -80,13 +83,17 @@ func _build_visual() -> void:
 		_rocket_mat = m2
 	mesh = MeshInstance3D.new()
 	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	if w["type"] == "rocket" or w["type"] == "artillery":
+	if w["type"] == "rocket" or w["type"] == "artillery" or w["type"] == "bomb":
 		mesh.mesh = _rocket_mesh
 		mesh.material_override = _rocket_mat
 		mesh.rotation.x = PI / 2
 		if w["type"] == "artillery":
 			mesh.scale = Vector3(2.0, 1.6, 2.0)
-		trail = FX.trail(self, toxic)
+		if w["type"] == "bomb":
+			mesh.scale = Vector3(1.9, 1.4, 1.9)
+			mesh.material_override = _shell_mat if false else _rocket_mat
+		else:
+			trail = FX.trail(self, toxic)
 	else:
 		mesh.mesh = _shell_mesh
 		mesh.material_override = _shell_mat
@@ -124,6 +131,8 @@ func _impact() -> void:
 			FX.explosion(tpos, 1.6 if not toxic else 2.2, toxic)
 			if toxic:
 				FX.toxin_cloud(tpos, 5.0, 4.0)
+		"bomb":
+			FX.explosion(tpos, 1.7)
 		"rocket":
 			FX.explosion(tpos, 0.6)
 		_:

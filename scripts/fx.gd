@@ -41,8 +41,8 @@ static func _scorch_tex() -> Texture2D:
 ## Flammenform: gewölbter Körper mit Spitze, gezackten Rändern und Farbe in der Textur
 ## (gelb-weißer Kern, oranger Rand). Alpha = Form.
 static func _flame_tex() -> Texture2D:
-	if _c.has("flame"):
-		return _c["flame"]
+	if _c.has("flametex"):
+		return _c["flametex"]
 	var W = 128
 	var H = 192
 	var img = Image.create(W, H, false, Image.FORMAT_RGBA8)
@@ -70,7 +70,7 @@ static func _flame_tex() -> Texture2D:
 			img.set_pixel(x, y, Color(col.r, col.g, col.b, a))
 	img.generate_mipmaps()
 	var t = ImageTexture.create_from_image(img)
-	_c["flame"] = t
+	_c["flametex"] = t
 	return t
 static func _flame_quad() -> QuadMesh:
 	if _c.has("flamequad"):

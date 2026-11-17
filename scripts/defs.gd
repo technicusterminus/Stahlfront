@@ -12,6 +12,7 @@ const DMG_MOD := {
 	"laser":     {"inf": 1.0, "light": 1.0, "heavy": 1.05, "air": 0.9, "bldg": 0.7},
 	"artillery": {"inf": 0.9, "light": 0.85, "heavy": 0.75, "air": 0.0, "bldg": 1.4},
 	"demolition": {"inf": 1.2, "light": 1.3, "heavy": 1.0, "air": 0.0, "bldg": 1.8},
+	"bomb": {"inf": 1.0, "light": 1.15, "heavy": 1.0, "air": 0.0, "bldg": 1.6},
 }
 
 const ROLE_NAMES := {
@@ -43,7 +44,8 @@ func U(id: String, d: Dictionary) -> void:
 	d["faction"] = id.split("_")[0]
 	d.merge({"sight": 18.0, "armor": "light", "speed": 6.0, "flying": false, "role": "combat",
 		"scale": 1.0, "weapon": null, "prereq": [], "desc": "", "horde": false, "cargo": 0,
-		"shield": 0.0, "stealth": false, "pair": false, "salvage": false, "built_at": ""}, false)
+		"shield": 0.0, "stealth": false, "pair": false, "salvage": false, "built_at": "",
+		"fixed_wing": false, "turn": 1.3}, false)
 	units[id] = d
 
 func B(id: String, d: Dictionary) -> void:
@@ -122,12 +124,16 @@ func _west() -> void:
 	U("west_heli", {"name": "Sperber-Kampfheli", "cost": 1500, "time": 14.0, "hp": 380.0, "speed": 13.0, "armor": "air", "flying": true, "model": "heli", "built_at": "airfield", "sight": 22.0,
 		"weapon": W("rocket", 34.0, 18.0, 1.1, {"burst": 2}), "desc": "Schneller Jäger für Bodenziele."})
 
+	U("west_jet", {"name": "Lanze-Jäger", "cost": 1300, "time": 13.0, "hp": 300.0, "speed": 17.0, "armor": "air", "flying": true, "model": "jet", "built_at": "airfield", "sight": 24.0,
+		"fixed_wing": true, "turn": 1.5, "weapon": W("rocket", 32.0, 24.0, 1.8, {"air": true, "burst": 2}), "desc": "Schneller Jagdflieger mit Lenkraketen gegen Luft- und Bodenziele. Kann nicht schweben und fliegt Angriffsschleifen."})
+	U("west_bomber", {"name": "Aegis-Tarnkappenbomber", "cost": 2400, "time": 20.0, "hp": 520.0, "speed": 12.0, "armor": "air", "flying": true, "model": "bomber", "built_at": "airfield", "sight": 22.0, "scale": 1.0,
+		"fixed_wing": true, "turn": 0.8, "prereq": ["tech"], "weapon": W("bomb", 140.0, 7.0, 4.5, {"splash": 5.0, "burst": 4}), "desc": "Fliegender Flügel mit Bombenschacht. Verheerend gegen Bodenziele und Gebäude, bekämpft keine Luftziele."})
 	B("west_hq", {"name": "Kommandozentrale", "cost": 2500, "time": 40.0, "hp": 3200.0, "size": 5, "power": 5, "produces": ["west_dozer"], "sight": 24.0, "desc": "Herz der Basis. Baut Baudrohnen."})
 	B("west_power", {"name": "Fusionsreaktor", "cost": 800, "time": 12.0, "hp": 900.0, "power": 10, "desc": "Liefert 10 Strom."})
 	B("west_supply", {"name": "Nachschubzentrum", "cost": 1500, "time": 15.0, "hp": 1500.0, "power": -1, "produces": ["west_harv"], "desc": "Lager für Nachschub. Liefert einen Lkw mit."})
 	B("west_barracks", {"name": "Kaserne", "cost": 500, "time": 10.0, "hp": 1100.0, "power": -1, "produces": ["west_inf", "west_at"], "prereq": ["power"], "desc": "Bildet Infanterie aus."})
 	B("west_factory", {"name": "Waffenfabrik", "cost": 2000, "time": 20.0, "hp": 2000.0, "size": 5, "power": -2, "produces": ["west_drone", "west_tank", "west_aa", "west_arty", "west_laser"], "prereq": ["supply", "barracks"], "desc": "Produziert Fahrzeuge."})
-	B("west_airfield", {"name": "Flugfeld", "cost": 1000, "time": 16.0, "hp": 1500.0, "size": 5, "power": -2, "produces": ["west_heli"], "prereq": ["factory"], "desc": "Startplatz für Kampfhubschrauber."})
+	B("west_airfield", {"name": "Flugfeld", "cost": 1000, "time": 16.0, "hp": 1500.0, "size": 5, "power": -2, "produces": ["west_heli", "west_jet", "west_bomber"], "prereq": ["factory"], "desc": "Startplatz für Kampfhubschrauber."})
 	B("west_defense", {"name": "Patriot-Batterie", "cost": 1000, "time": 12.0, "hp": 1300.0, "power": -2, "prereq": ["barracks"], "sight": 26.0,
 		"weapon": W("rocket", 46.0, 26.0, 1.4, {"air": true, "burst": 2}), "desc": "Raketenabwehr gegen Boden- und Luftziele. Braucht Strom."})
 	B("west_tech", {"name": "Forschungszentrum", "cost": 2000, "time": 25.0, "hp": 1500.0, "power": -3, "prereq": ["factory"], "desc": "Schaltet Artillerie, Laserpanzer und Superwaffe frei."})
@@ -153,12 +159,16 @@ func _red() -> void:
 	U("red_heli", {"name": "Taifun-Kampfheli", "cost": 1400, "time": 14.0, "hp": 430.0, "speed": 11.5, "armor": "air", "flying": true, "model": "heli", "built_at": "airfield", "sight": 22.0,
 		"weapon": W("bullet", 16.0, 16.0, 0.2), "desc": "Gatling-Hubschrauber gegen Infanterie und leichte Ziele."})
 
+	U("red_jet", {"name": "Sturm-Abfangjäger", "cost": 1200, "time": 12.0, "hp": 340.0, "speed": 16.0, "armor": "air", "flying": true, "model": "jet", "built_at": "airfield", "sight": 22.0,
+		"fixed_wing": true, "turn": 1.4, "weapon": W("bullet", 14.0, 20.0, 0.2, {"air": true}), "desc": "Robuster Abfangjäger mit Bordkanonen gegen Luft und Boden. Kann nicht schweben."})
+	U("red_bomber", {"name": "Bär-Bomber", "cost": 2500, "time": 22.0, "hp": 700.0, "speed": 9.5, "armor": "air", "flying": true, "model": "bomber", "built_at": "airfield", "sight": 22.0, "scale": 1.15,
+		"fixed_wing": true, "turn": 0.6, "prereq": ["tech"], "weapon": W("bomb", 170.0, 7.0, 5.0, {"splash": 5.5, "burst": 5}), "desc": "Schwerer viermotoriger Bomber mit Teppichabwurf. Langsam, zäh und vernichtend."})
 	B("red_hq", {"name": "Hauptquartier", "cost": 2500, "time": 40.0, "hp": 3600.0, "size": 5, "power": 5, "produces": ["red_dozer"], "sight": 24.0, "desc": "Herz der Basis. Baut Bautraktoren."})
 	B("red_power", {"name": "Kohlekraftwerk", "cost": 800, "time": 12.0, "hp": 1000.0, "power": 10, "desc": "Liefert 10 Strom."})
 	B("red_supply", {"name": "Versorgungsdepot", "cost": 1500, "time": 15.0, "hp": 1600.0, "power": -1, "produces": ["red_harv"], "desc": "Lager für Nachschub. Liefert einen Lkw mit."})
 	B("red_barracks", {"name": "Kaserne", "cost": 500, "time": 10.0, "hp": 1200.0, "power": -1, "produces": ["red_inf", "red_at"], "prereq": ["power"], "desc": "Bildet Infanterie aus."})
 	B("red_factory", {"name": "Panzerwerk", "cost": 2000, "time": 20.0, "hp": 2200.0, "size": 5, "power": -2, "produces": ["red_tank", "red_flame", "red_aa", "red_arty", "red_heavy"], "prereq": ["supply", "barracks"], "desc": "Produziert Fahrzeuge."})
-	B("red_airfield", {"name": "Hubschrauberbasis", "cost": 1000, "time": 16.0, "hp": 1500.0, "size": 5, "power": -2, "produces": ["red_heli"], "prereq": ["factory"], "desc": "Startplatz für Kampfhubschrauber."})
+	B("red_airfield", {"name": "Hubschrauberbasis", "cost": 1000, "time": 16.0, "hp": 1500.0, "size": 5, "power": -2, "produces": ["red_heli", "red_jet", "red_bomber"], "prereq": ["factory"], "desc": "Startplatz für Kampfhubschrauber."})
 	B("red_defense", {"name": "Gatling-Bunker", "cost": 1000, "time": 12.0, "hp": 1600.0, "power": -2, "prereq": ["barracks"], "sight": 24.0,
 		"weapon": W("flak", 14.0, 22.0, 0.15, {"air": true}), "desc": "Gatling gegen Infanterie und Luftziele. Braucht Strom."})
 	B("red_tech", {"name": "Propagandazentrum", "cost": 2000, "time": 25.0, "hp": 1600.0, "power": -3, "prereq": ["factory"], "aura": 28.0, "desc": "Propaganda-Aura: heilt eigene Einheiten im Umkreis und erhöht ihre Feuerrate. Schaltet Haubitze, Koloss und Superwaffe frei."})
@@ -184,10 +194,15 @@ func _shadow() -> void:
 	U("shadow_arty", {"name": "Bombardier", "cost": 1300, "time": 15.0, "hp": 300.0, "speed": 5.6, "model": "scud", "built_at": "factory",
 		"weapon": W("artillery", 140.0, 50.0, 9.0, {"splash": 7.0, "min_range": 12.0}), "prereq": ["tech"], "desc": "Giftrakete mit riesiger Reichweite."})
 
+	U("shadow_glider", {"name": "Schrott-Gleiter", "cost": 550, "time": 7.0, "hp": 170.0, "speed": 13.0, "armor": "air", "flying": true, "model": "glider", "built_at": "airfield", "sight": 20.0,
+		"fixed_wing": true, "turn": 1.9, "weapon": W("bullet", 10.0, 15.0, 0.22, {"air": true}), "desc": "Billiger Ultraleichtflieger mit MG. Wendig, aber zerbrechlich."})
+	U("shadow_sprayer", {"name": "Giftsprüher", "cost": 1100, "time": 11.0, "hp": 300.0, "speed": 10.0, "armor": "air", "flying": true, "model": "sprayer", "built_at": "airfield", "sight": 20.0,
+		"fixed_wing": true, "turn": 1.2, "weapon": W("toxin", 20.0, 5.5, 0.4, {"splash": 4.0}), "desc": "Doppeldecker, der Gift auf Bodentruppen sprüht. Tödlich gegen Infanterie."})
 	B("shadow_hq", {"name": "Versteck", "cost": 2000, "time": 35.0, "hp": 3000.0, "size": 5, "produces": ["shadow_dozer"], "sight": 24.0, "desc": "Herz der Basis. Bildet Arbeiter aus."})
 	B("shadow_supply", {"name": "Umschlagplatz", "cost": 1500, "time": 15.0, "hp": 1300.0, "produces": ["shadow_harv"], "desc": "Lager für Nachschub. Liefert einen Pickup mit."})
 	B("shadow_barracks", {"name": "Ausbildungslager", "cost": 500, "time": 10.0, "hp": 1000.0, "produces": ["shadow_inf", "shadow_at"], "desc": "Bildet Kämpfer aus."})
 	B("shadow_factory", {"name": "Schrottwerkstatt", "cost": 2000, "time": 20.0, "hp": 1800.0, "size": 5, "produces": ["shadow_tech", "shadow_buggy", "shadow_tank", "shadow_toxin", "shadow_bomb", "shadow_aa", "shadow_arty"], "prereq": ["supply", "barracks"], "desc": "Schweißt Fahrzeuge zusammen."})
+	B("shadow_airfield", {"name": "Schotterpiste", "cost": 1200, "time": 14.0, "hp": 1100.0, "size": 5, "produces": ["shadow_glider", "shadow_sprayer"], "prereq": ["factory"], "desc": "Provisorische Startbahn für Ultraleichtflieger und Sprühflugzeuge."})
 	B("shadow_defense", {"name": "Stinger-Stellung", "cost": 900, "time": 12.0, "hp": 1100.0, "prereq": ["barracks"], "sight": 24.0,
 		"weapon": W("rocket", 36.0, 24.0, 1.2, {"air": true, "burst": 2}), "desc": "Raketen gegen Boden- und Luftziele."})
 	B("shadow_tech", {"name": "Schwarzmarkt", "cost": 2000, "time": 25.0, "hp": 1400.0, "prereq": ["factory"], "desc": "Schaltet Bombardier und Superwaffe frei. Bringt 30 Credits alle 10 s."})

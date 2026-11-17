@@ -62,6 +62,8 @@ var _anim_t = 0.0
 var _fly_cur = 0.0
 
 # Fraktionsbesonderheiten
+var fixed_wing = false    # Flächenflieger: kann nicht schweben
+var _bank = 0.0
 var shield = 0.0          # Westbund: Energieschild
 var max_shield = 0.0
 var _shield_fx_t = 0.0
@@ -91,6 +93,7 @@ func setup(d: Dictionary, pid: int) -> void:
 	radius = (1.6 if is_vehicle else 0.55) * float(d["scale"])
 	if flying:
 		radius = 2.0 if d["role"] != "combat" or weapon != null else 1.4
+	fixed_wing = d["fixed_wing"]
 	max_shield = d["shield"]
 	shield = max_shield
 	_make_ring()
@@ -312,6 +315,8 @@ func _set_stealth(v: bool) -> void:
 		(mi as MeshInstance3D).transparency = tr
 
 func _follow(delta: float) -> bool:
+	if fixed_wing:
+		return _fixed_follow(delta)
 	if path.is_empty():
 		return true
 	var p: Vector3 = path[0]
@@ -399,6 +404,14 @@ func _do_attack(delta: float) -> void:
 	_engage(target, delta)
 
 func _engage(t, delta: float) -> void:
+	if fixed_wing:
+		var dd = Game.flat_dist(position, t.position)
+		var ang = atan2(t.position.x - position.x, t.position.z - position.z)
+		var df = abs(wrapf(heading - ang, -PI, PI))
+		var bomber = weapon["type"] == "bomb"
+		if cd <= 0.0 and burst_left == 0 and dd <= weapon["range"] and df < (0.7 if bomber else 0.32):
+			_fire(t)
+		return
 	var d = Game.flat_dist(position, t.position) - t.radius
 	if d > weapon["range"]:
 		if repath_t <= 0.0 or path.is_empty():
@@ -579,7 +592,40 @@ func _do_build(delta: float) -> void:
 
 # ---------------------------------------------------------------- Bewegung
 
+## Flächenflieger: Ziel, Wegpunkt oder Wachpunkt anfliegen; Wendekreis statt Schweben.
+func _fixed_follow(_delta: float) -> bool:
+	if path.is_empty():
+		return true
+	if Game.flat_dist(position, path[0]) < 9.0:
+		path.pop_front()
+		return path.is_empty()
+	return false
+
+func _fly_fixed(delta: float) -> void:
+	var goal = guard_pos
+	if _valid_target():
+		goal = target.position
+	elif not path.is_empty():
+		goal = path[0]
+	if abs(position.x) > 104.0 or abs(position.z) > 104.0:
+		goal = Vector3.ZERO
+	var a = atan2(goal.x - position.x, goal.z - position.z)
+	var diff = wrapf(a - heading, -PI, PI)
+	var tr = float(def["turn"])
+	heading += clamp(diff, -tr * delta, tr * delta)
+	_bank = lerp(_bank, clamp(diff * 1.2, -1.0, 1.0), min(1.0, 4.0 * delta))
+	var fwd = Vector3(sin(heading), 0, cos(heading))
+	var np = position + fwd * float(def["speed"]) * delta
+	np.x = clamp(np.x, -112.0, 112.0)
+	np.z = clamp(np.z, -112.0, 112.0)
+	np.y = Game.terrain.ground_y(np.x, np.z)
+	speed_now = float(def["speed"])
+	position = np
+
 func _integrate(delta: float) -> void:
+	if fixed_wing:
+		_fly_fixed(delta)
+		return
 	var sep = Vector3.ZERO
 	for o in Game.units_near(position, radius + 2.6):
 		if o == self or o.flying != flying:
@@ -642,10 +688,15 @@ func _animate(delta: float) -> void:
 	else:
 		transform.basis = Basis(Vector3.UP, heading)
 	if flying:
-		var target_h = (9.0 if weapon != null else 6.0) + sin(_anim_t * 1.3) * 0.3
+		var target_h = (13.0 if fixed_wing else (9.0 if weapon != null else 6.0)) + sin(_anim_t * 1.3) * 0.3
 		_fly_cur = lerp(_fly_cur, target_h, min(1.0, 1.5 * delta))
 		body.position.y = _fly_cur
-		body.rotation.x = clamp(speed_now / def["speed"], 0.0, 1.0) * 0.18
+		body.rotation.x = clamp(speed_now / def["speed"], 0.0, 1.0) * (0.0 if fixed_wing else 0.18)
+		if fixed_wing:
+			body.rotation.z = -_bank * 0.7
+			var prop = model.get("prop")
+			if prop:
+				prop.rotation.z += 45.0 * delta
 		var rot: Node3D = model["rotor"]
 		if rot:
 			rot.rotation.y += 28.0 * delta
