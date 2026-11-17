@@ -653,7 +653,23 @@ func _animate(delta: float) -> void:
 		if tr:
 			tr.rotation.x += 30.0 * delta
 	elif not is_vehicle:
-		if speed_now > 0.4:
+		var ap = model.get("anim")
+		if ap != null:
+			# Animierter Soldat: Gehen, Schießen oder Stehen
+			var want_anim = "Idle"
+			if speed_now > 0.4:
+				want_anim = "Walk"
+			elif Game.time - _last_fire_t < 0.5 and ap.has_animation("Shoot"):
+				want_anim = "Shoot"
+			if ap.current_animation != want_anim:
+				ap.play(want_anim, 0.15)
+			if want_anim == "Walk":
+				ap.speed_scale = clamp(speed_now / 4.0, 0.6, 1.6)
+			else:
+				ap.speed_scale = 1.0
+			if want_anim == "Shoot" and Game.time - _last_fire_t < 0.05:
+				ap.seek(0.0, true)
+		elif speed_now > 0.4:
 			body.position.y = abs(sin(_anim_t * 9.0)) * 0.1
 		else:
 			body.position.y = 0.0
@@ -758,8 +774,14 @@ func _make_corpse() -> void:
 	Game.fx_root.add_child(b)
 	b.global_transform = gt
 	var tw = b.create_tween()
-	tw.tween_property(b, "rotation:x", -PI / 2 * 0.95, 0.4).set_ease(Tween.EASE_IN)
-	tw.parallel().tween_property(b, "position:y", b.position.y + 0.2, 0.4)
+	var ap = model.get("anim")
+	if ap != null and ap.has_animation("Die"):
+		ap.speed_scale = 1.0
+		ap.play("Die")
+		tw.tween_interval(0.8)
+	else:
+		tw.tween_property(b, "rotation:x", -PI / 2 * 0.95, 0.4).set_ease(Tween.EASE_IN)
+		tw.parallel().tween_property(b, "position:y", b.position.y + 0.2, 0.4)
 	tw.tween_interval(5.0)
 	tw.tween_property(b, "position:y", -1.5, 2.0).as_relative()
 	tw.tween_callback(b.queue_free)

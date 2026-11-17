@@ -29,6 +29,7 @@ static var _fac = ""
 static var _team = Color.WHITE
 static var _bld = false
 static var _tex = {}
+static var _soldier = false
 
 const STYLE = {
 	"west":   {"panel": 1.7, "pw": 0.018, "rivet": 0.0, "rust": 0.03, "dirt": 0.18, "metal": 0.55, "rough": 0.3, "grain": 0.1, "nd": 0.35, "ds": 2.4, "camo_scale": 0.075},
@@ -281,7 +282,9 @@ static func load_custom(dir: String, names: Array, col: Color) -> Dictionary:
 		var inst: Node3D = scene.instantiate()
 		var root = Node3D.new()
 		root.add_child(inst)
+		_soldier = dir == "units" and (String(n).ends_with("inf") or String(n).ends_with("inf_at") or String(n).ends_with("worker"))
 		_teamcolor(inst, col)
+		_soldier = false
 		var out = {"root": root, "turret": null, "muzzle": Vector3(0, 1.2, 1.0), "rotor": null,
 			"tail_rotor": null, "spin": null, "height": 2.0, "smoke": [], "custom": true}
 		var t = inst.find_child("Turret", true, false)
@@ -295,6 +298,18 @@ static func load_custom(dir: String, names: Array, col: Color) -> Dictionary:
 			var nd = inst.find_child(key[0], true, false)
 			if nd != null:
 				out[key[1]] = nd
+		# Animierte Modelle (Soldaten): AnimationPlayer mitliefern, Schleifen setzen
+		var aps = inst.find_children("*", "AnimationPlayer", true, false)
+		if not aps.is_empty():
+			var ap: AnimationPlayer = aps[0]
+			for an in ["Idle", "Walk"]:
+				if ap.has_animation(an):
+					ap.get_animation(an).loop_mode = Animation.LOOP_LINEAR
+			out["anim"] = ap
+			if ap.has_animation("Idle"):
+				ap.play("Idle")
+			if m == null:
+				out["muzzle"] = Vector3(-0.07, 1.45, 1.15)
 		var top = 0.0
 		for mi in inst.find_children("*", "MeshInstance3D", true, false):
 			var aabb: AABB = _rel(mi, root) * (mi as MeshInstance3D).get_aabb()
@@ -320,8 +335,8 @@ static func _teamcolor(n: Node, col: Color) -> void:
 			var m = mi.mesh.surface_get_material(i)
 			if m is BaseMaterial3D and "team" in String(m.resource_name).to_lower():
 				if _fac != "":
-					# Fraktionslack (Tarnmuster, Fugen, Rost) statt Einheitsfarbe
-					mi.set_surface_override_material(i, hard("camo"))
+					# Fraktionslack (Tarnmuster, Fugen, Rost) bzw. Uniform-Tarnmuster statt Einheitsfarbe
+					mi.set_surface_override_material(i, hard("uniform" if _soldier else "camo"))
 				else:
 					var dm: BaseMaterial3D = m.duplicate()
 					dm.albedo_color = col.lerp(Color(0.45, 0.45, 0.42), 0.25)
