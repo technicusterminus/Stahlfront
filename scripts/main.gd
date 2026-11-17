@@ -247,6 +247,21 @@ func start_match(cfg: Dictionary) -> void:
 		Game.recalc_power(0)
 		cam.look_at_pos(hqp + Vector3(0, 0, 6))
 		cam.dist_target = float(args.get("camdist", "70"))
+	if args.has("firetest"):
+		var fp: Vector3 = Game.players[0]["start"] + Vector3(14, 0, 14)
+		var holder = Node3D.new()
+		holder.position = Vector3(fp.x, Game.terrain.ground_y(fp.x, fp.z), fp.z)
+		Game.fx_root.add_child(holder)
+		load("res://scripts/fx.gd").flame(holder, Vector3.ZERO, float(args["firetest"]))
+		var fimg: Image = load("res://scripts/fx.gd")._flame_tex().get_image()
+		fimg.decompress()
+		var big = Image.create(96, 160, false, Image.FORMAT_RGBA8)
+		big.fill(Color(0.1, 0.1, 0.15))
+		big.blend_rect(fimg, Rect2i(0, 0, 96, 160), Vector2i(0, 0))
+		big.save_png("res://shots/flame_tex.png")
+		Game.explore(fp, 20.0)
+		cam.look_at_pos(fp)
+		cam.dist_target = 14.0
 	if args.has("animalcam"):
 		var an = world.get_node("Animals")
 		if not an.herds.is_empty():

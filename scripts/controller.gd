@@ -171,7 +171,10 @@ func _ghostify(n: Node, m: Material) -> void:
 		(n as MeshInstance3D).material_override = m
 		(n as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	for c in n.get_children():
-		_ghostify(c, m)
+		if c is GPUParticles3D or c is OmniLight3D:
+			c.free()
+		else:
+			_ghostify(c, m)
 
 func _update_ghost() -> void:
 	if mode != "place" or ghost == null:

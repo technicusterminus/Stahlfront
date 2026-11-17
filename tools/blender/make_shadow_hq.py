@@ -132,7 +132,7 @@ P.append(S.box("TentDoor", (0.7, 0.05, 1.1), (4.9 + 0.2, 0.2, 0.55), DK, 0.0, ro
 for i in range(8):
     a = i * math.tau / 8
     P.append(S.box("FireStone", (0.22, 0.16, 0.16), (-2.3 + math.cos(a) * 0.42, -3.1 + math.sin(a) * 0.42, 0.08), RD, 0.04, rot=(0, 0, a)))
-P.append(S.sphere("Fire", 0.2, (-2.3, -3.1, 0.18), FR, scale=(1, 1, 0.7), segs=10, rings=6))
+# Flammen kommen als Partikel im Spiel (scripts/fx.gd)
 for i in range(3):
     P.append(S.cyl("Log", 0.06, 0.6, (-2.3, -3.1, 0.1), WD, 8, rot=(math.pi / 2, 0, i * 1.05)))
 

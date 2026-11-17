@@ -38,6 +38,59 @@ static func _scorch_tex() -> Texture2D:
 	_c["scorch"] = t
 	return t
 
+## Flammenform: gewölbter Körper mit Spitze, gezackten Rändern und Farbe in der Textur
+## (gelb-weißer Kern, oranger Rand). Alpha = Form.
+static func _flame_tex() -> Texture2D:
+	if _c.has("flame"):
+		return _c["flame"]
+	var W = 128
+	var H = 192
+	var img = Image.create(W, H, false, Image.FORMAT_RGBA8)
+	var n1 = FastNoiseLite.new()
+	n1.seed = 11
+	n1.frequency = 0.02
+	var n2 = FastNoiseLite.new()
+	n2.seed = 29
+	n2.frequency = 0.09
+	n2.fractal_octaves = 3
+	for y in H:
+		var v = 1.0 - float(y) / (H - 1)             # 0 unten, 1 oben
+		var sway = n1.get_noise_2d(v * 140.0, 5.0) * 0.32 * v
+		var hw = 0.78 * pow(max(0.0, sin(PI * pow(v, 0.55))), 0.85)   # Breite: Bauch unten, Spitze oben
+		for x in W:
+			var u = (float(x) / (W - 1) - 0.5) * 2.0
+			var du = u - sway
+			var rim = n2.get_noise_2d(float(x) * 1.2, float(y) * 0.9) * (0.22 + 0.18 * v)
+			var d = abs(du) - hw + rim
+			var a = clamp(-d / 0.1, 0.0, 1.0)
+			a *= clamp(1.0 - pow(v, 2.5) * 0.35, 0.0, 1.0)
+			var core = clamp(1.0 - abs(du) / max(hw, 0.08), 0.0, 1.0) * (1.0 - v * 0.6)
+			core = pow(core, 1.3)
+			var col = Color(0.95, 0.36, 0.05).lerp(Color(1.0, 0.8, 0.32), core)
+			img.set_pixel(x, y, Color(col.r, col.g, col.b, a))
+	img.generate_mipmaps()
+	var t = ImageTexture.create_from_image(img)
+	_c["flame"] = t
+	return t
+static func _flame_quad() -> QuadMesh:
+	if _c.has("flamequad"):
+		return _c["flamequad"]
+	var m = StandardMaterial3D.new()
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.blend_mode = BaseMaterial3D.BLEND_MODE_MIX
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.vertex_color_use_as_albedo = true
+	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	m.albedo_texture = _flame_tex()
+	m.albedo_color = Color(0.95, 0.95, 0.95, 1.0)
+	m.disable_receive_shadows = true
+	var q = QuadMesh.new()
+	q.size = Vector2(1, 1.6)
+	q.center_offset = Vector3(0, 0.55, 0)    # Fuß der Flamme am Emitterpunkt
+	q.material = m
+	_c["flamequad"] = q
+	return q
+
 static func _quad(additive: bool, lit := false) -> QuadMesh:
 	var key = "quad_%s_%s" % [additive, lit]
 	if _c.has(key):
@@ -96,8 +149,21 @@ static func _pm(key: String, cfg: Dictionary) -> ParticleProcessMaterial:
 		m.color_ramp = _ramp(cfg["ramp"])
 	if cfg.has("curve"):
 		m.scale_curve = _curve(cfg["curve"])
-	m.angle_min = 0.0
-	m.angle_max = 360.0
+	if cfg.get("fixed_angle", false):
+		m.angle_min = -6.0
+		m.angle_max = 6.0
+	else:
+		m.angle_min = 0.0
+		m.angle_max = 360.0
+	if cfg.has("turb"):
+		m.turbulence_enabled = true
+		m.turbulence_noise_strength = cfg["turb"]
+		m.turbulence_noise_scale = cfg.get("turb_scale", 2.5)
+		m.turbulence_noise_speed = Vector3(0, -cfg.get("turb_speed", 1.2), 0)
+		m.turbulence_influence_min = 0.04
+		m.turbulence_influence_max = 0.14
+	if cfg.get("flat_emit", false):
+		m.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
 	_c[key] = m
 	return m
 
@@ -139,7 +205,11 @@ static func explosion(pos: Vector3, size := 1.0, toxic := false) -> void:
 		fire_cols = [Color(0.85, 1, 0.6, 1), Color(0.35, 0.9, 0.15, 0.9), Color(0.1, 0.4, 0.05, 0.5), Color(0.02, 0.1, 0.02, 0)]
 	var fire = _pm("fire%d%s" % [b, toxic], {"vmin": 1.5 * s, "vmax": 5.0 * s, "smin": 1.2 * s, "smax": 2.6 * s, "damp": 4.0 * s,
 		"erad": 0.4 * s, "grav": Vector3(0, 2.0, 0), "ramp": fire_cols, "curve": [Vector2(0, 0.4), Vector2(0.3, 1.0), Vector2(1, 0.7)]})
-	_emit(pos + Vector3(0, 0.5 * s, 0), fire, _quad(true), int(14 + 8 * s), 0.7 + 0.12 * s, true, 0.95, 6.0 * s + 4.0)
+	_emit(pos + Vector3(0, 0.5 * s, 0), fire, _flame_quad(), int(14 + 8 * s), 0.7 + 0.12 * s, true, 0.95, 6.0 * s + 4.0)
+	# heller Kern des Feuerballs
+	var core = _pm("core%d%s" % [b, toxic], {"vmin": 0.2, "vmax": 1.2 * s, "smin": 0.8 * s, "smax": 1.5 * s, "erad": 0.15 * s,
+		"ramp": [Color(1, 1, 0.9, 0.9), Color(1, 0.7, 0.3, 0.6), Color(1, 0.3, 0.05, 0)] if not toxic else [Color(0.9, 1, 0.7, 0.9), Color(0.5, 1, 0.3, 0.6), Color(0.2, 0.6, 0.05, 0)]})
+	_emit(pos + Vector3(0, 0.4 * s, 0), core, _quad(true), 4, 0.35 + 0.05 * s, true, 1.0, 4.0 * s + 3.0)
 	var smoke = _pm("smoke%d%s" % [b, toxic], {"vmin": 0.6 * s, "vmax": 2.2 * s, "smin": 1.8 * s, "smax": 3.6 * s, "damp": 1.0,
 		"erad": 0.6 * s, "grav": Vector3(0, 1.4, 0),
 		"ramp": [Color(0.1, 0.09, 0.08, 0.0), Color(0.07, 0.065, 0.06, 0.7), Color(0.12, 0.12, 0.12, 0.35), Color(0.16, 0.16, 0.16, 0)] if not toxic
@@ -237,15 +307,15 @@ static func tracer(from: Vector3, to: Vector3, col := Color(1.0, 0.8, 0.4)) -> v
 
 # ---------------------------------------------------------------- Dauerhafte Emitter
 
-static func smoke_column(parent: Node3D, local_pos: Vector3, dark := false) -> GPUParticles3D:
-	var pm = _pm("chimney%s" % dark, {"vmin": 0.8, "vmax": 1.6, "smin": 1.0, "smax": 2.0, "dir": Vector3.UP, "spread": 12.0,
+static func smoke_column(parent: Node3D, local_pos: Vector3, dark := false, lit := true) -> GPUParticles3D:
+	var pm = _pm("chimney%s%s" % [dark, lit], {"vmin": 0.8, "vmax": 1.6, "smin": 1.0, "smax": 2.0, "dir": Vector3.UP, "spread": 12.0,
 		"grav": Vector3(0.5, 0.6, 0.2), "erad": 0.3,
 		"ramp": [Color(0.5, 0.5, 0.5, 0.0), Color(0.55, 0.55, 0.55, 0.4), Color(0.6, 0.6, 0.6, 0)] if not dark
-			else [Color(0.1, 0.1, 0.1, 0.0), Color(0.08, 0.08, 0.08, 0.6), Color(0.15, 0.15, 0.15, 0)],
+			else [Color(0.12, 0.11, 0.1, 0.0), Color(0.1, 0.09, 0.08, 0.35), Color(0.16, 0.15, 0.14, 0.2), Color(0.2, 0.2, 0.2, 0)],
 		"curve": [Vector2(0, 0.5), Vector2(1, 2.2)]})
 	var p = GPUParticles3D.new()
 	p.process_material = pm
-	p.draw_pass_1 = _quad(false, true)
+	p.draw_pass_1 = _quad(false, lit)
 	p.amount = 14
 	p.lifetime = 4.0
 	p.local_coords = false
@@ -256,21 +326,62 @@ static func smoke_column(parent: Node3D, local_pos: Vector3, dark := false) -> G
 	p.emitting = true
 	return p
 
-static func fire_burn(parent: Node3D, local_pos: Vector3) -> GPUParticles3D:
-	var pm = _pm("burn", {"vmin": 0.6, "vmax": 1.8, "smin": 0.8, "smax": 1.6, "dir": Vector3.UP, "spread": 20.0,
-		"grav": Vector3(0, 1.5, 0), "erad": 0.6,
-		"ramp": [Color(1, 0.9, 0.5, 0.0), Color(1, 0.5, 0.1, 0.9), Color(0.3, 0.1, 0.05, 0.3), Color(0.1, 0.1, 0.1, 0)]})
+## Dauerfeuer: züngelnde Flammen, Funkenflug, Rauchfahne und flackerndes Licht.
+## size 1.0 = Lagerfeuer, 2.0+ = brennendes Gebäude.
+static func flame(parent: Node3D, local_pos: Vector3, size := 1.0, with_light := true) -> GPUParticles3D:
+	var s = clampf(size, 0.5, 4.0)
+	var key = int(round(s * 2.0))
+	# Flammen (aufsteigend, verjüngt, Farbverlauf weiß-gelb → orange → rot → klar)
+	var pm = _pm("flame%d" % key, {"vmin": 1.0 * s, "vmax": 2.2 * s, "smin": 1.3 * s, "smax": 2.0 * s, "dir": Vector3.UP, "spread": 12.0,
+		"grav": Vector3(0, 0.6, 0), "erad": 0.5 * s, "fixed_angle": true, "turb": 1.4, "turb_scale": 2.2, "turb_speed": 1.6,
+		"ramp": [Color(1, 1, 1, 0.0), Color(1, 1, 1, 0.92), Color(1.0, 0.82, 0.7, 0.8), Color(0.85, 0.45, 0.35, 0.45), Color(0.3, 0.1, 0.1, 0.0)],
+		"curve": [Vector2(0, 0.55), Vector2(0.25, 1.0), Vector2(0.7, 0.75), Vector2(1, 0.25)]})
 	var p = GPUParticles3D.new()
 	p.process_material = pm
-	p.draw_pass_1 = _quad(true)
-	p.amount = 18
-	p.lifetime = 1.1
+	p.draw_pass_1 = _flame_quad()
+	p.amount = int(7 + 3 * s)
+	p.lifetime = 0.95
 	p.local_coords = false
+	p.visibility_aabb = AABB(Vector3(-4, -1, -4) * s, Vector3(8, 8, 8) * s)
 	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	parent.add_child(p)
 	p.position = local_pos
 	p.emitting = true
+	# Funken
+	var ep = _pm("embers%d" % key, {"vmin": 1.2 * s, "vmax": 3.2 * s, "smin": 0.05, "smax": 0.11, "dir": Vector3.UP, "spread": 28.0,
+		"grav": Vector3(0.25, 0.9, 0.1), "erad": 0.3 * s, "turb": 2.0, "turb_scale": 3.0,
+		"ramp": [Color(1.0, 0.9, 0.5, 0.0), Color(1.0, 0.7, 0.2, 1.0), Color(1.0, 0.35, 0.05, 0.8), Color(0.4, 0.1, 0.03, 0.0)]})
+	var e = GPUParticles3D.new()
+	e.process_material = ep
+	e.draw_pass_1 = _quad(true)
+	e.amount = int(8 + 6 * s)
+	e.lifetime = 2.2
+	e.local_coords = false
+	e.visibility_aabb = AABB(Vector3(-5, -1, -5) * s, Vector3(10, 12, 10) * s)
+	e.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(e)
+	e.position = local_pos + Vector3(0, 0.3 * s, 0)
+	e.emitting = true
+	# Rauch darüber
+	smoke_column(parent, local_pos + Vector3(0, 1.6 * s, 0), true, false)
+	# Flackerndes Licht
+	if with_light:
+		var l = OmniLight3D.new()
+		l.light_color = Color(1.0, 0.55, 0.2)
+		l.omni_range = 5.0 + 2.5 * s
+		l.light_energy = 2.0 * s
+		l.shadow_enabled = false
+		l.light_volumetric_fog_energy = 0.0
+		parent.add_child(l)
+		l.position = local_pos + Vector3(0, 0.7 * s, 0)
+		var tw = l.create_tween().set_loops()
+		for k in 6:
+			tw.tween_property(l, "light_energy", randf_range(1.2, 2.8) * s, randf_range(0.06, 0.16))
 	return p
+
+## Brennender Schaden an Gebäuden und Wracks.
+static func fire_burn(parent: Node3D, local_pos: Vector3) -> GPUParticles3D:
+	return flame(parent, local_pos, 1.7, true)
 
 static func trail(parent: Node3D, toxic := false) -> GPUParticles3D:
 	var pm = _pm("trail%s" % toxic, {"vmin": 0.1, "vmax": 0.4, "smin": 0.4, "smax": 0.8, "grav": Vector3(0, 0.4, 0), "erad": 0.05,

@@ -296,7 +296,7 @@ static func _shadow_barracks(r: Node3D, w: float, pc: Material, wl: Material, ou
 	for i in 6:
 		var a = TAU * i / 6.0
 		M.box(r, Vector3(0.25, 0.18, 0.2), Vector3(cos(a) * 0.45, 0.09, w * 0.22 + sin(a) * 0.45), M.mat(Color(0.35, 0.33, 0.3), 0, 1), Vector3(0, a, 0))
-	M.sph(r, 0.22, Vector3(0, 0.15, w * 0.22), M.glow(Color(1.0, 0.45, 0.1), 5.0))
+	load("res://scripts/fx.gd").flame(r, Vector3(0, 0.12, w * 0.22), 1.0)
 	# Übungspuppen
 	for k in 2:
 		var p = Vector3(w * 0.3, 0, w * 0.15 + k * 0.9)

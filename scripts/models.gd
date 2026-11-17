@@ -701,6 +701,8 @@ static func _build_building(d: Dictionary, col: Color) -> Dictionary:
 		var ce = cw * 0.5 + 0.6
 		load("res://scripts/arch_detail.gd").walker(custom["root"], d["faction"],
 			[Vector3(-ce, 0, ce), Vector3(ce, 0, ce), Vector3(ce, 0, -ce), Vector3(-ce, 0, -ce)], custom, 1.1)
+		if d["faction"] == "shadow" and d["role"] == "hq":
+			load("res://scripts/fx.gd").flame(custom["root"], Vector3(-2.3, 0.15, 3.1), 1.0)
 		return custom
 	var root = Node3D.new()
 	var faction: String = d["faction"]
