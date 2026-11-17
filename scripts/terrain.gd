@@ -10,6 +10,7 @@ var blocked = PackedByteArray()   # Game.GRID * Game.GRID, 1 = unpassierbar
 var mat: ShaderMaterial
 var water_mat: ShaderMaterial
 var tree_cells: Array = []
+var flat_list: Array = []
 var seed_used = 0
 
 func generate(seed_val: int, starts: Array, depots: Array) -> void:
@@ -44,6 +45,7 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	ridge.fractal_octaves = 2
 
 	var flats: Array = []
+	flat_list = flats
 	for s in starts:
 		flats.append(Vector3(s.x, s.y, 34.0))
 	for d in depots:
@@ -263,8 +265,8 @@ func _build_mesh() -> void:
 func _build_water() -> void:
 	var pm = PlaneMesh.new()
 	pm.size = Vector2(420, 420)
-	pm.subdivide_width = 8
-	pm.subdivide_depth = 8
+	pm.subdivide_width = 120
+	pm.subdivide_depth = 120
 	water_mat = ShaderMaterial.new()
 	water_mat.shader = load("res://shaders/water.gdshader")
 	var ntn = NoiseTexture2D.new()
@@ -275,6 +277,13 @@ func _build_water() -> void:
 	nn.frequency = 0.03
 	ntn.noise = nn
 	water_mat.set_shader_parameter("n1", ntn)
+	var foam = NoiseTexture2D.new()
+	foam.seamless = true
+	var fnz = FastNoiseLite.new()
+	fnz.frequency = 0.08
+	fnz.fractal_octaves = 3
+	foam.noise = fnz
+	water_mat.set_shader_parameter("foam_noise", foam)
 	water_mat.set_shader_parameter("fog_tex", Game.fog_tex)
 	var mi = MeshInstance3D.new()
 	mi.mesh = pm
@@ -284,79 +293,7 @@ func _build_water() -> void:
 	add_child(mi)
 
 func _build_props() -> void:
-	var rng = RandomNumberGenerator.new()
-	rng.seed = seed_used + 5
-	# Bäume: Stamm + zwei Kronen-Kegel
-	var trunk = CylinderMesh.new()
-	trunk.top_radius = 0.18
-	trunk.bottom_radius = 0.28
-	trunk.height = 2.0
-	trunk.radial_segments = 6
-	var crown = CylinderMesh.new()
-	crown.top_radius = 0.0
-	crown.bottom_radius = 1.6
-	crown.height = 3.6
-	crown.radial_segments = 8
-	var crown2 = CylinderMesh.new()
-	crown2.top_radius = 0.0
-	crown2.bottom_radius = 1.2
-	crown2.height = 2.8
-	crown2.radial_segments = 8
-	var per_cell = 2
-	var count = tree_cells.size() * per_cell
-	var mm_t = _mm(trunk, count, Game.fog_material(Color(0.28, 0.2, 0.13), 0.95))
-	var mm_c = _mm(crown, count, Game.fog_material(Color(1, 1, 1), 0.85))
-	var mm_c2 = _mm(crown2, count, Game.fog_material(Color(1, 1, 1), 0.85))
-	var i = 0
-	for c in tree_cells:
-		for k in per_cell:
-			var x: float = c.x * 2.0 - 120.0 + rng.randf_range(0.2, 1.8)
-			var z: float = c.y * 2.0 - 120.0 + rng.randf_range(0.2, 1.8)
-			var y = height_at(x, z)
-			var s = rng.randf_range(0.75, 1.35)
-			var b = Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s))
-			mm_t.multimesh.set_instance_transform(i, Transform3D(b, Vector3(x, y + 1.0 * s, z)))
-			mm_t.multimesh.set_instance_color(i, Color(1, 1, 1))
-			mm_c.multimesh.set_instance_transform(i, Transform3D(b, Vector3(x, y + 3.2 * s, z)))
-			mm_c2.multimesh.set_instance_transform(i, Transform3D(b, Vector3(x, y + 4.9 * s, z)))
-			var g = Color(0.09, 0.2 + rng.randf() * 0.1, 0.06).lerp(Color(0.2, 0.22, 0.07), rng.randf() * 0.5)
-			mm_c.multimesh.set_instance_color(i, g)
-			mm_c2.multimesh.set_instance_color(i, g.lightened(0.08))
-			i += 1
-	# Felsen an Hängen
-	var rock = SphereMesh.new()
-	rock.radius = 1.0
-	rock.height = 1.4
-	rock.radial_segments = 7
-	rock.rings = 4
-	var rocks: Array = []
-	for t in 900:
-		var x = rng.randf_range(-110, 110)
-		var z = rng.randf_range(-110, 110)
-		var n = normal_at(x, z)
-		if n.y < 0.9 and height_at(x, z) > WATER_Y + 0.3:
-			rocks.append(Vector2(x, z))
-	var mm_r = _mm(rock, rocks.size(), Game.fog_material(Color(1, 1, 1), 0.9))
-	for j in rocks.size():
-		var p: Vector2 = rocks[j]
-		var s = rng.randf_range(0.6, 2.2)
-		var b = Basis(Vector3(rng.randf(), rng.randf(), rng.randf()).normalized(), rng.randf() * TAU)
-		b = b.scaled(Vector3(s * rng.randf_range(0.8, 1.5), s * 0.7, s))
-		mm_r.multimesh.set_instance_transform(j, Transform3D(b, Vector3(p.x, height_at(p.x, p.y), p.y)))
-		var gv = rng.randf_range(0.17, 0.27)
-		mm_r.multimesh.set_instance_color(j, Color(gv, gv * 0.97, gv * 0.92))
-
-func _mm(mesh: Mesh, count: int, m: Material) -> MultiMeshInstance3D:
-	var mm = MultiMesh.new()
-	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.use_colors = true
-	mm.mesh = mesh
-	mm.instance_count = count
-	var mmi = MultiMeshInstance3D.new()
-	mmi.multimesh = mm
-	mmi.material_override = m
-	add_child(mmi)
-	return mmi
+	load("res://scripts/vegetation.gd").build(self, seed_used)
 
 ## Farbiges Abbild für die Minikarte.
 func minimap_image(res: int) -> Image:

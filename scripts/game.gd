@@ -43,6 +43,15 @@ var fog_exp = PackedByteArray()
 var fog_img: Image
 var fog_tex: ImageTexture
 var reveals: Array = []
+var occ_img: Image
+var occ_tex: ImageTexture
+
+## Belegung durch Gebäude/Depots (lässt Gras darunter verschwinden).
+func set_occ(cells: Array, on: bool) -> void:
+	for c in cells:
+		if in_grid(c):
+			occ_img.set_pixel(c.x, c.y, Color(1, 0, 0) if on else Color(0, 0, 0))
+	occ_tex.update(occ_img)
 var _fog_t = 0.0
 var _vic_t = 0.0
 var _fog_mats = {}
@@ -58,6 +67,9 @@ func _ready() -> void:
 	fog_img = Image.create(GRID, GRID, false, Image.FORMAT_RG8)
 	fog_img.fill(Color(0, 0, 0))
 	fog_tex = ImageTexture.create_from_image(fog_img)
+	occ_img = Image.create(GRID, GRID, false, Image.FORMAT_R8)
+	occ_img.fill(Color(0, 0, 0))
+	occ_tex = ImageTexture.create_from_image(occ_img)
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func fog_material(tint: Color, rough: float, glow := 0.0) -> ShaderMaterial:
@@ -319,6 +331,7 @@ func spawn_building(def_id: String, pid: int, center: Vector2i, complete: bool):
 	b.position.y = terrain.height_at(b.position.x, b.position.z)
 	buildings.append(b)
 	set_cells(b.cells, true)
+	set_occ(b.cells, true)
 	if complete:
 		b.finish(true)
 	return b
@@ -333,6 +346,7 @@ func spawn_depot(pos: Vector3, amount: float):
 	depots.append(dp)
 	var c = world_to_cell(dp.position)
 	set_cells(footprint(c, 2), true)
+	set_occ(footprint(c, 3), true)
 	return dp
 
 func remove_object(o) -> void:
@@ -445,11 +459,13 @@ func damage_area(pos: Vector3, r: float, dmg: float, wtype: String, attacker_pid
 			apply_damage(b, dmg * clamp(1.0 - max(d, 0.0) / (r + 0.01) * 0.6, 0.4, 1.0), wtype, attacker_pid, attacker)
 
 var last_combat_pos := Vector3.ZERO
+var last_combat_t := -99.0
 
 func on_damaged(victim, attacker_pid: int) -> void:
 	var p: Dictionary = players[victim.owner_id]
 	if attacker_pid >= 0:
 		last_combat_pos = victim.position
+		last_combat_t = time
 	if victim.owner_id == human and not spectator and time - _alert_t > 12.0 and attacker_pid >= 0:
 		_alert_t = time
 		last_alert_pos = victim.position

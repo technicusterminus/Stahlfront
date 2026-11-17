@@ -158,6 +158,7 @@ func _remove(explode: bool) -> void:
 	alive = false
 	set_selected(false)
 	Game.set_cells(cells, false)
+	Game.set_occ(cells, false)
 	Game.remove_object(self)
 	Game.recalc_power(owner_id)
 	if explode:

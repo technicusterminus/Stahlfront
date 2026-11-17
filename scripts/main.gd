@@ -46,6 +46,10 @@ func _ready() -> void:
 	for i in MID_DEPOTS.size():
 		var d: Vector2 = MID_DEPOTS[i]
 		Game.spawn_depot(Vector3(d.x, 0, d.y), 80000.0 if i == 0 else 50000.0)
+	var animals = load("res://scripts/animals.gd").new()
+	animals.name = "Animals"
+	world.add_child(animals)
+	animals.setup(seed_val, STARTS)
 	var cam = CameraScript.new()
 	cam.name = "Camera"
 	world.add_child(cam)
@@ -211,6 +215,11 @@ func start_match(cfg: Dictionary) -> void:
 		cam.look_at_pos(base + Vector3(0, 0, 4))
 		cam.dist_target = float(args.get("camdist", "34"))
 		Game.explore(base, 30.0)
+	if args.has("animalcam"):
+		var an = world.get_node("Animals")
+		if not an.herds.is_empty():
+			cam.look_at_pos(an.herds[0]["center"])
+			cam.dist_target = 26.0
 	if args.has("selectdozer"):
 		for u in Game.units:
 			if u.owner_id == 0 and u.def["role"] == "dozer":
@@ -366,7 +375,7 @@ func _take_shot(path: String, delay: float) -> void:
 
 func _quit_after(sec: float) -> void:
 	await get_tree().create_timer(sec, true, false, false).timeout
-	print("=== STATUS nach %.0f s Spielzeit ===" % Game.time)
+	print("=== STATUS nach %.0f s Spielzeit, %d FPS ===" % [Game.time, Engine.get_frames_per_second()])
 	for p in Game.players:
 		var nu = 0
 		var nb = 0
