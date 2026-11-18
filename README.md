@@ -239,6 +239,13 @@ Das Spiel lädt `.glb`-Dateien aus `models/units/` und `models/buildings/`, wenn
 | `tools/blender/make_west_hq.py`, `make_red_hq.py`, `make_shadow_hq.py` | Hauptquartiere |
 | `tools/blender/make_factories.py <west\|red\|shadow>` | Fabriken |
 | `tools/blender/make_barracks.py <west\|red\|shadow>` | Kasernen |
+| `tools/blender/make_power.py <west\|red\|shadow>` | Kraftwerke (Fusionsreaktor, Kohlekraftwerk, Generatorenschuppen) |
+| `tools/blender/make_supply.py <west\|red\|shadow>` | Nachschubgebäude (Logistikzentrum, Versorgungsdepot, Umschlagplatz) |
+| `tools/blender/make_defense.py <west\|red\|shadow>` | Abwehr mit drehbarem Aufbau (Patriot, Gatling-Bunker, Stinger) |
+| `tools/blender/make_tech.py <west\|red\|shadow>` | Forschung (Kuppellabor, Propagandazentrum, Schwarzmarkt) |
+| `tools/blender/make_airfield.py <west\|red\|shadow>` | Flugfelder |
+| `tools/blender/make_super.py <west\|red\|shadow>` | Superwaffen (Orbitalkanone, Atomsilo, Giftraketen-Silo) |
+| `tools/blender/sf_bld.py` | gemeinsame Bausteine der Gebäudeskripte (Materialien, Fenster, bewegliche Teile) |
 | `tools/blender/sf_common.py` | Gemeinsame Bausteine: Grundkörper mit Fasen, Booleans, UV, Verschleiß-Shader, Backen von Farbe, Rauheit und Normalen, Export |
 
 **Modelle neu erzeugen**
@@ -311,7 +318,7 @@ powershell -File tools/balance_test.ps1 -Godot <pfad\zu\godot_console.exe> -Seed
 
 ## Stand und bekannte Lücken
 
-**Fertig:** drei Fraktionen mit Einheiten, Gebäuden, Fähigkeiten, Superwaffen und Besonderheiten · Luftwaffe · Nebel des Krieges · KI · Landschaft mit Vegetation, Wasser und Tieren · Story in drei Fassungen · Blender-Modelle für Panzer, Soldaten, Hauptquartiere, Fabriken und Kasernen.
+**Fertig:** drei Fraktionen mit Einheiten, Gebäuden, Fähigkeiten, Superwaffen und Besonderheiten · Luftwaffe · Nebel des Krieges · KI · Landschaft mit Vegetation, Wasser und Tieren · Story in drei Fassungen · Blender-Modelle für Panzer, Soldaten und alle Gebäude außer den Werften (Hauptquartiere, Fabriken, Kasernen, Kraftwerke, Nachschub, Abwehr, Forschung, Flugfelder, Superwaffen).
 
 **Offen:**
 
