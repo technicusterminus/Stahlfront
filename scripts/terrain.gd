@@ -287,6 +287,112 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 		if seen[i] == 0:
 			blocked[i] = 1
 	return true
+## Schnelle Vorschau einer Karte (Gewässer, Höhen, Startpunkte, Vorkommen) für das Startmenü.
+func preview_image(sp: Dictionary, res: int) -> Image:
+	var size = float(sp["size"])
+	var half = size * 0.5
+	var lay = Maps.layout(sp)
+	_starts = lay["starts"]
+	spec = sp
+	SIZE = int(size)
+	_layout = int(sp.get("layout", 0))
+	_ctx = Maps.sea_ctx(sp, _starts)
+	var seed_val = int(sp["seed"])
+	var hills: float = sp["hills"]
+	var hm = lerp(0.55, 1.5, hills)
+	var ridge_thr = lerp(0.75, 0.4, hills)
+	var lake_thr = lerp(0.55, 0.05, float(sp["water"]))
+	var n1 = FastNoiseLite.new()
+	n1.seed = seed_val
+	n1.frequency = 0.007
+	n1.fractal_octaves = 4
+	var n2 = FastNoiseLite.new()
+	n2.seed = seed_val + 7
+	n2.frequency = 0.022
+	n2.fractal_octaves = 3
+	var lake = FastNoiseLite.new()
+	lake.seed = seed_val + 13
+	lake.frequency = 0.011
+	var ridge = FastNoiseLite.new()
+	ridge.seed = seed_val + 21
+	ridge.frequency = 0.013
+	ridge.fractal_type = FastNoiseLite.FRACTAL_RIDGED
+	ridge.fractal_octaves = 2
+	var flats: Array = []
+	for s in _starts:
+		flats.append(Vector3(s.x, s.y, 34.0 + max(0.0, size / 240.0 - 1.0) * 58.0))
+	for d in lay["depots"]:
+		flats.append(Vector3(d[0].x, d[0].y, 9.0))
+	var rng = RandomNumberGenerator.new()
+	rng.seed = seed_val
+	var isl: Array = []
+	var want = int(round(float(sp["islands"]) * 10.0))
+	var itry = 0
+	while isl.size() < want and itry < 120:
+		itry += 1
+		var ir = rng.randf_range(2.6, 6.5)
+		var ip = Vector2(rng.randf_range(-half * 0.55, half * 0.55), rng.randf_range(-half * 0.55, half * 0.55))
+		if ip.length() < ir + 5.0 or _wdist(ip) > -(ir + 4.5):
+			continue
+		var clash = false
+		for o in isl:
+			if Vector2(ip.x - o[0].x, ip.y - o[0].y).length() < ir + o[1] + 4.0:
+				clash = true
+		if not clash:
+			isl.append([ip, ir])
+	var img = Image.create(res, res, false, Image.FORMAT_RGB8)
+	for y in res:
+		for x in res:
+			var wx = (x + 0.5) / res * size - half
+			var wz = (y + 0.5) / res * size - half
+			var h = (n1.get_noise_2d(wx, wz) * 7.5 + n2.get_noise_2d(wx, wz) * 1.6) * hm + 2.2
+			var r = ridge.get_noise_2d(wx, wz)
+			if r > ridge_thr:
+				h += (r - ridge_thr) * 26.0 * lerp(0.7, 1.3, hills)
+			var l = lake.get_noise_2d(wx, wz)
+			if l > lake_thr:
+				h -= (l - lake_thr) * 32.0
+			var e: float = min(half - abs(wx), half - abs(wz))
+			if e < 16.0:
+				h += (16.0 - e) * (16.0 - e) * 0.085
+			var p = Vector2(wx, wz)
+			var bd = _bridge_dist(p)
+			if bd < 9.0:
+				h = lerp(h, 1.6, smoothstep(9.0, 4.0, bd))
+			for f in flats:
+				var d = p.distance_to(Vector2(f.x, f.y))
+				if d < f.z:
+					h = lerp(h, 3.0, smoothstep(f.z, f.z * 0.6, d))
+			var wd = _wdist(p)
+			if wd < 18.0:
+				h = lerp(h, 1.4, smoothstep(18.0, 9.0, wd))
+				if wd < 6.0:
+					h = lerp(h, -2.8, smoothstep(6.0, 3.0, wd))
+			for o in isl:
+				var d2 = p.distance_to(o[0])
+				if d2 < o[1] + 4.0:
+					h = lerp(h, 1.5, smoothstep(o[1] + 3.0, o[1] * 0.55, d2))
+			var c: Color
+			if h < WATER_Y:
+				c = Color(0.05, 0.14, 0.22).lerp(Color(0.1, 0.25, 0.35), clamp((h + 3.0) / 3.0, 0.0, 1.0))
+			else:
+				c = Color(0.22, 0.32, 0.12).lerp(Color(0.55, 0.52, 0.45), clamp((h - 2.0) / 9.0, 0.0, 1.0))
+			img.set_pixel(x, y, c)
+	for d in lay["depots"]:
+		var px = int((d[0].x + half) / size * res)
+		var pz = int((d[0].y + half) / size * res)
+		var col = Defs.RES_COLORS[d[1]]
+		for ox in range(-1, 2):
+			for oz in range(-1, 2):
+				img.set_pixel(clampi(px + ox, 0, res - 1), clampi(pz + oz, 0, res - 1), col)
+	for s in _starts:
+		var sx = int((s.x + half) / size * res)
+		var sz = int((s.y + half) / size * res)
+		for ox in range(-3, 4):
+			for oz in range(-3, 4):
+				img.set_pixel(clampi(sx + ox, 0, res - 1), clampi(sz + oz, 0, res - 1), Color(1, 1, 1))
+	return img
+
 func _cell_of(p: Vector2) -> Vector2i:
 	return Vector2i(int((p.x + Game.HALF) / 2.0), int((p.y + Game.HALF) / 2.0))
 

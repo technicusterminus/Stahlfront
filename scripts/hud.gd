@@ -50,7 +50,9 @@ var _btns: Array = []
 var _refresh_t = 0.0
 var _sell_armed = 0.0
 var _surrender_armed = false
-var _cfg = {"faction": "west", "enemies": 1, "difficulty": 1, "spectate": false}
+const Maps = preload("res://scripts/maps.gd")
+var _cfg = {"faction": "west", "enemies": 1, "difficulty": 1, "spectate": false, "hour": 9.0, "daycycle": 14.0}
+var _map_layer: Control = null
 
 func _ready() -> void:
 	layer = 10
@@ -399,6 +401,16 @@ func show_menu() -> void:
 	od.focus_mode = Control.FOCUS_NONE
 	od.item_selected.connect(func(i): _cfg["difficulty"] = i)
 	grid2.add_child(od)
+	_cfg["map"] = Game.map_spec.duplicate()
+	grid2.add_child(_label("Karte", 15))
+	var mrow = HBoxContainer.new()
+	mrow.add_theme_constant_override("separation", 10)
+	var msum = _label(_map_summary(), 14, Color(0.8, 0.88, 1.0))
+	msum.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	msum.clip_text = true
+	mrow.add_child(msum)
+	mrow.add_child(_button("Karte und Tageszeit …", func(): _open_map_dialog(msum), Vector2(210, 34)))
+	grid2.add_child(mrow)
 	v.add_child(HSeparator.new())
 	var bh = HBoxContainer.new()
 	bh.add_theme_constant_override("separation", 10)
@@ -412,9 +424,224 @@ func show_menu() -> void:
 
 func _start(spectate: bool) -> void:
 	_cfg["spectate"] = spectate
+	var changed: bool = Maps.clean(_cfg["map"]) != Game.map_spec
+	if changed:
+		# Hinweis zeigen, bevor die neue Karte erzeugt wird (das dauert einige Sekunden)
+		var note = _label("Karte wird erzeugt …", 30, Color(1, 1, 1))
+		note.set_anchors_preset(Control.PRESET_CENTER)
+		note.position = Vector2(-150, -20)
+		menu_layer.add_child(note)
+		for c in menu_layer.get_children():
+			if c != note:
+				c.visible = false
+		await get_tree().create_timer(0.1).timeout
 	menu_layer.queue_free()
 	menu_layer = null
 	start_requested.emit(_cfg.duplicate())
+
+func _map_summary(sp = null) -> String:
+	var s: Dictionary = Maps.clean(sp if sp != null else _cfg["map"])
+	return "%s · %d m · Wasser %d %% · Inseln %d %% · %s" % [s["name"], s["size"], int(s["water"] * 100), int(s["islands"] * 100), Maps.LAYOUT_NAMES[s["layout"]]]
+
+## Dialog: Vorlage wählen oder mit Reglern eine eigene Karte bauen, Vorschau, Tageszeit.
+func _open_map_dialog(summary: Label) -> void:
+	var layer = _dim_layer()
+	layer.color = Color(0, 0, 0, 0.6)
+	_map_layer = layer
+	var p = _center_panel(layer, 940)
+	var v: VBoxContainer = p.get_child(0)
+	v.add_child(_label("Karte und Tageszeit", 26, Color(1, 1, 1)))
+	var top = HBoxContainer.new()
+	top.add_theme_constant_override("separation", 10)
+	v.add_child(top)
+	top.add_child(_label("Vorlage", 15))
+	var pre = OptionButton.new()
+	pre.focus_mode = Control.FOCUS_NONE
+	pre.add_item("Eigene Karte (Regler)")
+	var all = Maps.presets()
+	for i in all.size():
+		var a: Dictionary = all[i]
+		pre.add_item("%02d  %s  ·  %d m  ·  %s" % [i + 1, a["name"], a["size"], Maps.LAYOUT_NAMES[a["layout"]]])
+	pre.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(pre)
+	var body = HBoxContainer.new()
+	body.add_theme_constant_override("separation", 22)
+	v.add_child(body)
+	var prev = TextureRect.new()
+	prev.custom_minimum_size = Vector2(330, 330)
+	prev.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	prev.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	prev.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	body.add_child(prev)
+	var right = VBoxContainer.new()
+	right.add_theme_constant_override("separation", 6)
+	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	body.add_child(right)
+	var guard = [false]
+	var sliders = {}
+	var timer = Timer.new()
+	timer.one_shot = true
+	timer.wait_time = 0.25
+	layer.add_child(timer)
+	var terr = load("res://scripts/terrain.gd").new()
+	var refresh = func():
+		var img: Image = terr.preview_image(Maps.clean(_cfg["map"]), 150)
+		prev.texture = ImageTexture.create_from_image(img)
+	timer.timeout.connect(refresh)
+	var touch = func():
+		if guard[0]:
+			return
+		_cfg["map"]["name"] = "Eigene Karte"
+		pre.select(0)
+		timer.start()
+	var add_slider = func(key: String, text: String, lo: float, hi: float, step: float, fmt: String):
+		var row = HBoxContainer.new()
+		row.add_theme_constant_override("separation", 10)
+		var lab = _label(text, 14)
+		lab.custom_minimum_size = Vector2(110, 0)
+		row.add_child(lab)
+		var sl = HSlider.new()
+		sl.min_value = lo
+		sl.max_value = hi
+		sl.step = step
+		sl.value = float(_cfg["map"][key]) * (100.0 if hi <= 1.0 else 1.0)
+		if hi <= 1.0:
+			sl.min_value = lo * 100.0
+			sl.max_value = hi * 100.0
+			sl.step = step * 100.0
+			sl.value = float(_cfg["map"][key]) * 100.0
+		sl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		sl.custom_minimum_size = Vector2(220, 22)
+		sl.focus_mode = Control.FOCUS_NONE
+		row.add_child(sl)
+		var vl = _label(fmt % sl.value, 14, Color(0.8, 0.88, 1.0))
+		vl.custom_minimum_size = Vector2(70, 0)
+		row.add_child(vl)
+		right.add_child(row)
+		sl.value_changed.connect(func(val):
+			vl.text = fmt % val
+			if guard[0]:
+				return
+			_cfg["map"][key] = (val / 100.0) if hi <= 1.0 else val
+			touch.call())
+		sliders[key] = [sl, vl, fmt, hi <= 1.0]
+	add_slider.call("size", "Größe", 160.0, 336.0, 16.0, "%d m")
+	add_slider.call("water", "Wasseranteil", 0.0, 1.0, 0.05, "%d %%")
+	add_slider.call("islands", "Inseln", 0.0, 1.0, 0.05, "%d %%")
+	add_slider.call("resources", "Rohstoffe", 0.0, 1.0, 0.05, "%d %%")
+	add_slider.call("hills", "Hügel", 0.0, 1.0, 0.05, "%d %%")
+	add_slider.call("forest", "Wald", 0.0, 1.0, 0.05, "%d %%")
+	var lrow = HBoxContainer.new()
+	lrow.add_theme_constant_override("separation", 10)
+	var llab = _label("Gewässerform", 14)
+	llab.custom_minimum_size = Vector2(110, 0)
+	lrow.add_child(llab)
+	var lob = OptionButton.new()
+	lob.focus_mode = Control.FOCUS_NONE
+	for nme in Maps.LAYOUT_NAMES:
+		lob.add_item(nme)
+	lob.select(int(_cfg["map"]["layout"]))
+	lob.item_selected.connect(func(i):
+		if guard[0]:
+			return
+		_cfg["map"]["layout"] = i
+		touch.call())
+	lrow.add_child(lob)
+	var sd = SpinBox.new()
+	sd.min_value = 0
+	sd.max_value = 99999
+	sd.value = int(_cfg["map"]["seed"])
+	sd.prefix = "Nr. "
+	sd.custom_minimum_size = Vector2(130, 0)
+	sd.value_changed.connect(func(val):
+		if guard[0]:
+			return
+		_cfg["map"]["seed"] = int(val)
+		touch.call())
+	lrow.add_child(sd)
+	lrow.add_child(_button("Würfeln", func():
+		sd.value = randi() % 100000, Vector2(90, 0)))
+	right.add_child(lrow)
+	right.add_child(HSeparator.new())
+	# Tageszeit
+	var trow = HBoxContainer.new()
+	trow.add_theme_constant_override("separation", 10)
+	var tlab = _label("Startzeit", 14)
+	tlab.custom_minimum_size = Vector2(110, 0)
+	trow.add_child(tlab)
+	var ts = HSlider.new()
+	ts.min_value = 0.0
+	ts.max_value = 23.5
+	ts.step = 0.5
+	ts.value = float(_cfg["hour"])
+	ts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ts.focus_mode = Control.FOCUS_NONE
+	trow.add_child(ts)
+	var tl = _label("", 14, Color(1.0, 0.9, 0.6))
+	tl.custom_minimum_size = Vector2(110, 0)
+	trow.add_child(tl)
+	var tfmt = func(h: float): return "%02d:%02d Uhr" % [int(h), int((h - int(h)) * 60.0)]
+	tl.text = tfmt.call(ts.value)
+	ts.value_changed.connect(func(val):
+		_cfg["hour"] = val
+		tl.text = tfmt.call(val))
+	right.add_child(trow)
+	var drow = HBoxContainer.new()
+	drow.add_theme_constant_override("separation", 10)
+	var dlab = _label("Tagesdauer", 14)
+	dlab.custom_minimum_size = Vector2(110, 0)
+	drow.add_child(dlab)
+	var dob = OptionButton.new()
+	dob.focus_mode = Control.FOCUS_NONE
+	var durs = [0.0, 6.0, 14.0, 30.0]
+	for t in ["Feste Tageszeit", "Kurz – 6 Minuten pro Tag", "Normal – 14 Minuten pro Tag", "Lang – 30 Minuten pro Tag"]:
+		dob.add_item(t)
+	dob.select(durs.find(float(_cfg["daycycle"])) if durs.has(float(_cfg["daycycle"])) else 2)
+	dob.item_selected.connect(func(i): _cfg["daycycle"] = durs[i])
+	drow.add_child(dob)
+	right.add_child(drow)
+	right.add_child(_label("Nachts sehen Einheiten und Gebäude weniger weit.", 13, Color(0.6, 0.68, 0.78)))
+	# Vorlage übernehmen
+	pre.item_selected.connect(func(i):
+		if i == 0:
+			return
+		guard[0] = true
+		_cfg["map"] = Maps.preset(i)
+		for key in sliders:
+			var e: Array = sliders[key]
+			var val: float = float(_cfg["map"][key]) * (100.0 if e[3] else 1.0)
+			e[0].value = val
+			e[1].text = e[2] % val
+		lob.select(int(_cfg["map"]["layout"]))
+		sd.value = int(_cfg["map"]["seed"])
+		guard[0] = false
+		refresh.call())
+	var bh = HBoxContainer.new()
+	bh.add_theme_constant_override("separation", 10)
+	v.add_child(bh)
+	bh.add_child(_button("Zufällige Karte", func():
+		var rs = {"name": "Zufallskarte", "size": [192, 240, 288][randi() % 3], "water": randf(), "islands": randf(), "resources": randf_range(0.2, 0.9),
+			"hills": randf(), "forest": randf(), "layout": randi() % 4, "seed": randi() % 100000}
+		guard[0] = true
+		_cfg["map"] = Maps.clean(rs)
+		pre.select(0)
+		for key in sliders:
+			var e: Array = sliders[key]
+			var val: float = float(_cfg["map"][key]) * (100.0 if e[3] else 1.0)
+			e[0].value = val
+			e[1].text = e[2] % val
+		lob.select(int(_cfg["map"]["layout"]))
+		sd.value = int(_cfg["map"]["seed"])
+		guard[0] = false
+		refresh.call(), Vector2(180, 44)))
+	var ok = _button("Fertig", func():
+		summary.text = _map_summary()
+		terr.free()
+		layer.queue_free()
+		_map_layer = null, Vector2(180, 44))
+	ok.add_theme_font_size_override("font_size", 18)
+	bh.add_child(ok)
+	refresh.call()
 
 func on_match_started() -> void:
 	set_game_ui(true)

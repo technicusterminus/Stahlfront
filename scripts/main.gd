@@ -54,6 +54,14 @@ func _ready() -> void:
 		Game.spectator = true
 		Game.update_fog()
 		hud.show_menu()
+		if args.has("mapdialog"):
+			hud.call_deferred("_open_map_dialog", Label.new())
+			_delayed_png(3.0, "ui_map.png")
+		if args.has("menupick"):
+			hud._cfg["map"] = Maps.preset(int(args["menupick"]))
+			hud._cfg["hour"] = float(args.get("hour", "9"))
+			hud.call_deferred("_start", false)
+			_delayed_png(14.0, "menupick.png")
 	if args.has("uitest"):
 		_ui_test()
 	if args.has("shot"):
@@ -200,6 +208,10 @@ func _environment() -> void:
 	Game.daynight = dn
 
 func start_match(cfg: Dictionary) -> void:
+	if cfg.has("map"):
+		var want: Dictionary = Maps.clean(cfg["map"])
+		if want != map_spec:
+			_build_world(want)
 	if cfg.has("hour"):
 		Game.daynight.configure(float(cfg["hour"]), float(cfg.get("daycycle", 0.0)))
 	Game.spectator = cfg["spectate"]
@@ -520,6 +532,10 @@ func _quit_after(sec: float) -> void:
 	get_tree().quit()
 
 ## Messung: bewegt sich beim Schuss nur das Rohr, nicht der Turm?
+func _delayed_png(t: float, file: String) -> void:
+	await _wait(t)
+	get_viewport().get_texture().get_image().save_png(ProjectSettings.globalize_path("res://shots/%s" % file))
+
 ## Zeigt drei Explosionsgrößen nebeneinander (für Bildproben mit --shot und --shotdelay).
 func _boom_test() -> void:
 	var s0: Vector3 = Game.players[0]["start"]
