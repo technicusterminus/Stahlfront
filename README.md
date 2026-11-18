@@ -56,6 +56,20 @@ Du startest mit einem Hauptquartier und einem Bauarbeiter und 5.000 Credits.
 5. **Superwaffe:** Forschung, dann das Superwaffen-Gebäude (5.000 Credits). Nach der Aufladezeit wählst du ein Ziel.
 6. **Sieg:** Zerstöre alle Gebäude und Einheiten der Gegner.
 
+### Ressourcenbaum
+
+Neben Credits gibt es vier Rohstoffe auf der Karte und einen veredelten:
+
+| Rohstoff | Fundort | Verwendung |
+|---|---|---|
+| **Holz** | Wäldchen mit Stammstapeln, je zwei neben jeder Startbasis | fast alle Gebäude |
+| **Eisen** | Erzfelsen neben jeder Startbasis | wird zu Stahl geschmolzen |
+| **Öl** | Ölquellen mit nickendem Förderbock zwischen Basis und Kartenmitte | Stahlwerk und alle Flugzeuge |
+| **Gold** | Adern in der Kartenmitte, umkämpft | Forschung, Superwaffen, teuerste Einheiten |
+| **Stahl** | entsteht automatisch: jedes fertige Nachschubgebäude schmilzt pro Sekunde aus 2 Eisen und 1 Öl einen Stahl | Fabriken, Abwehr, schwere Fahrzeuge |
+
+Sammler holen jeden Rohstoff: Rechtsklick auf ein Vorkommen, oder die Schaltflächen *Holz / Eisen / Öl / Gold sammeln*. Die Kosten stehen im Tooltip jeder Schaltfläche, die Kopfleiste zeigt alle Vorräte. Mehrere Nachschubgebäude schmelzen schneller. Die KI verteilt ihre Sammler reihum auf alle Rohstoffe.
+
 Der **Nebel des Krieges** verdeckt Gelände, das du noch nicht erkundet hast. Bauplätze müssen erkundet sein.
 
 ---
