@@ -302,6 +302,8 @@ func start_match(cfg: Dictionary) -> void:
 		cam.dist_target = 14.0
 	if args.has("recoiltest"):
 		_recoil_test()
+	if args.has("defensetest"):
+		_defense_test()
 	if args.has("animalcam"):
 		var an = world.get_node("Animals")
 		if not an.herds.is_empty():
@@ -476,6 +478,40 @@ func _quit_after(sec: float) -> void:
 	get_tree().quit()
 
 ## Messung: bewegt sich beim Schuss nur das Rohr, nicht der Turm?
+## Prüft je Fraktion: Abwehrbau drehbar, richtet sich auf ein Ziel aus und beschädigt es.
+func _defense_test() -> void:
+	await _wait(1.0)
+	for pl in Game.players.size():
+		var fac: String = Game.players[pl]["faction"]
+		var did = fac + "_defense"
+		var s0: Vector3 = Game.players[pl]["start"]
+		var site = null
+		for ring in range(8, 30):
+			for j in 16:
+				var a = TAU * j / 16.0 + ring * 0.3
+				var c = Game.world_to_cell(s0 + Vector3(cos(a), 0, sin(a)) * ring)
+				if Game.can_place(did, c, pl) == "":
+					site = c
+					break
+			if site != null:
+				break
+		if site == null:
+			print("DEFENSE ", did, ": KEIN BAUPLATZ")
+			continue
+		var b = Game.spawn_building(did, pl, site, true)
+		var foe_owner = (pl + 1) % Game.players.size()
+		var foe_id = ["west_tank", "red_tank", "shadow_tank"][foe_owner]
+		var foe = Game.spawn_unit(foe_id, foe_owner, b.position + Vector3(-11, 0, -9))
+		foe.visible = true
+		var hp0: float = foe.hp
+		var rot0: float = b.turret.rotation.y if b.turret else 0.0
+		await _wait(7.0)
+		var rot1: float = b.turret.rotation.y if b.turret else 0.0
+		var foe_ok = is_instance_valid(foe) and foe.alive
+		print("DEFENSE %s: Turm vorhanden=%s Drehung=%.2f Ziel-Leben %d -> %d (Gebäude-Leben %d/%d)" % [did, str(b.turret != null), rot1 - rot0, int(hp0), int(foe.hp) if foe_ok else 0, int(b.hp), int(b.max_hp)])
+		if foe_ok:
+			foe.take_damage(1e7, pl, null)
+
 func _recoil_test() -> void:
 	await _wait(1.0)
 	var st: Vector3 = Game.players[0]["start"] + Vector3(0, 0, 30)

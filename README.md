@@ -80,7 +80,7 @@ Die Karte hat einen **Mittelsee**, vier **Kanäle** zu den Ecken und je eine **B
 | **Rote Allianz** | Schiffswerft mit Sägedach, Schlot, Drehkran | Sturm-Kanonenboot: billig und robust | Oktober-Schlachtkreuzer: drei Doppelgeschütze, zerlegt Gebäude |
 | **Schattenfront** | Schmugglerhafen aus Holz, Zeltplane, Ausguck | Schmuggler-Kutter: schnell, MG | Piraten-Fregatte: Raketensalven, Containerstapel, Totenkopfflagge |
 
-Alle Schiffe haben Reling, Bullaugen, Rettungsboote, Besatzung, drehendes Radar, wehende Flaggen und Rauch. Die KI baut eine Werft und eine Flotte von höchstens sechs Schiffen, die ab drei Schiffen die Werft oder Küste des Gegners angreift. Test: `--seashow` stellt Werft und alle Schiffe in die Heimatbucht.
+Alle Schiffe haben Reling, Bullaugen, Rettungsboote, Besatzung, drehendes Radar, wehende Flaggen und Rauch. Die KI baut eine Werft und eine Flotte von höchstens sechs Schiffen, die ab drei Schiffen die Werft oder Küste des Gegners angreift. Test: `--seashow` stellt Werft und alle Schiffe in die Heimatbucht. Test der Abwehrbauten: `--defensetest` (Drehung, Ausrichtung, Schaden je Fraktion).
 
 Der **Nebel des Krieges** verdeckt Gelände, das du noch nicht erkundet hast. Bauplätze müssen erkundet sein.
 
