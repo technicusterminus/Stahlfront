@@ -36,6 +36,7 @@ var last_alert_pos = Vector3.ZERO
 var _alert_t = -99.0
 
 var astar: AStarGrid2D
+var astar_sea: AStarGrid2D
 var buckets = {}
 
 var fog_vis = PackedByteArray()
@@ -136,6 +137,17 @@ func init_grid() -> void:
 		for x in GRID:
 			if terrain.blocked[z * GRID + x] == 1:
 				astar.set_point_solid(Vector2i(x, z), true)
+	astar_sea = AStarGrid2D.new()
+	astar_sea.region = Rect2i(0, 0, GRID, GRID)
+	astar_sea.cell_size = Vector2(1, 1)
+	astar_sea.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+	astar_sea.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+	astar_sea.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+	astar_sea.update()
+	for z in GRID:
+		for x in GRID:
+			if terrain.sea[z * GRID + x] == 0:
+				astar_sea.set_point_solid(Vector2i(x, z), true)
 
 func world_to_cell(p: Vector3) -> Vector2i:
 	return Vector2i(clampi(int(floor((p.x + HALF) / CELL)), 0, GRID - 1), clampi(int(floor((p.z + HALF) / CELL)), 0, GRID - 1))
@@ -148,11 +160,13 @@ func cell_center(c: Vector2i) -> Vector3:
 func in_grid(c: Vector2i) -> bool:
 	return c.x >= 0 and c.y >= 0 and c.x < GRID and c.y < GRID
 
-func is_free(c: Vector2i) -> bool:
+func is_free(c: Vector2i, sea := false) -> bool:
+	if sea:
+		return in_grid(c) and terrain.sea[c.y * GRID + c.x] == 1
 	return in_grid(c) and not astar.is_point_solid(c)
 
-func nearest_free(c: Vector2i, max_r := 14) -> Vector2i:
-	if is_free(c):
+func nearest_free(c: Vector2i, max_r := 14, sea := false) -> Vector2i:
+	if is_free(c, sea):
 		return c
 	for r in range(1, max_r + 1):
 		var best = Vector2i(-1, -1)
@@ -162,7 +176,7 @@ func nearest_free(c: Vector2i, max_r := 14) -> Vector2i:
 				if abs(dx) != r and abs(dz) != r:
 					continue
 				var n = c + Vector2i(dx, dz)
-				if is_free(n):
+				if is_free(n, sea):
 					var d = float(dx * dx + dz * dz)
 					if d < bd:
 						bd = d
@@ -171,7 +185,7 @@ func nearest_free(c: Vector2i, max_r := 14) -> Vector2i:
 			return best
 	return c
 
-func line_clear(a: Vector2i, b: Vector2i) -> bool:
+func line_clear(a: Vector2i, b: Vector2i, sea := false) -> bool:
 	var d = b - a
 	var steps: int = max(abs(d.x), abs(d.y)) * 2
 	if steps == 0:
@@ -180,19 +194,19 @@ func line_clear(a: Vector2i, b: Vector2i) -> bool:
 		var t = float(i) / steps
 		var p = Vector2(a) + Vector2(d) * t
 		var c = Vector2i(int(round(p.x)), int(round(p.y)))
-		if not is_free(c):
+		if not is_free(c, sea):
 			return false
 		# Ecken pruefen, damit Diagonalen nicht durch Waende schlüpfen
 		var c2 = Vector2i(int(floor(p.x + 0.5)), int(floor(p.y)))
 		var c3 = Vector2i(int(floor(p.x)), int(floor(p.y + 0.5)))
-		if not is_free(c2) or not is_free(c3):
+		if not is_free(c2, sea) or not is_free(c3, sea):
 			return false
 	return true
 
-func find_path(from: Vector3, to: Vector3) -> Array:
-	var a = nearest_free(world_to_cell(from))
-	var b = nearest_free(world_to_cell(to))
-	var ids: Array = astar.get_id_path(a, b, true)
+func find_path(from: Vector3, to: Vector3, sea := false) -> Array:
+	var a = nearest_free(world_to_cell(from), 14, sea)
+	var b = nearest_free(world_to_cell(to), 30 if sea else 14, sea)
+	var ids: Array = (astar_sea if sea else astar).get_id_path(a, b, true)
 	var out: Array = []
 	if ids.is_empty():
 		return [to]
@@ -201,7 +215,7 @@ func find_path(from: Vector3, to: Vector3) -> Array:
 	var i = 1
 	while i < ids.size():
 		var j = i
-		while j + 1 < ids.size() and line_clear(anchor, ids[j + 1]):
+		while j + 1 < ids.size() and line_clear(anchor, ids[j + 1], sea):
 			j += 1
 		anchor = ids[j]
 		out.append(cell_center(anchor))
@@ -256,6 +270,8 @@ func can_place(def_id: String, center: Vector2i, pid: int) -> String:
 	for dp in depots:
 		if dp.position.distance_to(footprint_center(center, d["size"])) < 5.0 + d["size"]:
 			return "Zu nah am Nachschubdepot"
+	if d["role"] == "dock" and sea_dir(center, d["size"]) == null:
+		return "Die Werft muss am Ufer des Meeres stehen"
 	return ""
 
 # ---------------------------------------------------------------- Spieler
@@ -390,12 +406,40 @@ func spawn_building(def_id: String, pid: int, center: Vector2i, complete: bool):
 	b.position = footprint_center(center, d["size"])
 	b.position.y = terrain.height_at(b.position.x, b.position.z)
 	buildings.append(b)
+	if d["role"] == "dock":
+		var sd = sea_dir(center, d["size"])
+		if sd != null:
+			b.rotation.y = atan2(sd.x, sd.z)
 	set_cells(b.cells, true)
 	set_occ(b.cells, true)
 	pave_around(b)
 	if complete:
 		b.finish(true)
 	return b
+
+## Richtung (Weltvektor) vom Fundament zum nächsten Seewasser innerhalb von 4 Zellen, sonst null.
+func sea_dir(center: Vector2i, size: int):
+	var best = null
+	var bd = 1e9
+	for dz in range(-size / 2 - 4, size / 2 + 5):
+		for dx in range(-size / 2 - 4, size / 2 + 5):
+			var c = center + Vector2i(dx, dz)
+			if is_free(c, true):
+				var dd = float(dx * dx + dz * dz)
+				if dd < bd:
+					bd = dd
+					best = Vector3(dx, 0, dz)
+	return best
+
+## Gebiet als erkundet markieren (Startbuchten).
+func explore_circle(p: Vector3, r: float) -> void:
+	var c = world_to_cell(p)
+	var rc = int(r / CELL) + 1
+	for dz in range(-rc, rc + 1):
+		for dx in range(-rc, rc + 1):
+			var n = c + Vector2i(dx, dz)
+			if in_grid(n) and Vector2(dx, dz).length() * CELL <= r:
+				fog_exp[n.y * GRID + n.x] = 1
 
 func spawn_depot(pos: Vector3, amount: float, kind := "supply"):
 	var dp = DepotScript.new()

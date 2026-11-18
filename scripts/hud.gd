@@ -697,7 +697,7 @@ func _res_tip(k: String) -> String:
 	match k:
 		"wood": return "Holz: wird für fast alle Gebäude gebraucht. Sammler fahren zu Wäldchen (Rechtsklick)."
 		"iron": return "Eisen: wird im Nachschubgebäude zu Stahl geschmolzen (2 Eisen + 1 Öl = 1 Stahl)."
-		"oil": return "Öl: Brennstoff für Stahlwerk und alle Flugzeuge. Ölquellen liegen zwischen den Basen."
+		"oil": return "Öl: Brennstoff für Stahlwerk und alle Flugzeuge. Ölquellen liegen am Rand jeder Basis."
 		"gold": return "Gold: für Forschung, Superwaffen und die teuersten Einheiten. Adern liegen in der Kartenmitte."
 	return "Stahl: für Fabriken, Abwehr und schwere Fahrzeuge. Entsteht automatisch in Nachschubgebäuden."
 

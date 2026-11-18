@@ -17,7 +17,7 @@ const DMG_MOD := {
 
 const ROLE_NAMES := {
 	"hq": "Hauptquartier", "power": "Kraftwerk", "supply": "Nachschub", "barracks": "Kaserne",
-	"factory": "Fabrik", "airfield": "Flugfeld", "defense": "Abwehr", "tech": "Forschung", "super": "Superwaffe",
+	"factory": "Fabrik", "airfield": "Flugfeld", "dock": "Werft", "defense": "Abwehr", "tech": "Forschung", "super": "Superwaffe",
 }
 
 const RANK_NAMES := ["Rekrut", "Veteran", "Elite", "Held"]
@@ -46,7 +46,7 @@ func U(id: String, d: Dictionary) -> void:
 	d.merge({"sight": 18.0, "armor": "light", "speed": 6.0, "flying": false, "role": "combat",
 		"scale": 1.0, "weapon": null, "prereq": [], "desc": "", "horde": false, "cargo": 0,
 		"shield": 0.0, "stealth": false, "pair": false, "salvage": false, "built_at": "",
-		"fixed_wing": false, "turn": 1.3}, false)
+		"fixed_wing": false, "turn": 1.3, "naval": false}, false)
 	units[id] = d
 
 func B(id: String, d: Dictionary) -> void:
@@ -129,6 +129,11 @@ func _west() -> void:
 		"fixed_wing": true, "turn": 1.5, "weapon": W("rocket", 32.0, 24.0, 1.8, {"air": true, "burst": 2}), "desc": "Schneller Jagdflieger mit Lenkraketen gegen Luft- und Bodenziele. Kann nicht schweben und fliegt Angriffsschleifen."})
 	U("west_bomber", {"name": "Aegis-Tarnkappenbomber", "cost": 2400, "time": 20.0, "hp": 520.0, "speed": 12.0, "armor": "air", "flying": true, "model": "bomber", "built_at": "airfield", "sight": 22.0, "scale": 1.0,
 		"fixed_wing": true, "turn": 0.8, "prereq": ["tech"], "weapon": W("bomb", 140.0, 7.0, 4.5, {"splash": 5.0, "burst": 4}), "desc": "Fliegender Flügel mit Bombenschacht. Verheerend gegen Bodenziele und Gebäude, bekämpft keine Luftziele."})
+	U("west_corvette", {"name": "Sentinel-Korvette", "cost": 900, "time": 10.0, "hp": 520.0, "speed": 9.5, "armor": "light", "model": "corvette", "naval": true, "built_at": "dock", "sight": 26.0,
+		"weapon": W("rocket", 30.0, 24.0, 1.3, {"air": true, "burst": 2}), "desc": "Schnelles Raketenschiff mit Schildgenerator. Jagt Boote und Flugzeuge, kann auch Küstenziele beschießen."})
+	U("west_cruiser", {"name": "Aegis-Kreuzer", "cost": 1800, "time": 18.0, "hp": 1100.0, "speed": 6.0, "armor": "heavy", "model": "cruiser", "naval": true, "built_at": "dock", "sight": 28.0, "scale": 1.15,
+		"weapon": W("artillery", 62.0, 52.0, 4.5, {"splash": 4.0, "burst": 2, "min_range": 12.0}), "prereq": ["tech"], "desc": "Lenkwaffenkreuzer mit Senkrechtstartern. Beschießt Basen weit vom Wasser aus."})
+	B("west_dock", {"name": "Marinewerft", "cost": 1300, "time": 18.0, "hp": 1500.0, "size": 4, "power": -2, "produces": ["west_corvette", "west_cruiser"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Kriegsschiffe."})
 	B("west_hq", {"name": "Kommandozentrale", "cost": 2500, "time": 40.0, "hp": 3200.0, "size": 5, "power": 5, "produces": ["west_dozer"], "sight": 24.0, "desc": "Herz der Basis. Baut Baudrohnen."})
 	B("west_power", {"name": "Fusionsreaktor", "cost": 800, "time": 12.0, "hp": 900.0, "power": 10, "desc": "Liefert 10 Strom."})
 	B("west_supply", {"name": "Nachschubzentrum", "cost": 1500, "time": 15.0, "hp": 1500.0, "power": -1, "produces": ["west_harv"], "desc": "Lager für Nachschub. Liefert einen Lkw mit."})
@@ -164,6 +169,11 @@ func _red() -> void:
 		"fixed_wing": true, "turn": 1.4, "weapon": W("bullet", 14.0, 20.0, 0.2, {"air": true}), "desc": "Robuster Abfangjäger mit Bordkanonen gegen Luft und Boden. Kann nicht schweben."})
 	U("red_bomber", {"name": "Bär-Bomber", "cost": 2500, "time": 22.0, "hp": 700.0, "speed": 9.5, "armor": "air", "flying": true, "model": "bomber", "built_at": "airfield", "sight": 22.0, "scale": 1.15,
 		"fixed_wing": true, "turn": 0.6, "prereq": ["tech"], "weapon": W("bomb", 170.0, 7.0, 5.0, {"splash": 5.5, "burst": 5}), "desc": "Schwerer viermotoriger Bomber mit Teppichabwurf. Langsam, zäh und vernichtend."})
+	U("red_gunboat", {"name": "Sturm-Kanonenboot", "cost": 700, "time": 9.0, "hp": 450.0, "speed": 9.0, "armor": "light", "model": "gunboat", "naval": true, "built_at": "dock", "sight": 24.0,
+		"weapon": W("shell", 42.0, 21.0, 1.6, {"splash": 1.2}), "desc": "Gepanzertes Kanonenboot. Billig, robust, gut gegen Küstenfahrzeuge."})
+	U("red_battleship", {"name": "Oktober-Schlachtkreuzer", "cost": 2200, "time": 22.0, "hp": 1900.0, "speed": 5.0, "armor": "heavy", "model": "battleship", "naval": true, "built_at": "dock", "sight": 28.0, "scale": 1.3,
+		"weapon": W("artillery", 95.0, 56.0, 4.5, {"splash": 5.5, "burst": 2, "min_range": 14.0}), "prereq": ["tech"], "desc": "Schwimmende Festung mit Doppelgeschützen. Zerlegt Gebäude aus großer Distanz."})
+	B("red_dock", {"name": "Schiffswerft", "cost": 1300, "time": 18.0, "hp": 1700.0, "size": 4, "power": -2, "produces": ["red_gunboat", "red_battleship"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Kriegsschiffe."})
 	B("red_hq", {"name": "Hauptquartier", "cost": 2500, "time": 40.0, "hp": 3600.0, "size": 5, "power": 5, "produces": ["red_dozer"], "sight": 24.0, "desc": "Herz der Basis. Baut Bautraktoren."})
 	B("red_power", {"name": "Kohlekraftwerk", "cost": 800, "time": 12.0, "hp": 1000.0, "power": 10, "desc": "Liefert 10 Strom."})
 	B("red_supply", {"name": "Versorgungsdepot", "cost": 1500, "time": 15.0, "hp": 1600.0, "power": -1, "produces": ["red_harv"], "desc": "Lager für Nachschub. Liefert einen Lkw mit."})
@@ -199,6 +209,11 @@ func _shadow() -> void:
 		"fixed_wing": true, "turn": 1.9, "weapon": W("bullet", 10.0, 15.0, 0.22, {"air": true}), "desc": "Billiger Ultraleichtflieger mit MG. Wendig, aber zerbrechlich."})
 	U("shadow_sprayer", {"name": "Giftsprüher", "cost": 1100, "time": 11.0, "hp": 300.0, "speed": 10.0, "armor": "air", "flying": true, "model": "sprayer", "built_at": "airfield", "sight": 20.0,
 		"fixed_wing": true, "turn": 1.2, "weapon": W("toxin", 20.0, 5.5, 0.4, {"splash": 4.0}), "desc": "Doppeldecker, der Gift auf Bodentruppen sprüht. Tödlich gegen Infanterie."})
+	U("shadow_skiff", {"name": "Schmuggler-Kutter", "cost": 500, "time": 6.0, "hp": 280.0, "speed": 11.5, "armor": "light", "model": "skiff", "naval": true, "built_at": "dock", "sight": 24.0,
+		"weapon": W("bullet", 12.0, 16.0, 0.3, {"air": true}), "desc": "Schneller Kutter mit Bord-MG. Billig, wendig und bei Überfällen kaum zu fassen."})
+	U("shadow_frigate", {"name": "Piraten-Fregatte", "cost": 1500, "time": 15.0, "hp": 900.0, "speed": 6.5, "armor": "heavy", "model": "frigate", "naval": true, "built_at": "dock", "sight": 26.0, "scale": 1.1,
+		"weapon": W("rocket", 46.0, 30.0, 2.6, {"splash": 2.5, "burst": 4}), "prereq": ["tech"], "desc": "Zusammengeschweißte Raketenfregatte. Feuert Salven auf alles, was sich am Ufer bewegt."})
+	B("shadow_dock", {"name": "Schmugglerhafen", "cost": 1200, "time": 16.0, "hp": 1300.0, "size": 4, "produces": ["shadow_skiff", "shadow_frigate"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Schiffe aus Schrott und Beutegut."})
 	B("shadow_hq", {"name": "Versteck", "cost": 2000, "time": 35.0, "hp": 3000.0, "size": 5, "produces": ["shadow_dozer"], "sight": 24.0, "desc": "Herz der Basis. Bildet Arbeiter aus."})
 	B("shadow_supply", {"name": "Umschlagplatz", "cost": 1500, "time": 15.0, "hp": 1300.0, "produces": ["shadow_harv"], "desc": "Lager für Nachschub. Liefert einen Pickup mit."})
 	B("shadow_barracks", {"name": "Ausbildungslager", "cost": 500, "time": 10.0, "hp": 1000.0, "produces": ["shadow_inf", "shadow_at"], "desc": "Bildet Kämpfer aus."})
@@ -240,7 +255,7 @@ func _resource_costs() -> void:
 		var r = {}
 		if b["role"] != "hq":
 			r["wood"] = round(c * 0.02 / 5.0) * 5.0
-		if b["role"] in ["factory", "airfield", "tech", "defense", "super"]:
+		if b["role"] in ["factory", "airfield", "dock", "tech", "defense", "super"]:
 			r["steel"] = round(c * 0.025 / 5.0) * 5.0
 		if b["role"] == "tech":
 			r["gold"] = 40.0
@@ -269,7 +284,7 @@ func res_text(r: Dictionary) -> String:
 
 func build_list(faction: String) -> Array:
 	var out = []
-	for r in ["power", "supply", "barracks", "factory", "airfield", "defense", "tech", "super", "hq"]:
+	for r in ["power", "supply", "barracks", "factory", "airfield", "dock", "defense", "tech", "super", "hq"]:
 		var id: String = faction + "_" + r
 		if buildings.has(id):
 			out.append(id)

@@ -228,8 +228,12 @@ func _spawn(uid: String) -> void:
 func _spawn_one(uid: String, offset: Vector3) -> void:
 	var ud: Dictionary = Defs.units[uid]
 	var pos = (_exit_point() if not ud["flying"] else position) + offset
+	if ud["naval"]:
+		pos = Game.cell_center(Game.nearest_free(Game.world_to_cell(position), 12, true)) + offset
 	var u = Game.spawn_unit(uid, owner_id, pos)
 	u.heading = 0.0
+	if ud["naval"] and OS.get_cmdline_user_args().has("--verbose"):
+		print("SHIP vom Stapel: ", uid, " P", owner_id, " t=", int(Game.time))
 	if ud["role"] == "harvester":
 		u.cmd_harvest()
 	elif has_rally:

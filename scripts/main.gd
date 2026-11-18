@@ -11,7 +11,7 @@ const TerrainScript = preload("res://scripts/terrain.gd")
 const PowersScript = preload("res://scripts/powers.gd")
 
 const STARTS := [Vector2(-82, 82), Vector2(82, -82), Vector2(82, 82), Vector2(-82, -82)]
-const MID_DEPOTS := [Vector2(0, 0), Vector2(0, -78), Vector2(0, 78), Vector2(-78, 0), Vector2(78, 0)]
+const MID_DEPOTS := [Vector2(0, 28), Vector2(0, -78), Vector2(0, 78), Vector2(-78, 0), Vector2(78, 0)]
 
 var args = {}
 var world: Node3D
@@ -33,7 +33,7 @@ func _ready() -> void:
 		var perp = Vector2(-dd.y, dd.x).normalized()
 		res_sites.append([dd + perp * 21.0, "wood", 20000.0])
 		res_sites.append([dd - perp * 21.0, "iron", 20000.0])
-		res_sites.append([dd * 0.5, "oil", 16000.0])
+		res_sites.append([dd * 1.18, "oil", 16000.0])
 	for g in [Vector2(40, 0), Vector2(-40, 0), Vector2(0, 40), Vector2(0, -40)]:
 		res_sites.append([g, "gold", 9000.0])
 	var res_pts = res_sites.map(func(r): return r[0])
@@ -226,6 +226,33 @@ func start_match(cfg: Dictionary) -> void:
 		cam.look_at_pos(base + Vector3(0, 0, 4))
 		cam.dist_target = float(args.get("camdist", "34"))
 		Game.explore(base, 30.0)
+	if args.has("seashow"):
+		# Testaufstellung: Werft und alle Schiffe in der Heimatbucht jedes Spielers
+		for pl in Game.players.size():
+			var s0: Vector3 = Game.players[pl]["start"]
+			var bay = Vector3(s0.x * 0.6, 0, s0.z * 0.6)
+			Game.explore(bay, 30.0)
+			var fac1: String = Game.players[pl]["faction"]
+			var did: String = fac1 + "_dock"
+			var done = false
+			for ring in range(5, 24):
+				for j in 16:
+					var a1 = TAU * j / 16.0 + ring * 0.3
+					var p1 = bay + Vector3(cos(a1), 0, sin(a1)) * ring
+					var c1 = Game.world_to_cell(p1)
+					if Game.can_place(did, c1, pl) == "":
+						Game.spawn_building(did, pl, c1, true)
+						done = true
+						break
+				if done:
+					break
+			print("SEASHOW Werft ", fac1, " gebaut=", done)
+			var sids = Defs.units.keys().filter(func(k): return Defs.units[k]["faction"] == fac1 and Defs.units[k]["naval"])
+			for si in sids.size():
+				Game.spawn_unit(sids[si], pl, bay + Vector3(-3 + si * 6.0, 0, 0))
+		var b0: Vector3 = Game.players[0]["start"]
+		cam.look_at_pos(Vector3(b0.x * 0.6, 0, b0.z * 0.6))
+		cam.dist_target = float(args.get("camdist", "40"))
 	if args.has("basecam"):
 		# Testbasis: alle Gebäudetypen fertig, das letzte als Baustelle
 		var fac0: String = Game.players[0]["faction"]
@@ -445,7 +472,7 @@ func _quit_after(sec: float) -> void:
 		for b in Game.buildings:
 			if b.owner_id == p["id"]:
 				nb += 1
-		print("P%d %s alive=%s credits=%d units=%d bldgs=%d kills=%d losses=%d income=%d rank=%d res=%s" % [p["id"], p["faction"], p["alive"], int(p["credits"]), nu, nb, p["kills"], p["losses"], int(p["income"]), p["rank"], str(p["res"].values().map(func(v): return int(v)))])
+		print("P%d %s alive=%s credits=%d units=%d bldgs=%d kills=%d losses=%d income=%d rank=%d ships=%d docks=%d res=%s" % [p["id"], p["faction"], p["alive"], int(p["credits"]), nu, nb, p["kills"], p["losses"], int(p["income"]), p["rank"], Game.units.filter(func(u): return u.owner_id == p["id"] and u.alive and u.naval).size(), Game.buildings.filter(func(b): return b.owner_id == p["id"] and b.alive and b.def["role"] == "dock").size(), str(p["res"].values().map(func(v): return int(v)))])
 	get_tree().quit()
 
 ## Messung: bewegt sich beim Schuss nur das Rohr, nicht der Turm?

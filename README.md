@@ -64,11 +64,23 @@ Neben Credits gibt es vier Rohstoffe auf der Karte und einen veredelten:
 |---|---|---|
 | **Holz** | Wäldchen mit Stammstapeln, je zwei neben jeder Startbasis | fast alle Gebäude |
 | **Eisen** | Erzfelsen neben jeder Startbasis | wird zu Stahl geschmolzen |
-| **Öl** | Ölquellen mit nickendem Förderbock zwischen Basis und Kartenmitte | Stahlwerk und alle Flugzeuge |
+| **Öl** | Ölquellen mit nickendem Förderbock am Rand jeder Startbasis | Stahlwerk und alle Flugzeuge |
 | **Gold** | Adern in der Kartenmitte, umkämpft | Forschung, Superwaffen, teuerste Einheiten |
 | **Stahl** | entsteht automatisch: jedes fertige Nachschubgebäude schmilzt pro Sekunde aus 2 Eisen und 1 Öl einen Stahl | Fabriken, Abwehr, schwere Fahrzeuge |
 
 Sammler holen jeden Rohstoff: Rechtsklick auf ein Vorkommen, oder die Schaltflächen *Holz / Eisen / Öl / Gold sammeln*. Die Kosten stehen im Tooltip jeder Schaltfläche, die Kopfleiste zeigt alle Vorräte. Mehrere Nachschubgebäude schmelzen schneller. Die KI verteilt ihre Sammler reihum auf alle Rohstoffe.
+
+### Seestreitkräfte
+
+Die Karte hat einen **Mittelsee**, vier **Kanäle** zu den Ecken und je eine **Bucht** vor jeder Startbasis. Das Wasser bildet einen Baum ohne Schleifen und sperrt das Land nirgends ab. Ab dem Fabrikbau bauen Spieler am Ufer eine **Werft** (muss am Meer stehen, Pier zeigt zum Wasser). Schiffe fahren nur auf dem Meer, stampfen und rollen im Seegang und ziehen Heckwellen.
+
+| | Werft | leichtes Schiff | schwerer Kreuzer (braucht Forschung) |
+|---|---|---|---|
+| **Westbund** | Marinewerft mit Glashalle und Portalkran | Sentinel-Korvette: Raketen gegen Boote und Flugzeuge, Schildgenerator | Aegis-Kreuzer: Senkrechtstarter, Artillerie 52 m, Hubschrauberdeck |
+| **Rote Allianz** | Schiffswerft mit Sägedach, Schlot, Drehkran | Sturm-Kanonenboot: billig und robust | Oktober-Schlachtkreuzer: drei Doppelgeschütze, zerlegt Gebäude |
+| **Schattenfront** | Schmugglerhafen aus Holz, Zeltplane, Ausguck | Schmuggler-Kutter: schnell, MG | Piraten-Fregatte: Raketensalven, Containerstapel, Totenkopfflagge |
+
+Alle Schiffe haben Reling, Bullaugen, Rettungsboote, Besatzung, drehendes Radar, wehende Flaggen und Rauch. Die KI baut eine Werft und eine Flotte von höchstens sechs Schiffen, die ab drei Schiffen die Werft oder Küste des Gegners angreift. Test: `--seashow` stellt Werft und alle Schiffe in die Heimatbucht.
 
 Der **Nebel des Krieges** verdeckt Gelände, das du noch nicht erkundet hast. Bauplätze müssen erkundet sein.
 

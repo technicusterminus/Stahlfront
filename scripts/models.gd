@@ -397,6 +397,8 @@ static func _build_unit(model: String, col: Color, faction: String) -> Dictionar
 			_bomber(root, pc, faction, out)
 		"glider", "sprayer":
 			_biplane(root, pc, model == "sprayer", out)
+		"corvette", "cruiser", "gunboat", "battleship", "skiff", "frigate":
+			load("res://scripts/ships.gd").build(root, model, faction, pc, out)
 		_:
 			box(root, Vector3(2, 1, 3), Vector3(0, 0.5, 0), pc)
 	if VEH.has(model) and not OS.get_cmdline_user_args().has("--nofit"):
@@ -851,7 +853,7 @@ static func _build_building(d: Dictionary, col: Color) -> Dictionary:
 		_life(root, w, faction, role, out)
 	return out
 
-const LIFE_ROLES = ["power", "supply", "defense", "tech", "super", "airfield"]
+const LIFE_ROLES = ["power", "supply", "defense", "tech", "super", "airfield", "dock"]
 
 ## Maße der Fahrzeugmodelle für die Anbauteile (Länge, Breite, Oberkante der Wanne).
 const VEH = {
@@ -1004,6 +1006,14 @@ static func _life(r: Node3D, w: float, faction: String, role: String, out: Dicti
 			D.flag(r, Vector3(-e, 0, e), 3.6, _team, out)
 			D.flag(r, Vector3(e, 0, e), 3.6, _team, out)
 			D.walker(r, faction, [Vector3(-e * 1.05, 0, -e), Vector3(e * 1.05, 0, -e), Vector3(e * 1.05, 0, e)], out, 0.9)
+		"dock":
+			var pz: float = e + 0.4
+			D.walker(r, faction, [Vector3(-0.9, 0.31, pz), Vector3(-0.9, 0.31, pz + 6.5), Vector3(0.9, 0.31, pz + 6.5), Vector3(0.9, 0.31, pz)], out, 1.0)
+			D.walker(r, faction, [Vector3(0.9, 0.31, pz + 2.0), Vector3(-0.9, 0.31, pz + 5.0)], out, 0.7)
+			D.blink_light(r, Vector3(0.0, 0.7, pz + 8.4), accent, out, 1.1)
+			D.flag(r, Vector3(1.5, 0.3, pz + 7.8), 3.0, _team, out)
+			D.barrels(r, Vector3(-e + 0.4, 0, e * 0.2), 3)
+			D.pallet(r, Vector3(e - 0.5, 0, -e * 0.2), 0.3, 4)
 		"airfield":
 			D.flag(r, Vector3(e * 0.8, 0, -e * 0.8), 2.6, Color(1.0, 0.45, 0.1), out)
 			for k in 6:

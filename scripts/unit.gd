@@ -46,6 +46,8 @@ var _resume = false
 
 var cargo = 0.0
 var h_state = ""
+const ShipsScript = preload("res://scripts/ships.gd")
+var naval = false
 var h_depot = null
 var h_kind = "supply"
 var cargo_kind = "supply"
@@ -87,6 +89,7 @@ func setup(d: Dictionary, pid: int) -> void:
 	max_hp = d["hp"]
 	hp = max_hp
 	flying = d["flying"]
+	naval = d["naval"]
 	weapon = d["weapon"]
 	is_vehicle = d["armor"] != "inf"
 	var col: Color = Game.players[pid]["color"]
@@ -262,7 +265,7 @@ func _set_path(p: Vector3) -> void:
 	if flying:
 		path = [p]
 	else:
-		path = Game.find_path(position, p)
+		path = Game.find_path(position, p, naval)
 
 func can_target(t) -> bool:
 	if weapon == null or t == null or not is_instance_valid(t) or not t.alive or t.is_depot:
@@ -701,7 +704,7 @@ func _integrate(delta: float) -> void:
 		if want.length() > 0.1:
 			var th = atan2(want.x, want.z)
 			var diff = wrapf(th - heading, -PI, PI)
-			var turn = 3.2 if def["scale"] < 1.3 else 2.0
+			var turn = 1.2 if naval else (3.2 if def["scale"] < 1.3 else 2.0)
 			heading += clamp(diff, -turn * delta, turn * delta)
 			var fwd = Vector3(sin(heading), 0, cos(heading))
 			var f: float = clamp(cos(diff), 0.0, 1.0) if abs(diff) < 1.3 else 0.0
@@ -716,16 +719,16 @@ func _integrate(delta: float) -> void:
 	var np = position + v * delta
 	if not flying:
 		var cur_c = Game.world_to_cell(position)
-		if not Game.is_free(cur_c):
-			var fc = Game.nearest_free(cur_c)
+		if not Game.is_free(cur_c, naval):
+			var fc = Game.nearest_free(cur_c, 14, naval)
 			var tgt = Game.cell_center(fc)
 			np = position + Vector3(tgt.x - position.x, 0, tgt.z - position.z).normalized() * 6.0 * delta
-		elif not Game.is_free(Game.world_to_cell(np)):
+		elif not Game.is_free(Game.world_to_cell(np), naval):
 			var npx = Vector3(np.x, position.y, position.z)
 			var npz = Vector3(position.x, position.y, np.z)
-			if Game.is_free(Game.world_to_cell(npx)):
+			if Game.is_free(Game.world_to_cell(npx), naval):
 				np = npx
-			elif Game.is_free(Game.world_to_cell(npz)):
+			elif Game.is_free(Game.world_to_cell(npz), naval):
 				np = npz
 			else:
 				np = position
@@ -738,13 +741,29 @@ func _integrate(delta: float) -> void:
 func _animate(delta: float) -> void:
 	_anim_t += delta
 	# Staubfahne hinter fahrenden Bodenfahrzeugen
-	if is_vehicle and not flying and speed_now > 1.2 and visible:
+	if naval and visible:
+		# Heckwelle: Ringe auf dem Wasser hinter fahrenden Schiffen
+		if speed_now > 1.2:
+			_dust_t -= delta
+			if _dust_t <= 0.0:
+				_dust_t = 0.55
+				FX.ring(position - Vector3(sin(heading), 0, cos(heading)) * radius * 0.9 + Vector3(0, 0.0, 0), Color(0.92, 0.97, 1.0, 0.55), radius * 0.8, 1.1)
+	if is_vehicle and not flying and not naval and speed_now > 1.2 and visible:
 		_dust_t -= delta
 		if _dust_t <= 0.0:
 			_dust_t = 0.32
 			FX.dust(position - Vector3(sin(heading), 0, cos(heading)) * 1.8 + Vector3(0, 0.15, 0), 0.4)
 	var fwd = Vector3(sin(heading), 0, cos(heading))
-	if is_vehicle and not flying:
+	if naval:
+		# Seegang: Stampfen und Rollen, schneller bei Fahrt
+		var rough = 0.02 + 0.015 * clamp(speed_now / max(float(def["speed"]), 1.0), 0.0, 1.0)
+		var pitch = sin(_anim_t * 1.3) * rough * 2.0 - clamp(speed_now / max(float(def["speed"]), 1.0), 0.0, 1.0) * 0.025
+		var roll = sin(_anim_t * 0.9 + 1.0) * rough * 2.4
+		transform.basis = Basis(Vector3.UP, heading) * Basis.from_euler(Vector3(pitch, 0, roll))
+		body.position.y = sin(_anim_t * 1.1) * 0.06
+		if visible and model.has("anims"):
+			ShipsScript.play(model["anims"], delta, Game.time)
+	elif is_vehicle and not flying:
 		var n: Vector3 = Game.terrain.normal_at(position.x, position.z)
 		tilt_n = tilt_n.lerp(n, min(1.0, 6.0 * delta)).normalized()
 		var f = (fwd - tilt_n * fwd.dot(tilt_n)).normalized()

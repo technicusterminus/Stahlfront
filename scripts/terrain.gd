@@ -7,6 +7,8 @@ const WATER_Y := -0.6
 
 var heights = PackedFloat32Array()
 var blocked = PackedByteArray()   # Game.GRID * Game.GRID, 1 = unpassierbar
+var sea = PackedByteArray()       # 1 = schiffbares Wasser des zusammenhängenden Meeres
+var _starts: Array = []
 var mat: ShaderMaterial
 var water_mat: ShaderMaterial
 var tree_cells: Array = []
@@ -24,7 +26,23 @@ func generate(seed_val: int, starts: Array, depots: Array) -> void:
 	_build_water()
 	_build_props()
 
+## Mittelsee, vier Diagonalkanäle und je eine Bucht vor jeder Startbasis: ein Baum ohne Schleifen,
+## der den Rand nicht berührt, sperrt das Land also nirgends ab.
+func bay_center(start: Vector2) -> Vector2:
+	return start * 0.6
+
+func _wdist(p: Vector2) -> float:
+	var best: float = p.length() - 18.0
+	for s in _starts:
+		var b: Vector2 = bay_center(s)
+		best = min(best, p.distance_to(b) - 8.0)
+		var ab: Vector2 = b
+		var t: float = clamp(p.dot(ab) / ab.dot(ab), 0.0, 1.0)
+		best = min(best, p.distance_to(ab * t) - 4.5)
+	return best
+
 func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
+	_starts = starts
 	var rng = RandomNumberGenerator.new()
 	rng.seed = seed_val
 	var n1 = FastNoiseLite.new()
@@ -71,6 +89,11 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 				if d < f.z:
 					var t = smoothstep(f.z, f.z * 0.6, d)
 					h = lerp(h, 3.0, t)
+			var wd = _wdist(Vector2(x, z))
+			if wd < 18.0:
+				h = lerp(h, 1.4, smoothstep(18.0, 9.0, wd))
+			if wd < 6.0:
+				h = lerp(h, -2.8, smoothstep(6.0, 3.0, wd))
 			heights[iz * N + ix] = h
 
 	# Begehbarkeit je 2-m-Zelle
@@ -91,6 +114,38 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 			var avg = sum / 9.0
 			if avg < WATER_Y + 0.25 or mx - mn > 1.9 or cx < 5 or cz < 5 or cx >= G - 5 or cz >= G - 5:
 				blocked[cz * G + cx] = 1
+
+	# Meer: zusammenhängende tiefe Zellen ab der Seemitte
+	sea.resize(G * G)
+	sea.fill(0)
+	var deep = PackedByteArray()
+	deep.resize(G * G)
+	for cz in G:
+		for cx in G:
+			var sm = 0.0
+			for oz in 3:
+				for ox in 3:
+					sm += heights[(cz * 2 + oz) * N + cx * 2 + ox]
+			deep[cz * G + cx] = 1 if sm / 9.0 < WATER_Y - 0.3 else 0
+	var sstack: Array = [Vector2i(G / 2, G / 2)]
+	if deep[(G / 2) * G + G / 2] == 0:
+		return false
+	sea[(G / 2) * G + G / 2] = 1
+	while not sstack.is_empty():
+		var sc: Vector2i = sstack.pop_back()
+		for dv in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+			var sn: Vector2i = sc + dv
+			if sn.x < 0 or sn.y < 0 or sn.x >= G or sn.y >= G:
+				continue
+			var si = sn.y * G + sn.x
+			if sea[si] == 1 or deep[si] == 0:
+				continue
+			sea[si] = 1
+			sstack.append(sn)
+	for s in starts:
+		var bc = _cell_of(bay_center(s))
+		if sea[bc.y * G + bc.x] == 0:
+			return false
 
 	# Waldstuecke
 	tree_cells.clear()

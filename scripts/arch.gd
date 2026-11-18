@@ -18,6 +18,7 @@ static func build(r: Node3D, faction: String, role: String, w: float, pc: Materi
 		"_west_factory": D.west_factory(r, w, pc, wl, out)
 		"_west_airfield": _west_airfield(r, w, pc, wl, out)
 		"_west_tech": _west_tech(r, w, pc, wl, out)
+		"_west_dock", "_red_dock", "_shadow_dock": load("res://scripts/ships.gd").dock(r, faction, w, pc, wl, out)
 		"_red_hq": D.red_hq(r, w, pc, wl, out)
 		"_red_power": _red_power(r, w, pc, wl, out)
 		"_red_supply": _red_supply(r, w, pc, wl, out)

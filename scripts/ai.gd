@@ -16,7 +16,7 @@ func setup(p: int) -> void:
 	pid = p
 	faction = Game.faction_of(p)
 	rng.randomize()
-	var base = ["supply", "power", "barracks", "power", "factory", "defense", "power", "airfield", "tech", "power", "defense", "supply", "power", "super", "defense", "power", "defense"]
+	var base = ["supply", "power", "barracks", "power", "factory", "defense", "power", "airfield", "dock", "tech", "power", "defense", "supply", "power", "super", "defense", "power", "defense"]
 	for r in base:
 		var id: String = faction + "_" + r
 		if Defs.buildings.has(id):
@@ -43,6 +43,7 @@ func _physics_process(delta: float) -> void:
 	_construction()
 	_production()
 	_military()
+	_naval()
 	_powers()
 	_superweapon()
 
@@ -157,6 +158,17 @@ func _construction() -> void:
 func _find_site(id: String, role: String):
 	var d: Dictionary = Defs.buildings[id]
 	var center = hq_pos
+	if role == "dock":
+		var st: Vector3 = Game.players[pid]["start"]
+		var bay = Vector3(st.x * 0.6, 0, st.z * 0.6)
+		for ring in range(5, 24):
+			for k in 14:
+				var a = rng.randf() * TAU
+				var p = bay + Vector3(cos(a), 0, sin(a)) * (ring * 1.0)
+				var c = Game.world_to_cell(p)
+				if Game.can_place(id, c, pid) == "":
+					return c
+		return null
 	if role == "supply":
 		var best = null
 		var bd = 1e9
@@ -219,6 +231,11 @@ func _production() -> void:
 			if Game.missing_prereq(ud, pid) != "":
 				continue
 			var wgt = 3.0
+			if ud["naval"]:
+				# Flotte begrenzen: teure Schiffe zählen doppelt, höchstens sechs Schiffe
+				if _fleet().size() >= 6:
+					continue
+				wgt = 1.2 if ud["cost"] < 1000 else 0.8
 			var w = ud["weapon"]
 			if w == null:
 				# Unbewaffnete Aufklaerer: hoechstens zwei
@@ -253,7 +270,10 @@ func _production() -> void:
 # ---------------------------------------------------------------- Militär
 
 func _army() -> Array:
-	return _mine_units().filter(func(u): return u.def["role"] == "combat")
+	return _mine_units().filter(func(u): return u.def["role"] == "combat" and not u.naval)
+
+func _fleet() -> Array:
+	return _mine_units().filter(func(u): return u.naval and u.def["role"] == "combat")
 
 ## Gegner für die nächste Welle: der stärkste (mit etwas Zufall), damit nicht der
 ## geografisch nächste Spieler von allen zugleich überrannt wird.
@@ -340,6 +360,25 @@ func _military() -> void:
 	for u in home:
 		if u.order == "idle" and Game.flat_dist(u.position, hq_pos) > 50.0 and u.target == null:
 			u.cmd_move(hq_pos + (Vector3.ZERO - hq_pos).normalized() * 22.0, true)
+
+## Flotte: sammelt sich in der Heimatbucht und greift ab drei Schiffen die Bucht oder Küste des Gegners an.
+var next_fleet = 240.0
+
+func _naval() -> void:
+	var ships = _fleet()
+	if ships.size() < 3 or Game.time < next_fleet:
+		return
+	var t = _enemy_target()
+	if t == null:
+		return
+	next_fleet = Game.time + [140.0, 100.0, 70.0][Game.difficulty]
+	var tp = t.owner_id
+	var goal: Vector3 = t.position
+	for b in Game.buildings:
+		if b.alive and b.owner_id == tp and b.def["role"] == "dock":
+			goal = b.position
+	for u in ships:
+		u.cmd_move(goal, true)
 
 # ---------------------------------------------------------------- Fähigkeiten
 
