@@ -158,9 +158,9 @@ func sell() -> void:
 	if not alive:
 		return
 	var refund: float = def["cost"] * (1.0 if not complete else 0.5)
-	Game.players[owner_id]["credits"] += refund
+	Game.refund(owner_id, def, 1.0 if not complete else 0.5)
 	for qid in queue:
-		Game.players[owner_id]["credits"] += Defs.units[qid]["cost"]
+		Game.refund(owner_id, Defs.units[qid])
 	queue.clear()
 	Game.notify_player(owner_id, "%s %s: +%d Credits" % [def["name"], "abgebrochen" if not complete else "verkauft", int(refund)], Color(0.9, 0.9, 0.6))
 	FX.dust(position + Vector3(0, 1, 0), float(def["size"]) * 0.8)
@@ -191,8 +191,9 @@ func can_queue(uid: String) -> String:
 	var miss = Game.missing_prereq(ud, owner_id)
 	if miss != "":
 		return miss
-	if Game.players[owner_id]["credits"] < ud["cost"]:
-		return "Nicht genug Credits"
+	var why = Game.afford_why(owner_id, ud)
+	if why != "":
+		return why
 	if queue.size() >= 9:
 		return "Warteschlange ist voll"
 	return ""
@@ -201,14 +202,14 @@ func queue_unit(uid: String) -> String:
 	var why = can_queue(uid)
 	if why != "":
 		return why
-	Game.players[owner_id]["credits"] -= Defs.units[uid]["cost"]
+	Game.pay(owner_id, Defs.units[uid])
 	queue.append(uid)
 	return ""
 
 func cancel_unit(idx: int) -> void:
 	if idx < 0 or idx >= queue.size():
 		return
-	Game.players[owner_id]["credits"] += Defs.units[queue[idx]]["cost"]
+	Game.refund(owner_id, Defs.units[queue[idx]])
 	queue.remove_at(idx)
 	if idx == 0:
 		prod_t = 0.0

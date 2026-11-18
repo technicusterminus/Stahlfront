@@ -26,14 +26,23 @@ func _ready() -> void:
 	Game.world = world
 	_environment()
 	var base_depots = []
+	var res_sites = []   # [Vector2, Art, Menge]
 	for s in STARTS:
-		base_depots.append(s * 0.72)
+		var dd: Vector2 = s * 0.72
+		base_depots.append(dd)
+		var perp = Vector2(-dd.y, dd.x).normalized()
+		res_sites.append([dd + perp * 21.0, "wood", 20000.0])
+		res_sites.append([dd - perp * 21.0, "iron", 20000.0])
+		res_sites.append([dd * 0.5, "oil", 16000.0])
+	for g in [Vector2(40, 0), Vector2(-40, 0), Vector2(0, 40), Vector2(0, -40)]:
+		res_sites.append([g, "gold", 9000.0])
+	var res_pts = res_sites.map(func(r): return r[0])
 	var seed_val = int(args.get("seed", str(randi() % 100000)))
 	var terrain = TerrainScript.new()
 	terrain.name = "Terrain"
 	world.add_child(terrain)
 	Game.terrain = terrain
-	terrain.generate(seed_val, STARTS, base_depots + MID_DEPOTS)
+	terrain.generate(seed_val, STARTS, base_depots + MID_DEPOTS + res_pts)
 	Game.init_grid()
 	Game.units_root = Node3D.new()
 	Game.units_root.name = "Units"
@@ -46,6 +55,8 @@ func _ready() -> void:
 	for i in MID_DEPOTS.size():
 		var d: Vector2 = MID_DEPOTS[i]
 		Game.spawn_depot(Vector3(d.x, 0, d.y), 80000.0 if i == 0 else 50000.0)
+	for rs in res_sites:
+		Game.spawn_depot(Vector3(rs[0].x, 0, rs[0].y), rs[2], rs[1])
 	var animals = load("res://scripts/animals.gd").new()
 	animals.name = "Animals"
 	world.add_child(animals)
@@ -318,7 +329,7 @@ func _ui_test() -> void:
 	var sid: String = fac + "_supply"
 	var depot = null
 	var bd = 1e9
-	for dp in Game.depots:
+	for dp in Game.depots.filter(func(x): return x.kind == "supply"):
 		var d = Game.flat_dist(dp.position, dozer.position)
 		if d < bd:
 			bd = d
@@ -434,7 +445,7 @@ func _quit_after(sec: float) -> void:
 		for b in Game.buildings:
 			if b.owner_id == p["id"]:
 				nb += 1
-		print("P%d %s alive=%s credits=%d units=%d bldgs=%d kills=%d losses=%d income=%d rank=%d" % [p["id"], p["faction"], p["alive"], int(p["credits"]), nu, nb, p["kills"], p["losses"], int(p["income"]), p["rank"]])
+		print("P%d %s alive=%s credits=%d units=%d bldgs=%d kills=%d losses=%d income=%d rank=%d res=%s" % [p["id"], p["faction"], p["alive"], int(p["credits"]), nu, nb, p["kills"], p["losses"], int(p["income"]), p["rank"], str(p["res"].values().map(func(v): return int(v)))])
 	get_tree().quit()
 
 ## Messung: bewegt sich beim Schuss nur das Rohr, nicht der Turm?

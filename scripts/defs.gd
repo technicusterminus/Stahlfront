@@ -32,6 +32,7 @@ func _init() -> void:
 	_red()
 	_shadow()
 	_faction_traits()
+	_resource_costs()
 
 func W(type: String, dmg: float, rng: float, rof: float, extra := {}) -> Dictionary:
 	var w = {"type": type, "dmg": dmg, "range": rng, "rof": rof, "splash": 0.0, "air": false,
@@ -224,6 +225,47 @@ func _faction_traits() -> void:
 			u["stealth"] = true
 		if u["faction"] == "shadow" and vehicle and u["role"] == "combat":
 			u["salvage"] = true
+
+## Rohstoffe neben Credits: Holz, Eisen, Öl, Gold; Stahl entsteht im Nachschubgebäude aus Eisen und Öl.
+const RES_KINDS := ["wood", "iron", "oil", "gold", "steel"]
+const RES_NAMES := {"wood": "Holz", "iron": "Eisen", "oil": "Öl", "gold": "Gold", "steel": "Stahl", "supply": "Nachschub"}
+const RES_COLORS := {"wood": Color(0.62, 0.42, 0.22), "iron": Color(0.62, 0.66, 0.72), "oil": Color(0.5, 0.5, 0.64), "gold": Color(1.0, 0.82, 0.25), "steel": Color(0.55, 0.78, 0.95), "supply": Color(1.0, 0.86, 0.4)}
+const START_RES := {"wood": 220.0, "iron": 160.0, "oil": 110.0, "gold": 40.0, "steel": 120.0}
+
+## Ergänzt jede Einheit/jedes Gebäude um Rohstoffkosten nach einfachen Regeln.
+func _resource_costs() -> void:
+	for id in buildings:
+		var b: Dictionary = buildings[id]
+		var c: float = b["cost"]
+		var r = {}
+		if b["role"] != "hq":
+			r["wood"] = round(c * 0.03 / 5.0) * 5.0
+		if b["role"] in ["factory", "airfield", "tech", "defense", "super"]:
+			r["steel"] = round(c * 0.025 / 5.0) * 5.0
+		if b["role"] == "tech":
+			r["gold"] = 40.0
+		if b["role"] == "super":
+			r["gold"] = 200.0
+		b["res"] = r
+	for id in units:
+		var u: Dictionary = units[id]
+		var c: float = u["cost"]
+		var r = {}
+		if u["role"] == "combat":
+			if c >= 700:
+				r["steel"] = round(c * 0.04 / 5.0) * 5.0
+			if u["flying"]:
+				r["oil"] = round(c * 0.04 / 5.0) * 5.0
+			if c >= 1500:
+				r["gold"] = round(c * 0.03 / 5.0) * 5.0
+		u["res"] = r
+
+func res_text(r: Dictionary) -> String:
+	var parts: Array = []
+	for k in RES_KINDS:
+		if r.has(k) and r[k] > 0.0:
+			parts.append("%d %s" % [int(r[k]), RES_NAMES[k]])
+	return ", ".join(parts)
 
 func build_list(faction: String) -> Array:
 	var out = []

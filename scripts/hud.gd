@@ -13,6 +13,8 @@ var top: PanelContainer
 var bottom: PanelContainer
 var lbl_faction: Label
 var lbl_credits: Label
+var res_box: HBoxContainer
+var res_lbls = {}
 var lbl_power: Label
 var power_bar: ProgressBar
 var btn_rank: Button
@@ -142,6 +144,15 @@ func _build_top() -> void:
 	lbl_credits.tooltip_text = "Credits: Sammler holen Nachschub aus Depots und liefern ihn am Nachschubzentrum ab."
 	lbl_credits.mouse_filter = Control.MOUSE_FILTER_PASS
 	h.add_child(lbl_credits)
+	res_box = HBoxContainer.new()
+	res_box.add_theme_constant_override("separation", 12)
+	h.add_child(res_box)
+	for k in Defs.RES_KINDS:
+		var rl = _label("", 14, Defs.RES_COLORS[k].lightened(0.35))
+		rl.mouse_filter = Control.MOUSE_FILTER_PASS
+		rl.tooltip_text = _res_tip(k)
+		res_box.add_child(rl)
+		res_lbls[k] = rl
 	var pv = HBoxContainer.new()
 	pv.add_theme_constant_override("separation", 8)
 	h.add_child(pv)
@@ -453,6 +464,8 @@ func _process(delta: float) -> void:
 		return
 	var p: Dictionary = Game.players[Game.human]
 	lbl_credits.text = "%s %s" % [ui["credits"], _fmt(int(p["credits"]))]
+	for k in Defs.RES_KINDS:
+		res_lbls[k].text = "%s %d" % [Defs.RES_NAMES[k], int(p["res"][k])]
 	var uses_power: bool = Defs.factions[p["faction"]]["uses_power"]
 	lbl_power.visible = uses_power
 	power_bar.visible = uses_power
@@ -520,10 +533,10 @@ func _update_info() -> void:
 	var o = sel[0]
 	info_hp.visible = not o.is_depot
 	if o.is_depot:
-		info_title.text = "Nachschubdepot"
+		info_title.text = Defs.RES_NAMES[o.kind] + ("depot" if o.kind == "supply" else "vorkommen")
 		info_sub.text = "Neutral"
 		info_hp_lbl.text = ""
-		info_status.text = "Noch %s Credits. Sammler mit Rechtsklick hierher schicken." % _fmt(int(o.supply))
+		info_status.text = "Noch %s %s. Sammler mit Rechtsklick hierher schicken." % [_fmt(int(o.supply)), "Credits" if o.kind == "supply" else Defs.RES_NAMES[o.kind]]
 		prod_bar.visible = false
 		return
 	var owner_txt: String = "Eigene Einheit" if o.owner_id == Game.human else "Spieler %d · %s" % [o.owner_id + 1, Game.players[o.owner_id]["name"]]
@@ -676,8 +689,17 @@ func _rebuild_grid() -> void:
 			if u.def["role"] == "harvester":
 				has_h = true
 		if has_h:
-			_add_cmd("Nachschub\nsammeln", "harvest", "")
+			for k in ["supply", "wood", "iron", "oil", "gold"]:
+				_add_cmd("%s\nsammeln" % Defs.RES_NAMES[k], "harvest", k)
 	_refresh_grid()
+
+func _res_tip(k: String) -> String:
+	match k:
+		"wood": return "Holz: wird für fast alle Gebäude gebraucht. Sammler fahren zu Wäldchen (Rechtsklick)."
+		"iron": return "Eisen: wird im Nachschubgebäude zu Stahl geschmolzen (2 Eisen + 1 Öl = 1 Stahl)."
+		"oil": return "Öl: Brennstoff für Stahlwerk und alle Flugzeuge. Ölquellen liegen zwischen den Basen."
+		"gold": return "Gold: für Forschung, Superwaffen und die teuersten Einheiten. Adern liegen in der Kartenmitte."
+	return "Stahl: für Fabriken, Abwehr und schwere Fahrzeuge. Entsteht automatisch in Nachschubgebäuden."
 
 func _refresh_grid() -> void:
 	if Game.spectator or Game.players.is_empty():
@@ -692,13 +714,13 @@ func _refresh_grid() -> void:
 			"build":
 				var d: Dictionary = Defs.buildings[e["id"]]
 				var why = Game.missing_prereq(d, Game.human)
-				if why == "" and p["credits"] < d["cost"]:
-					why = "Nicht genug Credits (%s fehlen)" % _fmt(int(d["cost"] - p["credits"]))
+				if why == "":
+					why = Game.afford_why(Game.human, d)
 				btn.disabled = why != ""
 				var pw = ""
 				if d["power"] != 0 and Defs.factions[d["faction"]]["uses_power"]:
 					pw = "\nStrom: %+d" % d["power"]
-				btn.tooltip_text = "%s – %s Credits, %d s\n%s%s%s" % [d["name"], _fmt(d["cost"]), int(d["time"]), d["desc"], pw, ("\n\n" + why) if why != "" else ""]
+				btn.tooltip_text = "%s – %s Credits%s, %d s\n%s%s%s" % [d["name"], _fmt(d["cost"]), ("  +  " + Defs.res_text(d["res"])) if not d["res"].is_empty() else "", int(d["time"]), d["desc"], pw, ("\n\n" + why) if why != "" else ""]
 			"train":
 				if b == null:
 					continue
@@ -711,8 +733,8 @@ func _refresh_grid() -> void:
 				var wtxt = ""
 				if w != null:
 					wtxt = "\nWaffe: %s, Reichweite %d – %s" % [_wname(w["type"]), int(w["range"]), _good_vs(w)]
-				btn.tooltip_text = "%s – %s Credits, %d s\n%s\nLeben %d · Tempo %.1f%s\n\nLinksklick: in Auftrag geben · Rechtsklick: einen stornieren (volle Erstattung)%s" % [
-					ud["name"], _fmt(ud["cost"]), int(ud["time"]), ud["desc"], ud["hp"], ud["speed"], wtxt, ("\n\n" + why2) if why2 != "" else ""]
+				btn.tooltip_text = "%s – %s Credits%s, %d s\n%s\nLeben %d · Tempo %.1f%s\n\nLinksklick: in Auftrag geben · Rechtsklick: einen stornieren (volle Erstattung)%s" % [
+					ud["name"], _fmt(ud["cost"]), ("  +  " + Defs.res_text(ud["res"])) if not ud["res"].is_empty() else "", int(ud["time"]), ud["desc"], ud["hp"], ud["speed"], wtxt, ("\n\n" + why2) if why2 != "" else ""]
 			"fire_super":
 				btn.disabled = b == null or not b.super_ready or not Game.has_power(Game.human)
 				btn.tooltip_text = "Superwaffe abfeuern, danach Ziel anklicken." if not btn.disabled else "Superwaffe lädt noch oder es fehlt Strom."
@@ -744,7 +766,7 @@ func _on_cmd(kind: String, id: String) -> void:
 				c.select_same_type_on_screen(us[0].def["id"])
 		"harvest":
 			for u in c.selected_units():
-				u.cmd_harvest()
+				u.cmd_harvest(null, id)
 		"fire_super":
 			var b2 = c.single_building()
 			if b2 != null:

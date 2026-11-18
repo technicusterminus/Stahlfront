@@ -295,7 +295,7 @@ func add_player(faction: String, is_ai: bool, start: Vector3) -> Dictionary:
 		"name": Defs.factions[faction]["name"],
 		"credits": 5000.0, "ai": is_ai, "alive": true, "xp": 0.0, "rank": 1, "points": 1,
 		"unlocked": {}, "ready_at": {}, "start": start, "power_prod": 0, "power_use": 0,
-		"kills": 0, "losses": 0, "built": 0, "income": 0.0,
+		"kills": 0, "losses": 0, "built": 0, "income": 0.0, "res": Defs.START_RES.duplicate(), "smelt_t": 0.0,
 	}
 	players.append(p)
 	return p
@@ -305,6 +305,29 @@ func income_mult(pid: int) -> float:
 	if players[pid]["ai"] and not spectator:
 		return [0.75, 1.0, 1.3][difficulty]
 	return 1.0
+
+## Prüft Credits und Rohstoffe; gibt den Grund zurück oder "".
+func afford_why(pid: int, d: Dictionary) -> String:
+	var p: Dictionary = players[pid]
+	if p["credits"] < d["cost"]:
+		return "Nicht genug Credits (%d fehlen)" % int(d["cost"] - p["credits"])
+	var res: Dictionary = d.get("res", {})
+	for k in res:
+		if p["res"][k] < res[k]:
+			return "Nicht genug %s (%d fehlen)" % [Defs.RES_NAMES[k], int(res[k] - p["res"][k])]
+	return ""
+
+func pay(pid: int, d: Dictionary) -> void:
+	players[pid]["credits"] -= d["cost"]
+	var res: Dictionary = d.get("res", {})
+	for k in res:
+		players[pid]["res"][k] -= res[k]
+
+func refund(pid: int, d: Dictionary, f := 1.0) -> void:
+	players[pid]["credits"] += d["cost"] * f
+	var res: Dictionary = d.get("res", {})
+	for k in res:
+		players[pid]["res"][k] += res[k] * f
 
 func faction_of(pid: int) -> String:
 	return players[pid]["faction"]
@@ -374,8 +397,9 @@ func spawn_building(def_id: String, pid: int, center: Vector2i, complete: bool):
 		b.finish(true)
 	return b
 
-func spawn_depot(pos: Vector3, amount: float):
+func spawn_depot(pos: Vector3, amount: float, kind := "supply"):
 	var dp = DepotScript.new()
+	dp.kind = kind
 	dp.supply = amount
 	dp.max_supply = amount
 	units_root.add_child(dp)
@@ -412,6 +436,27 @@ func _physics_process(delta: float) -> void:
 	if _vic_t <= 0.0:
 		_vic_t = 2.0
 		check_victory()
+	_smelt(delta)
+
+## Stahlwerk: jedes fertige Nachschubgebäude schmilzt jede Sekunde aus 2 Eisen und 1 Öl einen Stahl.
+func _smelt(delta: float) -> void:
+	for p in players:
+		if not p["alive"]:
+			continue
+		var n = 0
+		for b in buildings:
+			if b.owner_id == p["id"] and b.alive and b.complete and b.def["role"] == "supply":
+				n += 1
+		if n == 0:
+			continue
+		p["smelt_t"] += delta * n
+		while p["smelt_t"] >= 1.0:
+			p["smelt_t"] -= 1.0
+			var r: Dictionary = p["res"]
+			if r["iron"] >= 2.0 and r["oil"] >= 1.0 and r["steel"] < 400.0:
+				r["iron"] -= 2.0
+				r["oil"] -= 1.0
+				r["steel"] += 1.0
 
 func units_near(pos: Vector3, r: float) -> Array:
 	var out: Array = []

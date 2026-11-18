@@ -76,15 +76,30 @@ func _economy() -> void:
 	var harv = 0
 	for u in _mine_units():
 		if u.def["role"] == "harvester":
+			var kind = _harvest_kind(harv)
 			harv += 1
 			if u.order == "idle":
-				u.cmd_harvest()
+				u.cmd_harvest(null, kind)
+			elif u.cargo == 0.0 and u.h_state == "to_depot" and u.h_kind != kind:
+				u.cmd_harvest(null, kind)
 	var supplies = _count_role("supply", false)
-	var want: int = min(supplies * (2 if Game.difficulty < 2 else 3), 6)
+	var want: int = min(supplies * (3 if Game.difficulty < 2 else 4), 8)
 	if harv < want:
 		var s = _first_building("supply")
 		if s != null and s.queue.is_empty():
 			s.queue_unit(Defs.harv_of(faction))
+
+## Welcher Rohstoff als Nächstes geholt wird: reihum, aber nie einer, von dem schon reichlich da ist.
+func _harvest_kind(i: int) -> String:
+	var cycle = ["supply", "iron", "wood", "oil", "supply", "gold"]
+	var p: Dictionary = Game.players[pid]
+	for k in 6:
+		var kind: String = cycle[(i + k) % 6]
+		var stock: float = p["credits"] if kind == "supply" else p["res"][kind]
+		var cap: float = 9000.0 if kind == "supply" else (200.0 if kind == "gold" else 450.0)
+		if stock < cap:
+			return kind
+	return "supply"
 
 # ---------------------------------------------------------------- Bauen
 
@@ -130,12 +145,12 @@ func _construction() -> void:
 	var d: Dictionary = Defs.buildings[id]
 	if Game.missing_prereq(d, pid) != "":
 		return
-	if _credits() < d["cost"]:
+	if Game.afford_why(pid, d) != "":
 		return
 	var site = _find_site(id, role)
 	if site == null:
 		return
-	Game.players[pid]["credits"] -= d["cost"]
+	Game.pay(pid, d)
 	var b = Game.spawn_building(id, pid, site, false)
 	idle[0].cmd_build(b)
 
@@ -146,7 +161,7 @@ func _find_site(id: String, role: String):
 		var best = null
 		var bd = 1e9
 		for dp in Game.depots:
-			if dp.supply <= 0:
+			if dp.supply <= 0 or dp.kind != "supply":
 				continue
 			var dd = Game.flat_dist(dp.position, hq_pos)
 			if dd < bd and (dd < 45.0 or _count_role("supply") > 0):

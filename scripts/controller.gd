@@ -151,8 +151,9 @@ func begin_place(def_id: String) -> void:
 	cancel_mode()
 	var p: Dictionary = Game.players[Game.human]
 	var d: Dictionary = Defs.buildings[def_id]
-	if p["credits"] < d["cost"]:
-		Game.notify("Nicht genug Credits für %s." % d["name"], Color(1, 0.6, 0.4))
+	var why = Game.afford_why(Game.human, d)
+	if why != "":
+		Game.notify("%s: %s." % [d["name"], why], Color(1, 0.6, 0.4))
 		return
 	mode = "place"
 	place_id = def_id
@@ -189,8 +190,8 @@ func _update_ghost() -> void:
 	p.y = Game.terrain.height_at(p.x, p.z)
 	ghost.global_position = p
 	place_ok = Game.can_place(place_id, place_center, Game.human)
-	if place_ok == "" and Game.players[Game.human]["credits"] < d["cost"]:
-		place_ok = "Nicht genug Credits"
+	if place_ok == "":
+		place_ok = Game.afford_why(Game.human, d)
 	var gm: StandardMaterial3D = ghost.get_meta("mat")
 	gm.albedo_color = Color(0.3, 1.0, 0.4, 0.4) if place_ok == "" else Color(1.0, 0.25, 0.2, 0.45)
 
@@ -200,7 +201,7 @@ func _try_place(keep: bool) -> void:
 		return
 	var d: Dictionary = Defs.buildings[place_id]
 	var p: Dictionary = Game.players[Game.human]
-	p["credits"] -= d["cost"]
+	Game.pay(Game.human, d)
 	var b = Game.spawn_building(place_id, Game.human, place_center, false)
 	var dozers = selection.filter(func(o): return own(o) and o.is_unit and o.def["role"] == "dozer")
 	for dz in dozers:

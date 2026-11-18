@@ -52,7 +52,7 @@ func _draw() -> void:
 		draw_texture_rect(terrain_tex, r, false)
 	for dp in Game.depots:
 		if Game.is_explored(dp.position) and dp.supply > 0:
-			draw_rect(Rect2(w2m(dp.position) - Vector2(3, 3), Vector2(6, 6)), Color(1, 0.85, 0.3))
+			draw_rect(Rect2(w2m(dp.position) - Vector2(3, 3), Vector2(6, 6)), Defs.RES_COLORS[dp.kind].lightened(0.2))
 	for b in Game.buildings:
 		if not b.alive or not b.visible:
 			continue

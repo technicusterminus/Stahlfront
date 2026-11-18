@@ -47,6 +47,8 @@ var _resume = false
 var cargo = 0.0
 var h_state = ""
 var h_depot = null
+var h_kind = "supply"
+var cargo_kind = "supply"
 var h_timer = 0.0
 var h_home = null
 var _home_t = 0.0
@@ -235,12 +237,16 @@ func cmd_stop() -> void:
 	guard_pos = position
 	build_target = null
 
-func cmd_harvest(dp = null) -> void:
+func cmd_harvest(dp = null, kind := "") -> void:
 	if role() != "harvester":
 		return
 	order = "harvest"
 	if dp != null:
 		h_depot = dp
+		h_kind = dp.kind
+	elif kind != "" and kind != h_kind:
+		h_kind = kind
+		h_depot = null
 	h_state = "to_base" if cargo > 0 and dp == null else "to_depot"
 	path.clear()
 
@@ -540,7 +546,7 @@ func _nearest_depot():
 	var best = null
 	var bd = 1e9
 	for dp in Game.depots:
-		if dp.supply <= 0.0:
+		if dp.supply <= 0.0 or dp.kind != h_kind:
 			continue
 		var d = Game.flat_dist(position, dp.position)
 		# Nicht ins Feindgebiet: Depots nahe feindlicher Abwehr meiden waere schoen, hier zaehlt Distanz
@@ -568,7 +574,7 @@ func _do_harvest(delta: float) -> void:
 				path.clear()
 				if h_depot == null:
 					order = "idle"
-					Game.notify_player(owner_id, "Alle Nachschubdepots sind leer.", Color(1, 0.8, 0.4))
+					Game.notify_player(owner_id, "Alle Vorkommen für %s sind leer." % Defs.RES_NAMES[h_kind], Color(1, 0.8, 0.4))
 					return
 			if Game.flat_dist(position, h_depot.position) < 4.6:
 				h_state = "loading"
@@ -581,7 +587,8 @@ func _do_harvest(delta: float) -> void:
 		"loading":
 			h_timer -= delta
 			if h_timer <= 0.0:
-				cargo = h_depot.take(def["cargo"]) if is_instance_valid(h_depot) else 0.0
+				cargo = h_depot.take(def["cargo"] * (1.0 if h_depot.kind == "supply" else 0.5)) if is_instance_valid(h_depot) else 0.0
+				cargo_kind = h_depot.kind if is_instance_valid(h_depot) else "supply"
 				h_state = "to_base" if cargo > 0.0 else "to_depot"
 				path.clear()
 		"to_base":
@@ -595,10 +602,13 @@ func _do_harvest(delta: float) -> void:
 					return
 			if Game.flat_dist(position, h_home.position) < h_home.radius + 3.2:
 				var gain = cargo * Game.income_mult(owner_id)
-				Game.players[owner_id]["credits"] += gain
-				Game.players[owner_id]["income"] += gain
+				if cargo_kind == "supply":
+					Game.players[owner_id]["credits"] += gain
+					Game.players[owner_id]["income"] += gain
+				else:
+					Game.players[owner_id]["res"][cargo_kind] += gain
 				if owner_id == Game.human:
-					FX.sparkle(position + Vector3(0, 2, 0), Color(1, 0.85, 0.3))
+					FX.sparkle(position + Vector3(0, 2, 0), Defs.RES_COLORS[cargo_kind])
 				cargo = 0.0
 				h_state = "to_depot"
 				path.clear()
