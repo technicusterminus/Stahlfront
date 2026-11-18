@@ -13,7 +13,7 @@ func setup(seed_val: int, avoid: Array) -> void:
 	var tries = 0
 	while herds.size() < 7 and tries < 400:
 		tries += 1
-		var p = Vector3(rng.randf_range(-95, 95), 0, rng.randf_range(-95, 95))
+		var p = Vector3(rng.randf_range(-Game.HALF * 0.8, Game.HALF * 0.8), 0, rng.randf_range(-Game.HALF * 0.8, Game.HALF * 0.8))
 		if not _ok(p) or _near_any(p, avoid, 45.0):
 			continue
 		var h = {"center": p, "target": p, "speed": 1.4, "flee_t": 0.0, "wait": rng.randf_range(2, 8), "check": 0.0, "deer": []}
@@ -26,7 +26,7 @@ func setup(seed_val: int, avoid: Array) -> void:
 			h["deer"].append(d)
 		herds.append(h)
 	for f in 4:
-		var c = Vector3(rng.randf_range(-80, 80), 0, rng.randf_range(-80, 80))
+		var c = Vector3(rng.randf_range(-Game.HALF * 0.67, Game.HALF * 0.67), 0, rng.randf_range(-Game.HALF * 0.67, Game.HALF * 0.67))
 		var fl = {"anchor": c, "angle": rng.randf() * TAU, "h": rng.randf_range(18, 26), "r": rng.randf_range(10, 20), "check": 0.0, "birds": []}
 		for i in 9:
 			var b = _make_bird()
@@ -122,8 +122,8 @@ func _update_herd(h: Dictionary, delta: float) -> void:
 			if away.length() < 0.1:
 				away = Vector3(1, 0, 0)
 			var tgt = h["center"] + away.normalized() * 35.0
-			tgt.x = clamp(tgt.x, -100, 100)
-			tgt.z = clamp(tgt.z, -100, 100)
+			tgt.x = clamp(tgt.x, -Game.HALF + 20.0, Game.HALF - 20.0)
+			tgt.z = clamp(tgt.z, -Game.HALF + 20.0, Game.HALF - 20.0)
 			h["target"] = tgt
 			h["speed"] = 9.0
 			h["flee_t"] = 4.0
@@ -180,8 +180,8 @@ func _update_flock(fl: Dictionary, delta: float) -> void:
 			if away.length() < 0.1:
 				away = Vector3(0, 0, 1)
 			fl["anchor"] = fl["anchor"] + away.normalized() * 40.0
-			fl["anchor"].x = clamp(fl["anchor"].x, -100, 100)
-			fl["anchor"].z = clamp(fl["anchor"].z, -100, 100)
+			fl["anchor"].x = clamp(fl["anchor"].x, -Game.HALF + 20.0, Game.HALF - 20.0)
+			fl["anchor"].z = clamp(fl["anchor"].z, -Game.HALF + 20.0, Game.HALF - 20.0)
 	fl["angle"] += delta * 0.35
 	var a: float = fl["angle"]
 	var center = fl["anchor"] + Vector3(cos(a), 0, sin(a)) * fl["r"]

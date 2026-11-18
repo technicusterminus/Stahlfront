@@ -10,10 +10,11 @@ const HUDScript = preload("res://scripts/hud.gd")
 const TerrainScript = preload("res://scripts/terrain.gd")
 const PowersScript = preload("res://scripts/powers.gd")
 
-const STARTS := [Vector2(-82, 82), Vector2(82, -82), Vector2(82, 82), Vector2(-82, -82)]
-const MID_DEPOTS := [Vector2(0, 28), Vector2(0, -78), Vector2(0, 78), Vector2(-78, 0), Vector2(78, 0)]
+const Maps = preload("res://scripts/maps.gd")
 
 var args = {}
+var map_spec = {}
+var starts_all: Array = []
 var world: Node3D
 var sun: DirectionalLight3D
 
@@ -25,42 +26,8 @@ func _ready() -> void:
 	add_child(world)
 	Game.world = world
 	_environment()
-	var base_depots = []
-	var res_sites = []   # [Vector2, Art, Menge]
-	for s in STARTS:
-		var dd: Vector2 = s * 0.72
-		base_depots.append(dd)
-		var perp = Vector2(-dd.y, dd.x).normalized()
-		res_sites.append([dd + perp * 21.0, "wood", 20000.0])
-		res_sites.append([dd - perp * 21.0, "iron", 20000.0])
-		res_sites.append([dd * 1.18, "oil", 16000.0])
-	for g in [Vector2(40, 0), Vector2(-40, 0), Vector2(0, 40), Vector2(0, -40)]:
-		res_sites.append([g, "gold", 9000.0])
-	var res_pts = res_sites.map(func(r): return r[0])
-	var seed_val = int(args.get("seed", str(randi() % 100000)))
-	var terrain = TerrainScript.new()
-	terrain.name = "Terrain"
-	world.add_child(terrain)
-	Game.terrain = terrain
-	terrain.generate(seed_val, STARTS, base_depots + MID_DEPOTS + res_pts)
-	Game.init_grid()
-	Game.units_root = Node3D.new()
-	Game.units_root.name = "Units"
-	world.add_child(Game.units_root)
-	Game.fx_root = Node3D.new()
-	Game.fx_root.name = "FX"
-	world.add_child(Game.fx_root)
-	for d in base_depots:
-		Game.spawn_depot(Vector3(d.x, 0, d.y), 45000.0)
-	for i in MID_DEPOTS.size():
-		var d: Vector2 = MID_DEPOTS[i]
-		Game.spawn_depot(Vector3(d.x, 0, d.y), 80000.0 if i == 0 else 50000.0)
-	for rs in res_sites:
-		Game.spawn_depot(Vector3(rs[0].x, 0, rs[0].y), rs[2], rs[1])
-	var animals = load("res://scripts/animals.gd").new()
-	animals.name = "Animals"
-	world.add_child(animals)
-	animals.setup(seed_val, STARTS)
+	map_spec = Maps.clean(_spec_from_args())
+	_build_world(map_spec)
 	var cam = CameraScript.new()
 	cam.name = "Camera"
 	world.add_child(cam)
@@ -93,6 +60,66 @@ func _ready() -> void:
 		_take_shot(args["shot"], float(args.get("shotdelay", "6")))
 	if args.has("quit"):
 		_quit_after(float(args["quit"]))
+
+func _spec_from_args() -> Dictionary:
+	var sp = Maps.default_spec()
+	if args.has("map"):
+		sp = Maps.preset(int(args["map"]))
+	for k in ["size", "water", "islands", "resources", "hills", "forest", "seed"]:
+		if args.has(k):
+			sp[k] = float(args[k]) if k != "seed" else int(args[k])
+	if not args.has("seed") and not args.has("map") and not args.has("autostart") and not args.has("demo"):
+		sp["seed"] = randi() % 100000
+	return sp
+
+## Baut Gelände, Vorkommen, Tiere und Raster für die Karte; ersetzt eine vorhandene Karte.
+func _build_world(sp: Dictionary) -> void:
+	for n in ["Terrain", "Units", "FX", "Animals"]:
+		var old = world.get_node_or_null(n)
+		if old != null:
+			world.remove_child(old)
+			old.queue_free()
+	Game.reset_match()
+	map_spec = sp
+	Game.map_spec = sp
+	Game.setup_world(int(sp["size"]))
+	var lay = Maps.layout(sp)
+	starts_all = lay["starts"]
+	var pts = lay["depots"].map(func(r): return r[0])
+	var terrain = TerrainScript.new()
+	terrain.name = "Terrain"
+	world.add_child(terrain)
+	Game.terrain = terrain
+	terrain.generate(sp, starts_all, pts)
+	Game.init_grid()
+	Game.units_root = Node3D.new()
+	Game.units_root.name = "Units"
+	world.add_child(Game.units_root)
+	Game.fx_root = Node3D.new()
+	Game.fx_root.name = "FX"
+	world.add_child(Game.fx_root)
+	for rs in lay["depots"]:
+		Game.spawn_depot(Vector3(rs[0].x, 0, rs[0].y), rs[2], rs[1])
+	var animals = load("res://scripts/animals.gd").new()
+	animals.name = "Animals"
+	world.add_child(animals)
+	animals.setup(int(sp["seed"]), starts_all)
+	if args.has("mapimg"):
+		var img: Image = terrain.minimap_image(320)
+		for dp in Game.depots:
+			var px = int((dp.position.x + Game.HALF) / (Game.HALF * 2.0) * 320.0)
+			var pz = int((dp.position.z + Game.HALF) / (Game.HALF * 2.0) * 320.0)
+			var col = Defs.RES_COLORS[dp.kind]
+			for ox in range(-2, 3):
+				for oz in range(-2, 3):
+					img.set_pixel(clampi(px + ox, 0, 319), clampi(pz + oz, 0, 319), col)
+		for s in starts_all:
+			var sx = int((s.x + Game.HALF) / (Game.HALF * 2.0) * 320.0)
+			var sz = int((s.y + Game.HALF) / (Game.HALF * 2.0) * 320.0)
+			for ox in range(-4, 5):
+				for oz in range(-4, 5):
+					img.set_pixel(clampi(sx + ox, 0, 319), clampi(sz + oz, 0, 319), Color(1, 1, 1))
+		img.save_png(ProjectSettings.globalize_path("res://shots/%s" % args["mapimg"]))
 
 var _bc_t = 0.0
 
@@ -183,7 +210,7 @@ func start_match(cfg: Dictionary) -> void:
 	var n_enemies: int = clampi(cfg["enemies"], 1, 3)
 	Game.fog_vis.fill(0)
 	Game.fog_exp.fill(0)
-	var starts_used = [STARTS[0], STARTS[1]] if n_enemies == 1 else STARTS.slice(0, n_enemies + 1)
+	var starts_used = [starts_all[0], starts_all[1]] if n_enemies == 1 else starts_all.slice(0, n_enemies + 1)
 	for i in starts_used.size():
 		var s: Vector2 = starts_used[i]
 		var f: String = mine if i == 0 else facs[(facs.find(mine) + i) % 3]
@@ -217,6 +244,8 @@ func start_match(cfg: Dictionary) -> void:
 		cam.look_at_pos(Vector3(float(xz[0]), 0, float(xz[1])))
 	Game.last_alert_pos = st
 	Game.explore(st, 48.0)
+	var hbay: Vector2 = Game.terrain.bay_center(Vector2(st.x, st.z))
+	Game.explore(Vector3(hbay.x, 0, hbay.y), 18.0)
 	Game.running = true
 	Game.update_fog()
 	Game.hud.on_match_started()
@@ -239,7 +268,8 @@ func start_match(cfg: Dictionary) -> void:
 		# Testaufstellung: Werft und alle Schiffe in der Heimatbucht jedes Spielers
 		for pl in Game.players.size():
 			var s0: Vector3 = Game.players[pl]["start"]
-			var bay = Vector3(s0.x * 0.6, 0, s0.z * 0.6)
+			var bcv: Vector2 = Game.terrain.bay_center(Vector2(s0.x, s0.z))
+			var bay = Vector3(bcv.x, 0, bcv.y)
 			Game.explore(bay, 30.0)
 			var fac1: String = Game.players[pl]["faction"]
 			var did: String = fac1 + "_dock"
@@ -260,7 +290,8 @@ func start_match(cfg: Dictionary) -> void:
 			for si in sids.size():
 				Game.spawn_unit(sids[si], pl, bay + Vector3(-3 + si * 6.0, 0, 0))
 		var b0: Vector3 = Game.players[0]["start"]
-		cam.look_at_pos(Vector3(b0.x * 0.6, 0, b0.z * 0.6))
+		var bc0: Vector2 = Game.terrain.bay_center(Vector2(b0.x, b0.z))
+		cam.look_at_pos(Vector3(bc0.x, 0, bc0.y))
 		cam.dist_target = float(args.get("camdist", "40"))
 	if args.has("basecam"):
 		# Testbasis: alle Gebäudetypen fertig, das letzte als Baustelle

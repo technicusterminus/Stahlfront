@@ -33,10 +33,11 @@ static func build(t, seed_val: int) -> void:
 	var bushes := {}
 	var flats: Array = t.flat_list
 
-	var x := -112.0
-	while x < 112.0:
-		var z := -112.0
-		while z < 112.0:
+	var lim: float = Game.HALF - 8.0
+	var x: float = -lim
+	while x < lim:
+		var z: float = -lim
+		while z < lim:
 			var px = x + rng.randf_range(-0.45, 0.45)
 			var pz = z + rng.randf_range(-0.45, 0.45)
 			z += 0.75
@@ -229,8 +230,8 @@ static func _trees(t, rng, kind) -> void:
 	var leafs := []
 	for c in t.tree_cells:
 		for k in 2:
-			var x: float = c.x * 2.0 - 120.0 + rng.randf_range(0.2, 1.8)
-			var z: float = c.y * 2.0 - 120.0 + rng.randf_range(0.2, 1.8)
+			var x: float = c.x * 2.0 - Game.HALF + rng.randf_range(0.2, 1.8)
+			var z: float = c.y * 2.0 - Game.HALF + rng.randf_range(0.2, 1.8)
 			var y: float = t.height_at(x, z)
 			var s = rng.randf_range(0.75, 1.4)
 			var b = Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s))

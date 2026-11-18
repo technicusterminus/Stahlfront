@@ -150,6 +150,10 @@ func _construction() -> void:
 		return
 	var site = _find_site(id, role)
 	if site == null:
+		if role == "dock":
+			dock_fail += 1
+			if dock_fail >= 5:
+				order_list.erase("dock")   # kein Platz am Wasser: Werft aus der Bauordnung nehmen
 		return
 	Game.pay(pid, d)
 	var b = Game.spawn_building(id, pid, site, false)
@@ -160,7 +164,8 @@ func _find_site(id: String, role: String):
 	var center = hq_pos
 	if role == "dock":
 		var st: Vector3 = Game.players[pid]["start"]
-		var bay = Vector3(st.x * 0.6, 0, st.z * 0.6)
+		var bc: Vector2 = Game.terrain.bay_center(Vector2(st.x, st.z))
+		var bay = Vector3(bc.x, 0, bc.y)
 		for ring in range(5, 24):
 			for k in 14:
 				var a = rng.randf() * TAU
@@ -363,6 +368,7 @@ func _military() -> void:
 
 ## Flotte: sammelt sich in der Heimatbucht und greift ab drei Schiffen die Bucht oder Küste des Gegners an.
 var next_fleet = 240.0
+var dock_fail = 0
 
 func _naval() -> void:
 	var ships = _fleet()

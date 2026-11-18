@@ -39,11 +39,11 @@ func _update_fog() -> void:
 	fog_tex.update(fog_img)
 
 func w2m(p: Vector3) -> Vector2:
-	return Vector2((p.x + 120.0) / 240.0 * size.x, (p.z + 120.0) / 240.0 * size.y)
+	return Vector2((p.x + Game.HALF) / (Game.HALF * 2.0) * size.x, (p.z + Game.HALF) / (Game.HALF * 2.0) * size.y)
 
 func m2w(m: Vector2) -> Vector3:
-	var x = m.x / size.x * 240.0 - 120.0
-	var z = m.y / size.y * 240.0 - 120.0
+	var x = m.x / size.x * Game.HALF * 2.0 - Game.HALF
+	var z = m.y / size.y * Game.HALF * 2.0 - Game.HALF
 	return Vector3(x, Game.terrain.ground_y(x, z), z)
 
 func _draw() -> void:
@@ -57,7 +57,7 @@ func _draw() -> void:
 		if not b.alive or not b.visible:
 			continue
 		var c: Color = Game.players[b.owner_id]["color"]
-		var s: float = b.half * 2.0 / 240.0 * size.x + 2.0
+		var s: float = b.half * 2.0 / (Game.HALF * 2.0) * size.x + 2.0
 		draw_rect(Rect2(w2m(b.position) - Vector2(s, s) * 0.5, Vector2(s, s)), c.lightened(0.15))
 	draw_texture_rect(fog_tex, r, false)
 	for u in Game.units:

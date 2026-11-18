@@ -1,4 +1,5 @@
 shader_type spatial;
+global uniform float world_size;
 render_mode cull_disabled;
 // Vegetation: Wind, Farbverlauf zur Spitze, Durchscheinen, Nebel des Krieges,
 // Platzhalter-Textur (unter Gebaeuden verschwindet das Gras).
@@ -21,7 +22,7 @@ void vertex() {
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	vec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
 	hf = clamp(VERTEX.y / sway_h, 0.0, 1.0);
-	vec2 uv = origin.xz / 240.0 + 0.5;
+	vec2 uv = origin.xz / world_size + 0.5;
 	vec4 oc = texture(occ_tex, uv);
 	float occ = use_occ ? clamp(max(max(oc.r, oc.g), max(oc.b, oc.a)) * 1.6 - 0.3, 0.0, 1.0) : 0.0;
 	float ph = TIME * 1.6 + origin.x * 0.13 + origin.z * 0.11;

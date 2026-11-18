@@ -677,8 +677,8 @@ func _fly_fixed(delta: float) -> void:
 	_bank = lerp(_bank, clamp(diff * 1.2, -1.0, 1.0), min(1.0, 4.0 * delta))
 	var fwd = Vector3(sin(heading), 0, cos(heading))
 	var np = position + fwd * float(def["speed"]) * delta
-	np.x = clamp(np.x, -112.0, 112.0)
-	np.z = clamp(np.z, -112.0, 112.0)
+	np.x = clamp(np.x, -Game.HALF + 8.0, Game.HALF - 8.0)
+	np.z = clamp(np.z, -Game.HALF + 8.0, Game.HALF - 8.0)
 	np.y = Game.terrain.ground_y(np.x, np.z)
 	speed_now = float(def["speed"])
 	position = np
@@ -732,8 +732,8 @@ func _integrate(delta: float) -> void:
 				np = npz
 			else:
 				np = position
-	np.x = clamp(np.x, -112.0, 112.0)
-	np.z = clamp(np.z, -112.0, 112.0)
+	np.x = clamp(np.x, -Game.HALF + 8.0, Game.HALF - 8.0)
+	np.z = clamp(np.z, -Game.HALF + 8.0, Game.HALF - 8.0)
 	np.y = Game.terrain.ground_y(np.x, np.z)
 	speed_now = Game.flat_dist(np, position) / max(delta, 0.0001)
 	position = np

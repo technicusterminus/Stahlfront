@@ -1,4 +1,5 @@
 shader_type spatial;
+global uniform float world_size;
 
 uniform sampler2D noise_tex : repeat_enable, filter_linear_mipmap;
 uniform sampler2D noise_n : hint_normal, repeat_enable, filter_linear_mipmap;
@@ -8,7 +9,7 @@ uniform sampler2D occ_tex : filter_linear, repeat_disable;
 
 varying vec3 wpos;
 float fog_at(vec2 uv) {
-	vec2 px = vec2(1.0 / 120.0);
+	vec2 px = vec2(2.0 / world_size);
 	vec2 a = texture(fog_tex, uv).rg * 0.36
 		+ (texture(fog_tex, uv + vec2(px.x, 0.0)).rg + texture(fog_tex, uv - vec2(px.x, 0.0)).rg
 		+ texture(fog_tex, uv + vec2(0.0, px.y)).rg + texture(fog_tex, uv - vec2(0.0, px.y)).rg) * 0.11
@@ -39,7 +40,7 @@ void fragment() {
 	float rough = 0.93;
 
 	// Basisboden je Fraktion (aus der Belegungs-Textur, Rand mit Rauschen aufgebrochen)
-	vec4 base = texture(occ_tex, wpos.xz / 240.0 + 0.5);
+	vec4 base = texture(occ_tex, wpos.xz / world_size + 0.5);
 	float edge = (n2 - 0.5) * 0.35 + (n3 - 0.5) * 0.15;
 	float mw = smoothstep(0.38, 0.62, base.r + edge);
 	float mr = smoothstep(0.38, 0.62, base.g + edge);
@@ -63,7 +64,7 @@ void fragment() {
 	col = mix(col, cs, ms * (1.0 - mw) * (1.0 - mr));
 	rough = mix(rough, 0.78, max(mw, mr));
 
-	float vis = fog_at(wpos.xz / 240.0 + 0.5);
+	float vis = fog_at(wpos.xz / world_size + 0.5);
 	ALBEDO = col * vis;
 	ROUGHNESS = rough;
 	SPECULAR = 0.25 * vis;

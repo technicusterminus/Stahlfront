@@ -1,4 +1,5 @@
 shader_type spatial;
+global uniform float world_size;
 
 uniform vec3 tint : source_color = vec3(0.1, 0.3, 0.1);
 uniform float rough = 0.9;
@@ -7,7 +8,7 @@ uniform sampler2D fog_tex : filter_linear, repeat_disable;
 
 varying vec3 wpos;
 float fog_at(vec2 uv) {
-	vec2 px = vec2(1.0 / 120.0);
+	vec2 px = vec2(2.0 / world_size);
 	vec2 a = texture(fog_tex, uv).rg * 0.36
 		+ (texture(fog_tex, uv + vec2(px.x, 0.0)).rg + texture(fog_tex, uv - vec2(px.x, 0.0)).rg
 		+ texture(fog_tex, uv + vec2(0.0, px.y)).rg + texture(fog_tex, uv - vec2(0.0, px.y)).rg) * 0.11
@@ -21,7 +22,7 @@ void vertex() {
 }
 
 void fragment() {
-	float vis = fog_at(wpos.xz / 240.0 + 0.5);
+	float vis = fog_at(wpos.xz / world_size + 0.5);
 	ALBEDO = tint * COLOR.rgb * vis;
 	ROUGHNESS = rough;
 	SPECULAR = 0.3 * vis;

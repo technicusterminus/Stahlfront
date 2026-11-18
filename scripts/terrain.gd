@@ -1,8 +1,9 @@
 extends Node3D
+const Maps = preload("res://scripts/maps.gd")
 ## Prozedurales Gelände: Höhenfeld, Mesh, Wasser, Bäume und Felsen, Begehbarkeitsraster.
 
-const SIZE := 240
-const N := 241
+var SIZE := 240
+var N := 241
 const WATER_Y := -0.6
 
 var heights = PackedFloat32Array()
@@ -14,37 +15,68 @@ var water_mat: ShaderMaterial
 var tree_cells: Array = []
 var flat_list: Array = []
 var seed_used = 0
+var spec = {}
+var _ctx = {}
+var islands: Array = []
+var _why = ""
+var _layout = 0       # Gewässerform: 0 Kreuz, 1 Windungen, 2 getrennte Seen, 3 Uferkanal
 
-func generate(seed_val: int, starts: Array, depots: Array) -> void:
+func generate(sp: Dictionary, starts: Array, depots: Array) -> void:
+	spec = sp
+	SIZE = int(sp["size"])
+	N = SIZE + 1
+	var k = float(SIZE) / 240.0
+	var water: float = sp["water"]
+	_layout = int(sp.get("layout", 0))
+	_ctx = Maps.sea_ctx(sp, starts)
 	var tries = 0
-	while tries < 12:
-		if _try_generate(seed_val + tries * 101, starts, depots):
-			seed_used = seed_val + tries * 101
+	while tries < 24:
+		if tries == 12 and _layout != 0:
+			_layout = 0   # Rückfall auf die sichere Form
+			var sp2 = sp.duplicate()
+			sp2["layout"] = 0
+			_ctx = Maps.sea_ctx(sp2, starts)
+		if _try_generate(int(sp["seed"]) + tries * 101, starts, depots):
+			seed_used = int(sp["seed"]) + tries * 101
 			break
 		tries += 1
+	print("KARTE %s: Größe %d, Form %s, Versuche %d%s" % [sp.get("name", "?"), SIZE, Maps.LAYOUT_NAMES[_layout], tries + 1, "  FEHLGESCHLAGEN: " + _why if tries >= 24 else ""])
 	_build_mesh()
 	_build_water()
 	_build_props()
 
-## Mittelsee, vier Diagonalkanäle und je eine Bucht vor jeder Startbasis: ein Baum ohne Schleifen,
-## der den Rand nicht berührt, sperrt das Land also nirgends ab.
 func bay_center(start: Vector2) -> Vector2:
-	return start * 0.6
+	return Maps.bay_center(start)
 
 func _wdist(p: Vector2) -> float:
-	var best: float = p.length() - 18.0
-	for s in _starts:
-		var b: Vector2 = bay_center(s)
-		best = min(best, p.distance_to(b) - 8.0)
-		var ab: Vector2 = b
-		var t: float = clamp(p.dot(ab) / ab.dot(ab), 0.0, 1.0)
-		best = min(best, p.distance_to(ab * t) - 4.5)
+	return Maps.sea_dist(p, _ctx)
+
+func _seg_d(p: Vector2, a: Vector2, b: Vector2) -> float:
+	var ab = b - a
+	var t: float = clamp((p - a).dot(ab) / max(ab.dot(ab), 0.0001), 0.0, 1.0)
+	return p.distance_to(a + ab * t)
+
+## Abstand zu den Landbrücken: Ring durch die Startecken und Speichen entlang der Achsen.
+func _bridge_dist(p: Vector2) -> float:
+	var e: float = absf(_starts[0].x)
+	var c = [Vector2(-e, -e), Vector2(e, -e), Vector2(e, e), Vector2(-e, e)]
+	var best = 1e9
+	for i in 4:
+		best = min(best, _seg_d(p, c[i], c[(i + 1) % 4]))
+		var ax = [Vector2(e, 0), Vector2(0, e), Vector2(-e, 0), Vector2(0, -e)][i]
+		best = min(best, _seg_d(p, Vector2.ZERO, ax))
 	return best
 
 func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	_starts = starts
 	var rng = RandomNumberGenerator.new()
 	rng.seed = seed_val
+	var hills: float = spec["hills"]
+	var water: float = spec["water"]
+	var hm = lerp(0.55, 1.5, hills)
+	var ridge_thr = lerp(0.75, 0.4, hills)
+	var lake_thr = lerp(0.55, 0.05, water)
+	var half: float = Game.HALF
 	var n1 = FastNoiseLite.new()
 	n1.seed = seed_val
 	n1.frequency = 0.007
@@ -65,36 +97,86 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	var flats: Array = []
 	flat_list = flats
 	for s in starts:
-		flats.append(Vector3(s.x, s.y, 34.0))
+		flats.append(Vector3(s.x, s.y, 34.0 + max(0.0, float(SIZE) / 240.0 - 1.0) * 58.0))
 	for d in depots:
 		flats.append(Vector3(d.x, d.y, 9.0))
+
+	# Inseln im Meer: nur dort, wo ringsum tiefes Wasser ist, nicht im Zentrum
+	islands.clear()
+	var want = int(round(float(spec["islands"]) * 10.0))
+	var itry = 0
+	while islands.size() < want and itry < 120:
+		itry += 1
+		var ir = rng.randf_range(2.6, 6.5)
+		var ip = Vector2(rng.randf_range(-half * 0.55, half * 0.55), rng.randf_range(-half * 0.55, half * 0.55))
+		if ip.length() < ir + 5.0:
+			continue
+		if _wdist(ip) > -(ir + 4.5):
+			continue
+		var clash = false
+		for o in islands:
+			if Vector2(ip.x - o[0].x, ip.y - o[0].y).length() < ir + o[1] + 4.0:
+				clash = true
+		if not clash:
+			islands.append([ip, ir])
 
 	heights.resize(N * N)
 	for iz in N:
 		for ix in N:
-			var x = float(ix) - 120.0
-			var z = float(iz) - 120.0
-			var h = n1.get_noise_2d(x, z) * 7.5 + n2.get_noise_2d(x, z) * 1.6 + 2.2
+			var x = float(ix) - half
+			var z = float(iz) - half
+			var h = (n1.get_noise_2d(x, z) * 7.5 + n2.get_noise_2d(x, z) * 1.6) * hm + 2.2
 			var r = ridge.get_noise_2d(x, z)
-			if r > 0.55:
-				h += (r - 0.55) * 26.0
+			if r > ridge_thr:
+				h += (r - ridge_thr) * 26.0 * lerp(0.7, 1.3, hills)
 			var l = lake.get_noise_2d(x, z)
-			if l > 0.3:
-				h -= (l - 0.3) * 32.0
-			var e: float = min(120.0 - abs(x), 120.0 - abs(z))
+			if l > lake_thr:
+				h -= (l - lake_thr) * 32.0
+			var e: float = min(half - abs(x), half - abs(z))
 			if e < 16.0:
 				h += (16.0 - e) * (16.0 - e) * 0.085
-			for f in flats:
-				var d = Vector2(x, z).distance_to(Vector2(f.x, f.y))
-				if d < f.z:
-					var t = smoothstep(f.z, f.z * 0.6, d)
-					h = lerp(h, 3.0, t)
-			var wd = _wdist(Vector2(x, z))
-			if wd < 18.0:
-				h = lerp(h, 1.4, smoothstep(18.0, 9.0, wd))
-			if wd < 6.0:
-				h = lerp(h, -2.8, smoothstep(6.0, 3.0, wd))
+			var bd = _bridge_dist(Vector2(x, z))
+			if bd < 9.0:
+				h = lerp(h, 1.6, smoothstep(9.0, 4.0, bd))
 			heights[iz * N + ix] = h
+	# flache Plätze (Basen, Vorkommen) nur im eigenen Umkreis einarbeiten
+	for f in flats:
+		var rr: float = f.z
+		var ix0 = int(max(f.x + half - rr, 0.0))
+		var ix1 = int(min(f.x + half + rr, float(SIZE)))
+		var iz0 = int(max(f.y + half - rr, 0.0))
+		var iz1 = int(min(f.y + half + rr, float(SIZE)))
+		for iz in range(iz0, iz1 + 1):
+			for ix in range(ix0, ix1 + 1):
+				var d = Vector2(float(ix) - half, float(iz) - half).distance_to(Vector2(f.x, f.y))
+				if d < rr:
+					var tt = smoothstep(rr, rr * 0.6, d)
+					heights[iz * N + ix] = lerp(heights[iz * N + ix], 3.0, tt)
+	# Meer, Ufer und Inseln
+	for iz in N:
+		for ix in N:
+			var p = Vector2(float(ix) - half, float(iz) - half)
+			var wd = _wdist(p)
+			if wd < 18.0:
+				var h = heights[iz * N + ix]
+				h = lerp(h, 1.4, smoothstep(18.0, 9.0, wd))
+				if wd < 6.0:
+					h = lerp(h, -2.8, smoothstep(6.0, 3.0, wd))
+				heights[iz * N + ix] = h
+	for o in islands:
+		var ip: Vector2 = o[0]
+		var ir: float = o[1]
+		var jx0 = int(max(ip.x + half - ir - 4.0, 0.0))
+		var jx1 = int(min(ip.x + half + ir + 4.0, float(SIZE)))
+		var jz0 = int(max(ip.y + half - ir - 4.0, 0.0))
+		var jz1 = int(min(ip.y + half + ir + 4.0, float(SIZE)))
+		for iz in range(jz0, jz1 + 1):
+			for ix in range(jx0, jx1 + 1):
+				var d2 = Vector2(float(ix) - half, float(iz) - half).distance_to(ip)
+				if d2 < ir + 4.0:
+					var wob = n2.get_noise_2d(float(ix) * 3.0, float(iz) * 3.0) * 0.8
+					var tt2 = smoothstep(ir + 3.0 + wob, ir * 0.55, d2)
+					heights[iz * N + ix] = lerp(heights[iz * N + ix], 1.5 + wob * 0.5, tt2)
 
 	# Begehbarkeit je 2-m-Zelle
 	var G: int = Game.GRID
@@ -131,6 +213,11 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	if deep[(G / 2) * G + G / 2] == 0:
 		return false
 	sea[(G / 2) * G + G / 2] = 1
+	for s in starts:
+		var sc0 = _cell_of(bay_center(s))
+		if deep[sc0.y * G + sc0.x] == 1 and sea[sc0.y * G + sc0.x] == 0:
+			sea[sc0.y * G + sc0.x] = 1
+			sstack.append(sc0)
 	while not sstack.is_empty():
 		var sc: Vector2i = sstack.pop_back()
 		for dv in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
@@ -145,6 +232,7 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	for s in starts:
 		var bc = _cell_of(bay_center(s))
 		if sea[bc.y * G + bc.x] == 0:
+			_why = "Bucht kein Wasser"
 			return false
 
 	# Waldstuecke
@@ -152,11 +240,12 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	var forest = FastNoiseLite.new()
 	forest.seed = seed_val + 33
 	forest.frequency = 0.03
+	var fthr = lerp(0.75, 0.0, float(spec["forest"]))
 	for cz in G:
 		for cx in G:
 			if blocked[cz * G + cx] == 1:
 				continue
-			var wp = Vector2(cx * 2.0 - 119.0, cz * 2.0 - 119.0)
+			var wp = Vector2(cx * 2.0 - half + 1.0, cz * 2.0 - half + 1.0)
 			var near_flat = false
 			for f in flats:
 				if wp.distance_to(Vector2(f.x, f.y)) < f.z + 4.0:
@@ -164,13 +253,14 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 					break
 			if near_flat:
 				continue
-			if forest.get_noise_2d(wp.x, wp.y) > 0.32 and rng.randf() < 0.55:
+			if forest.get_noise_2d(wp.x, wp.y) > fthr and rng.randf() < 0.55:
 				blocked[cz * G + cx] = 1
 				tree_cells.append(Vector2i(cx, cz))
 
 	# Erreichbarkeit: alles, was vom ersten Start nicht erreichbar ist, sperren
 	var start_c = _cell_of(starts[0])
 	if blocked[start_c.y * G + start_c.x] == 1:
+		_why = "Start blockiert"
 		return false
 	var seen = PackedByteArray()
 	seen.resize(G * G)
@@ -191,18 +281,18 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	for p in starts + depots:
 		var c = _cell_of(p)
 		if seen[c.y * G + c.x] == 0:
+			_why = "unerreichbar bei %s" % str(p)
 			return false
 	for i in G * G:
 		if seen[i] == 0:
 			blocked[i] = 1
 	return true
-
 func _cell_of(p: Vector2) -> Vector2i:
-	return Vector2i(int((p.x + 120.0) / 2.0), int((p.y + 120.0) / 2.0))
+	return Vector2i(int((p.x + Game.HALF) / 2.0), int((p.y + Game.HALF) / 2.0))
 
 func height_at(x: float, z: float) -> float:
-	var fx: float = clamp(x + 120.0, 0.0, 239.999)
-	var fz: float = clamp(z + 120.0, 0.0, 239.999)
+	var fx: float = clamp(x + Game.HALF, 0.0, SIZE - 0.001)
+	var fz: float = clamp(z + Game.HALF, 0.0, SIZE - 0.001)
 	var ix = int(fx)
 	var iz = int(fz)
 	var tx = fx - ix
@@ -256,8 +346,8 @@ func _build_mesh() -> void:
 	for iz in N:
 		for ix in N:
 			var i = iz * N + ix
-			var x = float(ix) - 120.0
-			var z = float(iz) - 120.0
+			var x = float(ix) - Game.HALF
+			var z = float(iz) - Game.HALF
 			verts[i] = Vector3(x, heights[i], z)
 			var hl = heights[iz * N + max(ix - 1, 0)]
 			var hr = heights[iz * N + min(ix + 1, N - 1)]
@@ -310,7 +400,7 @@ func _build_mesh() -> void:
 	mat.set_shader_parameter("noise_n", ntn)
 	mat.set_shader_parameter("fog_tex", Game.fog_tex)
 	mat.set_shader_parameter("occ_tex", Game.occ_tex)
-	mat.set_shader_parameter("map_size", 240.0)
+	mat.set_shader_parameter("map_size", float(SIZE))
 
 	var mi = MeshInstance3D.new()
 	mi.mesh = am
@@ -320,7 +410,7 @@ func _build_mesh() -> void:
 
 func _build_water() -> void:
 	var pm = PlaneMesh.new()
-	pm.size = Vector2(420, 420)
+	pm.size = Vector2(SIZE + 180, SIZE + 180)
 	pm.subdivide_width = 120
 	pm.subdivide_depth = 120
 	water_mat = ShaderMaterial.new()
@@ -359,8 +449,8 @@ func minimap_image(res: int) -> Image:
 		tree_set[tc] = true
 	for y in res:
 		for x in res:
-			var wx = (x + 0.5) / res * 240.0 - 120.0
-			var wz = (y + 0.5) / res * 240.0 - 120.0
+			var wx = (x + 0.5) / res * SIZE - Game.HALF
+			var wz = (y + 0.5) / res * SIZE - Game.HALF
 			var h = height_at(wx, wz)
 			var c: Color
 			if h < WATER_Y:
@@ -369,8 +459,8 @@ func minimap_image(res: int) -> Image:
 				var n = normal_at(wx, wz)
 				c = Color(0.2, 0.27, 0.1).lerp(Color(0.38, 0.36, 0.32), clamp((1.0 - n.y) * 8.0, 0.0, 1.0))
 				c = c.lightened(clamp(h * 0.02, -0.2, 0.25))
-			var cx = int((wx + 120.0) / 2.0)
-			var cz = int((wz + 120.0) / 2.0)
+			var cx = int((wx + Game.HALF) / 2.0)
+			var cz = int((wz + Game.HALF) / 2.0)
 			if tree_set.has(Vector2i(cx, cz)):
 				c = Color(0.08, 0.16, 0.06)
 			img.set_pixel(x, y, c)

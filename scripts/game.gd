@@ -5,8 +5,9 @@ signal message(text: String, col: Color)
 signal match_ended(won: bool)
 
 const CELL := 2.0
-const GRID := 120
-const HALF := 120.0
+var GRID := 120        # Zellen je Seite (Weltgröße / CELL)
+var HALF := 120.0      # halbe Weltgröße in Metern
+var map_spec = {}
 const BUCKET := 8.0
 
 var UnitScript: GDScript
@@ -103,6 +104,17 @@ func _ready() -> void:
 	UnitScript = load("res://scripts/unit.gd")
 	BuildingScript = load("res://scripts/building.gd")
 	DepotScript = load("res://scripts/depot.gd")
+	RenderingServer.global_shader_parameter_add("world_size", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 240.0)
+	setup_world(240)
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+
+## Weltgröße (Meter) festlegen: Raster, Nebel- und Belegungstexturen neu anlegen.
+func setup_world(size: int) -> void:
+	GRID = int(size / CELL)
+	HALF = size * 0.5
+	RenderingServer.global_shader_parameter_set("world_size", float(size))
+	fog_vis = PackedByteArray()
+	fog_exp = PackedByteArray()
 	fog_vis.resize(GRID * GRID)
 	fog_exp.resize(GRID * GRID)
 	fog_img = Image.create(GRID, GRID, false, Image.FORMAT_RG8)
@@ -111,7 +123,9 @@ func _ready() -> void:
 	occ_img = Image.create(GRID, GRID, false, Image.FORMAT_RGBA8)
 	occ_img.fill(Color(0, 0, 0, 0))
 	occ_tex = ImageTexture.create_from_image(occ_img)
-	process_mode = Node.PROCESS_MODE_PAUSABLE
+	_fog_mats.clear()
+	buckets.clear()
+	depots.clear()
 
 func fog_material(tint: Color, rough: float, glow := 0.0) -> ShaderMaterial:
 	var key = "%s_%s_%s" % [tint.to_html(), rough, glow]

@@ -1,4 +1,5 @@
 shader_type spatial;
+global uniform float world_size;
 render_mode specular_schlick_ggx;
 // Wasser: Tiefenfarbe, Lichtbrechung, Uferschaum, Wellen, Fresnel, Nebel des Krieges.
 
@@ -23,7 +24,7 @@ void vertex() {
 }
 
 void fragment() {
-	float vis = fog_at(wpos.xz / 240.0 + 0.5);
+	float vis = fog_at(wpos.xz / world_size + 0.5);
 	vec3 a = texture(n1, wpos.xz * 0.05 + TIME * vec2(0.012, 0.007)).rgb;
 	vec3 b = texture(n1, wpos.xz * 0.11 - TIME * vec2(0.009, 0.014)).rgb;
 	vec3 nm = mix(a, b, 0.5);

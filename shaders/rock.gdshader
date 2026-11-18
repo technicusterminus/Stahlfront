@@ -1,4 +1,5 @@
 shader_type spatial;
+global uniform float world_size;
 // Felsen: Koernung, Flechten, Moos auf der Oberseite, Nebel des Krieges.
 
 uniform sampler2D fog_tex : filter_linear, repeat_disable;
@@ -22,7 +23,7 @@ float tri(vec3 p, vec3 n) {
 }
 
 void fragment() {
-	vec2 f = texture(fog_tex, wpos.xz / 240.0 + 0.5).rg;
+	vec2 f = texture(fog_tex, wpos.xz / world_size + 0.5).rg;
 	float vis = mix(mix(0.0, 0.38, f.g), 1.0, smoothstep(0.1, 0.9, f.r));
 	float g1 = tri(wpos * 0.35, wnrm);
 	float g2 = tri(wpos * 2.2, wnrm);

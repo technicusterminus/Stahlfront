@@ -92,8 +92,8 @@ func _process(delta: float) -> void:
 						v.y += 1
 		if v != Vector2.ZERO:
 			_pan(Vector2(v.x, -v.y).normalized() * rd * (25.0 + dist * 0.9))
-	position.x = clamp(position.x, -108.0, 108.0)
-	position.z = clamp(position.z, -108.0, 108.0)
+	position.x = clamp(position.x, -Game.HALF + 12.0, Game.HALF - 12.0)
+	position.z = clamp(position.z, -Game.HALF + 12.0, Game.HALF - 12.0)
 	if Game.terrain != null:
 		_ground_y = lerp(_ground_y, max(Game.terrain.ground_y(position.x, position.z), 0.0), min(1.0, rd * 3.0))
 	position.y = _ground_y
