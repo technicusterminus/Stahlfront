@@ -20,6 +20,7 @@ var power_bar: ProgressBar
 var btn_rank: Button
 var lbl_super: Label
 var lbl_time: Label
+var lbl_daytime: Label
 var minimap
 var info_title: Label
 var info_sub: Label
@@ -175,6 +176,10 @@ func _build_top() -> void:
 	h.add_child(sp)
 	lbl_time = _label("00:00", 15, Color(0.7, 0.78, 0.85))
 	h.add_child(lbl_time)
+	lbl_daytime = _label("09:00 Tag", 15, Color(1.0, 0.9, 0.6))
+	lbl_daytime.tooltip_text = "Uhrzeit im Spiel. Nachts sehen Einheiten und Gebäude weniger weit."
+	lbl_daytime.mouse_filter = Control.MOUSE_FILTER_PASS
+	h.add_child(lbl_daytime)
 	btn_help = _button("Hilfe (F1)", toggle_help)
 	h.add_child(btn_help)
 	btn_menu = _button("Menü (Esc)", toggle_pause)
@@ -483,6 +488,10 @@ func _process(delta: float) -> void:
 			break
 	lbl_super.text = st
 	lbl_time.text = _clock(Game.time)
+	if Game.daynight != null:
+		lbl_daytime.text = Game.daynight.clock_text(Game.hour)
+		var nightly = Game.daynight.night_amount(Game.hour)
+		lbl_daytime.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6).lerp(Color(0.6, 0.75, 1.0), nightly))
 	_refresh_t -= delta
 	var sig = _selection_sig()
 	if sig != _sig:

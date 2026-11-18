@@ -32,6 +32,9 @@ var running = false
 var game_over = false
 var time = 0.0
 var difficulty = 1
+var hour = 9.0           # Uhrzeit (0..24), vom Tag-Nacht-Wechsel gesetzt
+var sight_mult = 1.0     # nachts kleiner
+var daynight
 var last_alert_pos = Vector3.ZERO
 var _alert_t = -99.0
 
@@ -651,10 +654,10 @@ func update_fog() -> void:
 		fog_vis.fill(0)
 		for u in units:
 			if u.owner_id == human and u.alive:
-				_mark(u.position, u.def["sight"])
+				_mark(u.position, u.def["sight"] * sight_mult)
 		for b in buildings:
 			if b.owner_id == human and b.alive:
-				_mark(b.position, b.def["sight"])
+				_mark(b.position, b.def["sight"] * sight_mult)
 		for r in reveals.duplicate():
 			if time > r["until"]:
 				reveals.erase(r)

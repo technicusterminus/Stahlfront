@@ -164,8 +164,17 @@ func _environment() -> void:
 	sun.directional_shadow_max_distance = 170.0
 	sun.light_volumetric_fog_energy = 1.2
 	world.add_child(sun)
+	var dn = load("res://scripts/daynight.gd").new()
+	dn.name = "DayNight"
+	add_child(dn)
+	dn.start_hour = float(args.get("hour", "9"))
+	dn.cycle_minutes = float(args.get("daycycle", "0"))
+	dn.setup(env, psm, sun)
+	Game.daynight = dn
 
 func start_match(cfg: Dictionary) -> void:
+	if cfg.has("hour"):
+		Game.daynight.configure(float(cfg["hour"]), float(cfg.get("daycycle", 0.0)))
 	Game.spectator = cfg["spectate"]
 	Game.difficulty = cfg["difficulty"]
 	Game.human = 0
@@ -304,6 +313,8 @@ func start_match(cfg: Dictionary) -> void:
 		_recoil_test()
 	if args.has("defensetest"):
 		_defense_test()
+	if args.has("boomtest"):
+		_boom_test()
 	if args.has("animalcam"):
 		var an = world.get_node("Animals")
 		if not an.herds.is_empty():
@@ -478,6 +489,29 @@ func _quit_after(sec: float) -> void:
 	get_tree().quit()
 
 ## Messung: bewegt sich beim Schuss nur das Rohr, nicht der Turm?
+## Zeigt drei Explosionsgrößen nebeneinander (für Bildproben mit --shot und --shotdelay).
+func _boom_test() -> void:
+	var s0: Vector3 = Game.players[0]["start"]
+	var toward = Vector3(-s0.x, 0, -s0.z).normalized()
+	var st: Vector3 = s0 + toward * 30.0
+	Game.explore(st, 40.0)
+	Game.update_fog()
+	Game.cam.look_at_pos(st)
+	Game.cam.dist_target = float(args.get("camdist", "30"))
+	await _wait(1.5)
+	var side = Vector3(-toward.z, 0, toward.x)
+	var sizes = [1.0, 2.5, 4.5]
+	for i in 3:
+		var p: Vector3 = st + side * ((i - 1) * 9.0)
+		p.y = Game.terrain.ground_y(p.x, p.z)
+		load("res://scripts/fx.gd").explosion(p, sizes[i], args.has("toxic"))
+	var marks = [0.2, 0.5, 1.0, 2.0, 3.5]
+	var last = 0.0
+	for k in marks.size():
+		await _wait(marks[k] - last)
+		last = marks[k]
+		get_viewport().get_texture().get_image().save_png(ProjectSettings.globalize_path("res://shots/boom_%d.png" % k))
+	print("BOOM fertig")
 ## Prüft je Fraktion: Abwehrbau drehbar, richtet sich auf ein Ziel aus und beschädigt es.
 func _defense_test() -> void:
 	await _wait(1.0)
