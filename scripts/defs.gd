@@ -4,6 +4,7 @@ extends Node
 # Schadensfaktor je Waffentyp gegen Panzerungsklasse.
 const DMG_MOD := {
 	"bullet":    {"inf": 1.0, "light": 0.55, "heavy": 0.2, "air": 0.5, "bldg": 0.12},
+	"gatling":   {"inf": 1.3, "light": 0.85, "heavy": 0.5, "air": 1.8, "bldg": 0.12},
 	"flak":      {"inf": 0.7, "light": 0.4, "heavy": 0.12, "air": 2.2, "bldg": 0.06},
 	"shell":     {"inf": 0.45, "light": 1.0, "heavy": 1.0, "air": 0.0, "bldg": 0.75},
 	"rocket":    {"inf": 0.35, "light": 1.0, "heavy": 1.25, "air": 1.3, "bldg": 0.7},
@@ -181,7 +182,7 @@ func _red() -> void:
 	B("red_factory", {"name": "Panzerwerk", "cost": 2000, "time": 20.0, "hp": 2200.0, "size": 5, "power": -2, "produces": ["red_tank", "red_flame", "red_aa", "red_arty", "red_heavy"], "prereq": ["supply", "barracks"], "desc": "Produziert Fahrzeuge."})
 	B("red_airfield", {"name": "Hubschrauberbasis", "cost": 1000, "time": 16.0, "hp": 1500.0, "size": 5, "power": -2, "produces": ["red_heli", "red_jet", "red_bomber"], "prereq": ["factory"], "desc": "Startplatz für Kampfhubschrauber."})
 	B("red_defense", {"name": "Gatling-Bunker", "cost": 1000, "time": 12.0, "hp": 1600.0, "power": -2, "prereq": ["barracks"], "sight": 24.0,
-		"weapon": W("flak", 14.0, 22.0, 0.15, {"air": true}), "desc": "Gatling gegen Infanterie und Luftziele. Braucht Strom."})
+		"weapon": W("gatling", 12.0, 22.0, 0.15, {"air": true}), "desc": "Gatling gegen Infanterie, Luftziele und leichte Fahrzeuge, auch gegen Panzer wirksam. Braucht Strom."})
 	B("red_tech", {"name": "Propagandazentrum", "cost": 2000, "time": 25.0, "hp": 1600.0, "power": -3, "prereq": ["factory"], "aura": 28.0, "desc": "Propaganda-Aura: heilt eigene Einheiten im Umkreis und erhöht ihre Feuerrate. Schaltet Haubitze, Koloss und Superwaffe frei."})
 	B("red_super", {"name": "Atomsilo", "cost": 5000, "time": 60.0, "hp": 3200.0, "size": 5, "power": -6, "prereq": ["tech"], "desc": "Superwaffe: Atomrakete."})
 

@@ -9,10 +9,10 @@ static func fire(src, pid: int, w: Dictionary, from: Vector3, target, tpos: Vect
 	var tvalid: bool = target != null and is_instance_valid(target) and target.alive
 	var wt: String = w["type"]
 	match wt:
-		"bullet", "flak":
+		"bullet", "flak", "gatling":
 			var hit = tpos + Vector3(randf_range(-0.4, 0.4), randf_range(-0.3, 0.3), randf_range(-0.4, 0.4))
 			FX.muzzle(from, Color(1, 0.8, 0.4), 0.6)
-			FX.tracer(from, hit, Color(1.0, 0.72, 0.3) if wt == "bullet" else Color(1.0, 0.5, 0.25))
+			FX.tracer(from, hit, Color(1.0, 0.72, 0.3) if wt == "bullet" else (Color(1.0, 0.85, 0.35) if wt == "gatling" else Color(1.0, 0.5, 0.25)))
 			if tvalid:
 				Game.apply_damage(target, dmg, wt, pid, src)
 			FX.impact(hit)

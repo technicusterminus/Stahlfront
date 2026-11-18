@@ -626,7 +626,7 @@ func _hp_col(f: float) -> Color:
 	return Color(0.95, 0.3, 0.2)
 
 func _wname(t: String) -> String:
-	return {"bullet": "MG", "flak": "Flak", "shell": "Kanone", "rocket": "Raketen", "flame": "Flammenwerfer",
+	return {"bullet": "MG", "flak": "Flak", "gatling": "Gatling", "shell": "Kanone", "rocket": "Raketen", "flame": "Flammenwerfer",
 		"toxin": "Gift", "laser": "Laser", "artillery": "Artillerie", "bomb": "Bomben", "demolition": "Sprengladung"}.get(t, t)
 
 func _good_vs(w: Dictionary) -> String:
