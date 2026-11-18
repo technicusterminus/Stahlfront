@@ -159,9 +159,15 @@ turret = loft_z("Turret",
                 0.0, 0.62, M_TEAM, bevel=0.03)
 turret.location = (0, 0.15, 1.22)
 box("Mantlet", (0.6, 0.45, 0.42), (0, -1.48, 0.3), M_HULL, parent=turret, bevel=0.04)
-cyl("Barrel", 0.085, 3.1, (0, -3.15, 0.32), M_STEEL, parent=turret, axis="Y", verts=14, r2=0.075)
-cyl("Evacuator", 0.13, 0.5, (0, -2.6, 0.32), M_DARK, parent=turret, axis="Y", verts=14)
-cyl("MuzzleBrake", 0.12, 0.32, (0, -4.62, 0.32), M_DARK, parent=turret, axis="Y", verts=12, bevel=0.01)
+barrel = cyl("Barrel", 0.085, 3.1, (0, -3.15, 0.32), M_STEEL, parent=turret, axis="Y", verts=14, r2=0.075)
+evac = cyl("Evacuator", 0.13, 0.5, (0, -2.6, 0.32), M_DARK, parent=turret, axis="Y", verts=14)
+brake = cyl("MuzzleBrake", 0.12, 0.32, (0, -4.62, 0.32), M_DARK, parent=turret, axis="Y", verts=12, bevel=0.01)
+# Rücklaufendes Rohr: Evacuator und Mündungsbremse hängen am Rohr und bewegen sich mit
+for child in (evac, brake):
+    mw = child.matrix_world.copy()
+    child.parent = barrel
+    child.matrix_world = mw
+barrel_group = [barrel, evac, brake]
 cyl("Cupola", 0.3, 0.22, (0.45, 0.25, 0.72), M_TEAM, parent=turret, verts=16, bevel=0.02)
 cyl("Hatch", 0.24, 0.06, (0.45, 0.25, 0.86), M_HULL, parent=turret, verts=16)
 box("Periscope", (0.18, 0.1, 0.1), (0.45, -0.02, 0.8), M_GLASS, parent=turret, bevel=0.0)
@@ -227,8 +233,8 @@ def join_into(target, parts):
     bpy.ops.object.mode_set(mode="OBJECT")
 
 meshes = [o for o in objects if o.type == "MESH"]
-turret_parts = [o for o in meshes if o.parent == turret and o != turret]
-hull_parts = [o for o in meshes if o not in turret_parts and o not in (turret, hull)]
+turret_parts = [o for o in meshes if o.parent == turret and o != turret and o not in barrel_group]
+hull_parts = [o for o in meshes if o not in turret_parts and o not in (turret, hull) and o not in barrel_group]
 join_into(turret, turret_parts)
 join_into(hull, hull_parts)
 
@@ -415,7 +421,7 @@ bake_object(hull, 2048)
 bake_object(turret, 1024)
 
 bpy.ops.object.select_all(action="DESELECT")
-for ob in (hull, turret, muzzle):
+for ob in (hull, turret, muzzle, barrel, evac, brake):
     ob.select_set(True)
 glb = os.path.join(root_dir, "models", "units", "tank.glb")
 bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB", use_selection=True, export_apply=True, export_yup=True)

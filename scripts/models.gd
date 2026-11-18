@@ -290,6 +290,9 @@ static func load_custom(dir: String, names: Array, col: Color) -> Dictionary:
 		var t = inst.find_child("Turret", true, false)
 		if t != null:
 			out["turret"] = t
+		var brl = inst.find_child("Barrel", true, false)
+		if brl != null:
+			out["barrel"] = brl
 		var m = inst.find_child("Muzzle", true, false)
 		if m != null:
 			var ref: Node3D = t if t != null else root
@@ -396,6 +399,8 @@ static func _build_unit(model: String, col: Color, faction: String) -> Dictionar
 			_biplane(root, pc, model == "sprayer", out)
 		_:
 			box(root, Vector3(2, 1, 3), Vector3(0, 0.5, 0), pc)
+	if VEH.has(model) and not OS.get_cmdline_user_args().has("--nofit"):
+		_fittings(root, faction, model, out)
 	return out
 
 static func _inf(r: Node3D, col: Color, faction: String, model: String, out: Dictionary) -> void:
@@ -440,23 +445,25 @@ static func _tank(r: Node3D, pc: Material, model: String, out: Dictionary) -> vo
 	box(t, Vector3(1.55 * k, 0.55, 1.9 * k), Vector3(0, 0.27, 0), pc)
 	box(t, Vector3(1.2 * k, 0.35, 0.5), Vector3(0, 0.25, 1.1 * k), pc, Vector3(-0.5, 0, 0))
 	cyl(t, 0.22, 0.25, 0.25, Vector3(0.35, 0.65, -0.3), pc)
+	var br = node(t, Vector3.ZERO)
 	match model:
 		"laser_tank":
-			cyl(t, 0.16, 0.2, 2.2, Vector3(0, 0.3, 1.9), steel(), Vector3(PI / 2, 0, 0))
+			cyl(br, 0.16, 0.2, 2.2, Vector3(0, 0.3, 1.9), steel(), Vector3(PI / 2, 0, 0))
 			cyl(t, 0.22, 0.22, 0.5, Vector3(0, 0.3, 0.9), glow(Color(0.2, 0.9, 1.0), 4.0), Vector3(PI / 2, 0, 0))
-			sph(t, 0.18, Vector3(0, 0.3, 3.0), glow(Color(0.4, 1.0, 1.0), 6.0))
+			sph(br, 0.18, Vector3(0, 0.3, 3.0), glow(Color(0.4, 1.0, 1.0), 6.0))
 			out["muzzle"] = Vector3(0, 0.3, 3.1)
 		"flame_tank":
-			cyl(t, 0.14, 0.2, 1.2, Vector3(0, 0.3, 1.4), steel(), Vector3(PI / 2, 0, 0))
+			cyl(br, 0.14, 0.2, 1.2, Vector3(0, 0.3, 1.4), steel(), Vector3(PI / 2, 0, 0))
 			for sx in [-0.5, 0.5]:
 				cyl(r, 0.32, 0.32, 1.4, Vector3(sx, 1.45, -1.4), mat(Color(0.5, 0.18, 0.1), 0.4, 0.5), Vector3(PI / 2, 0, 0))
 			out["muzzle"] = Vector3(0, 0.3, 2.1)
 		_:
-			cyl(t, 0.09, 0.11, 2.6 * k, Vector3(0, 0.3, 1.9 * k), steel(), Vector3(PI / 2, 0, 0), 10)
-			cyl(t, 0.14, 0.14, 0.35, Vector3(0, 0.3, 3.1 * k), dark(), Vector3(PI / 2, 0, 0), 10)
+			cyl(br, 0.09, 0.11, 2.6 * k, Vector3(0, 0.3, 1.9 * k), steel(), Vector3(PI / 2, 0, 0), 10)
+			cyl(br, 0.14, 0.14, 0.35, Vector3(0, 0.3, 3.1 * k), dark(), Vector3(PI / 2, 0, 0), 10)
 			out["muzzle"] = Vector3(0, 0.3, 3.3 * k)
 	if small:
 		box(t, Vector3(0.4, 0.35, 0.9), Vector3(0.9, 0.35, -0.2), olive())
+	out["barrel"] = br
 	out["turret"] = t
 	out["height"] = 2.2
 
@@ -470,9 +477,11 @@ static func _heavy(r: Node3D, pc: Material, out: Dictionary) -> void:
 	var t = node(r, Vector3(0, 1.58, -0.3))
 	box(t, Vector3(2.1, 0.75, 2.4), Vector3(0, 0.37, 0), pc)
 	box(t, Vector3(1.8, 0.4, 0.7), Vector3(0, 0.3, 1.4), pc, Vector3(-0.5, 0, 0))
+	var br = node(t, Vector3.ZERO)
 	for sx in [-0.35, 0.35]:
-		cyl(t, 0.11, 0.13, 3.0, Vector3(sx, 0.4, 2.3), steel(), Vector3(PI / 2, 0, 0), 10)
+		cyl(br, 0.11, 0.13, 3.0, Vector3(sx, 0.4, 2.3), steel(), Vector3(PI / 2, 0, 0), 10)
 	box(t, Vector3(0.6, 0.4, 0.6), Vector3(-0.6, 0.95, -0.4), dark())
+	out["barrel"] = br
 	out["turret"] = t
 	out["muzzle"] = Vector3(0, 0.4, 3.8)
 	out["height"] = 2.8
@@ -488,10 +497,12 @@ static func _aa(r: Node3D, pc: Material, faction: String, out: Dictionary) -> vo
 	var t = node(r, Vector3(0, 1.45, -0.3))
 	cyl(t, 0.7, 0.8, 0.4, Vector3(0, 0.2, 0), pc)
 	box(t, Vector3(1.2, 0.6, 1.0), Vector3(0, 0.6, 0), pc)
+	var br = node(t, Vector3.ZERO)
 	for sx in [-0.45, 0.45]:
 		for sy in [0.45, 0.75]:
-			cyl(t, 0.06, 0.06, 1.8, Vector3(sx, sy, 1.1), steel(), Vector3(PI / 2 - 0.35, 0, 0), 8)
+			cyl(br, 0.06, 0.06, 1.8, Vector3(sx, sy, 1.1), steel(), Vector3(PI / 2 - 0.35, 0, 0), 8)
 	box(t, Vector3(0.5, 0.35, 0.4), Vector3(0, 1.05, -0.2), dark())
+	out["barrel"] = br
 	out["turret"] = t
 	out["muzzle"] = Vector3(0, 0.9, 1.9)
 
@@ -541,8 +552,10 @@ static func _artillery(r: Node3D, pc: Material, out: Dictionary) -> void:
 	box(t, Vector3(1.9, 1.0, 2.4), Vector3(0, 0.5, 0), pc)
 	var b = node(t, Vector3(0, 0.6, 1.0))
 	b.rotation.x = -0.4
-	cyl(b, 0.14, 0.18, 4.4, Vector3(0, 0, 2.2), steel(), Vector3(PI / 2, 0, 0), 10)
-	cyl(b, 0.22, 0.22, 0.5, Vector3(0, 0, 4.3), dark(), Vector3(PI / 2, 0, 0), 10)
+	var br = node(b, Vector3.ZERO)
+	cyl(br, 0.14, 0.18, 4.4, Vector3(0, 0, 2.2), steel(), Vector3(PI / 2, 0, 0), 10)
+	cyl(br, 0.22, 0.22, 0.5, Vector3(0, 0, 4.3), dark(), Vector3(PI / 2, 0, 0), 10)
+	out["barrel"] = br
 	out["turret"] = t
 	out["muzzle"] = Vector3(0, 2.4, 5.0)
 	out["height"] = 2.8
@@ -811,6 +824,8 @@ static func _build_building(d: Dictionary, col: Color) -> Dictionary:
 		box(root, Vector3(w + 0.9, 0.14, w + 0.9), Vector3(0, 0.02, 0), dark())
 	if load("res://scripts/arch.gd").build(root, faction, role, w, pc, wl, out):
 		_dress(root, w, faction, role, out)
+		if role in LIFE_ROLES and not OS.get_cmdline_user_args().has("--nolife"):
+			_life(root, w, faction, role, out)
 		return out
 	match role:
 		"hq":
@@ -832,7 +847,169 @@ static func _build_building(d: Dictionary, col: Color) -> Dictionary:
 		"super":
 			_super(root, w, wl, pc, faction, out)
 	_dress(root, w, faction, role, out)
+	if role in LIFE_ROLES and not OS.get_cmdline_user_args().has("--nolife"):
+		_life(root, w, faction, role, out)
 	return out
+
+const LIFE_ROLES = ["power", "supply", "defense", "tech", "super", "airfield"]
+
+## Maße der Fahrzeugmodelle für die Anbauteile (Länge, Breite, Oberkante der Wanne).
+const VEH = {
+	"tank": {"len": 4.3, "w": 3.0, "top": 1.3}, "laser_tank": {"len": 4.3, "w": 3.0, "top": 1.3}, "flame_tank": {"len": 4.3, "w": 3.0, "top": 1.3},
+	"scorpion": {"len": 3.6, "w": 2.5, "top": 1.15}, "heavy_tank": {"len": 4.8, "w": 3.9, "top": 1.6},
+	"aa": {"len": 3.7, "w": 2.2, "top": 1.4}, "truck": {"len": 4.4, "w": 2.1, "top": 2.0}, "dozer": {"len": 3.4, "w": 2.3, "top": 1.5},
+	"rocketlauncher": {"len": 4.6, "w": 2.1, "top": 1.3}, "artillery": {"len": 4.4, "w": 2.5, "top": 1.4},
+	"technical": {"len": 4.0, "w": 1.9, "top": 1.2}, "technical_aa": {"len": 4.0, "w": 1.9, "top": 1.2}, "buggy": {"len": 3.2, "w": 2.1, "top": 0.95},
+	"toxin_truck": {"len": 4.4, "w": 2.0, "top": 1.8}, "scud": {"len": 6.0, "w": 2.2, "top": 1.8}, "bombtruck": {"len": 4.4, "w": 2.0, "top": 1.9},
+}
+
+## Sammelt Anbauteile je Material, damit pro Fahrzeug nur ein Netz mit wenigen Zeichenaufrufen entsteht.
+static var _bt = {}
+
+static func _acc(mesh: Mesh, tf: Transform3D, m: Material) -> void:
+	if not _bt.has(m):
+		var st = SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		_bt[m] = st
+	_bt[m].append_from(mesh, 0, tf)
+
+static func _bb(size: Vector3, pos: Vector3, m: Material, rot := Vector3.ZERO) -> void:
+	_acc(_boxmesh(size), Transform3D(Basis.from_euler(rot), pos), m)
+
+static func _bc(rt: float, rb: float, h: float, pos: Vector3, m: Material, rot := Vector3.ZERO, seg := 10) -> void:
+	var key = "bc%s_%s_%s_%s" % [rt, rb, h, seg]
+	if not _meshes.has(key):
+		var cm = CylinderMesh.new()
+		cm.top_radius = rt
+		cm.bottom_radius = rb
+		cm.height = h
+		cm.radial_segments = seg
+		cm.rings = 1
+		_meshes[key] = cm
+	_acc(_meshes[key], Transform3D(Basis.from_euler(rot), pos), m)
+
+static func _bs(radius: float, pos: Vector3, m: Material) -> void:
+	var key = "bs%s" % radius
+	if not _meshes.has(key):
+		var sm = SphereMesh.new()
+		sm.radius = radius
+		sm.height = radius * 2.0
+		sm.radial_segments = 10
+		sm.rings = 5
+		_meshes[key] = sm
+	_acc(_meshes[key], Transform3D(Basis.IDENTITY, pos), m)
+
+static func _flush(parent: Node3D) -> void:
+	if _bt.is_empty():
+		return
+	var am = ArrayMesh.new()
+	for m in _bt:
+		(_bt[m] as SurfaceTool).commit(am)
+		am.surface_set_material(am.get_surface_count() - 1, m)
+	_bt.clear()
+	var mi = MeshInstance3D.new()
+	mi.mesh = am
+	parent.add_child(mi)
+
+## Fraktionstypische Anbauteile an Fahrzeugen: macht jedes Modell einzigartig und erkennbar.
+static func _fittings(r: Node3D, faction: String, model: String, out: Dictionary) -> void:
+	var d = VEH[model]
+	var L: float = d["len"]
+	var W: float = d["w"]
+	var top: float = d["top"]
+	var team = mat(_team, 0.0, 0.8)
+	var rear = -L * 0.5
+	_bt.clear()
+	# Antenne mit Wimpel in Teamfarbe (alle Fraktionen)
+	var ax = -W * 0.5 + 0.28
+	_bc(0.018, 0.018, 2.0, Vector3(ax, top + 0.9, rear + 0.35), dark(), Vector3.ZERO, 6)
+	_bb(Vector3(0.02, 0.22, 0.5), Vector3(ax, top + 1.78, rear + 0.1), team)
+	match faction:
+		"west":
+			var gm = glow(Color(0.4, 0.85, 1.0), 3.0)
+			for sx in [-1.0, 1.0]:
+				_bb(Vector3(0.04, 0.05, L * 0.62), Vector3(sx * (W * 0.5 + 0.03), top * 0.62, 0.0), gm)
+			_bs(0.17, Vector3(W * 0.5 - 0.5, top + 0.12, rear + 0.8), gm)
+			_bb(Vector3(0.28, 0.14, 0.34), Vector3(-0.3, top + 0.1, L * 0.5 - 0.7), dark())
+			_bs(0.07, Vector3(-0.3, top + 0.12, L * 0.5 - 0.52), gm)
+		"red":
+			var era = mat(Color(0.2, 0.22, 0.14), 0.3, 0.7)
+			var can = mat(Color(0.25, 0.3, 0.18), 0.3, 0.7)
+			for sx in [-1.0, 1.0]:
+				for i in 5:
+					_bb(Vector3(0.07, 0.3, 0.46), Vector3(sx * (W * 0.5 + 0.03), top * 0.58, -L * 0.34 + i * (L * 0.17)), era)
+			for sx in [-0.45, 0.45]:
+				_bb(Vector3(0.3, 0.38, 0.2), Vector3(sx, top - 0.12, rear + 0.1), can)
+			_bb(Vector3(W * 0.55, 0.1, 0.22), Vector3(0, top - 0.3, L * 0.5 + 0.05), steel())
+		_:
+			var rust = mat(Color(0.4, 0.2, 0.09), 0.5, 0.8)
+			var tin = mat(Color(0.5, 0.47, 0.42), 0.65, 0.6)
+			var cloth = mat(Color(0.25, 0.22, 0.18), 0.0, 0.95)
+			for k in 3:
+				_bb(Vector3(0.08, 0.5, 0.7 + k * 0.1), Vector3((W * 0.5 + 0.04) * (1.0 if k % 2 == 0 else -1.0), top * 0.6, -L * 0.2 + k * L * 0.18), rust if k != 1 else tin, Vector3(0.1 * k, 0, 0.12 * (k - 1)))
+			for k in 4:
+				_bc(0.0, 0.1, 0.4, Vector3(-0.45 + k * 0.3, top * 0.5, L * 0.5 + 0.12), steel(), Vector3(PI / 2, 0, 0), 6)
+			_bc(0.3, 0.3, 0.16, Vector3(0, top + 0.5, rear + 0.1), dark(), Vector3(PI / 2, 0, 0), 14)
+			_bc(0.26, 0.26, 0.55, Vector3(W * 0.5 - 0.4, top + 0.28, rear + 0.5), rust, Vector3.ZERO, 10)
+			_bb(Vector3(0.55, 0.32, 0.4), Vector3(-W * 0.5 + 0.55, top + 0.16, rear + 0.5), mat(Color(0.5, 0.45, 0.3), 0.0, 0.95), Vector3(0, 0.3, 0))
+			_bc(0.02, 0.02, 1.3, Vector3(W * 0.5 - 0.3, top + 0.65, 0.2), dark(), Vector3.ZERO, 6)
+			_bb(Vector3(0.02, 0.4, 0.6), Vector3(W * 0.5 - 0.3, top + 1.15, 0.5), cloth, Vector3(0, 0.3, 0))
+	# Scheinwerfer vorn
+	var lamp = glow(Color(1.0, 0.95, 0.8), 3.0)
+	for sx in [-1.0, 1.0]:
+		_bs(0.08, Vector3(sx * (W * 0.5 - 0.35), top * 0.55, L * 0.5 - 0.02), lamp)
+	_flush(r)
+	if faction == "red":
+		var st = _star(r, Vector3(0, top + 0.03, rear + 0.9), 0.3, glow(Color(1.0, 0.82, 0.2), 1.2))
+		st.rotation.x = -PI / 2
+## Leben in Anlagen ohne Blender-Modell: Blinklichter, Fahnen, Arbeiter, Fahrzeuge, Fässer.
+static func _life(r: Node3D, w: float, faction: String, role: String, out: Dictionary) -> void:
+	var D = load("res://scripts/arch_detail.gd")
+	var h: float = out.get("height", 4.0)
+	var e = w * 0.5 + 0.2
+	var warn = Color(1.0, 0.15, 0.08)
+	var amber = Color(1.0, 0.7, 0.15)
+	var cyan = Color(0.4, 0.85, 1.0)
+	var accent = cyan if faction == "west" else (warn if faction == "red" else amber)
+	match role:
+		"power":
+			for k in 4:
+				D.blink_light(r, Vector3((1 if k % 2 == 0 else -1) * w * 0.34, h + 0.1, (1 if k < 2 else -1) * w * 0.34), accent, out, 1.3, k * 0.33)
+			D.barrels(r, Vector3(e - 1.0, 0, -e + 0.4), 4)
+			D.vent(r, Vector3(0, h, 0), out, 0.9)
+			D.walker(r, faction, [Vector3(-e, 0, e), Vector3(e, 0, e), Vector3(e, 0, -e * 0.2)], out, 0.9)
+		"supply":
+			D.forklift(r, [Vector3(-e * 0.8, 0, e), Vector3(e * 0.8, 0, e), Vector3(e * 0.8, 0, e * 0.55), Vector3(-e * 0.8, 0, e * 0.55)], out)
+			D.pallet(r, Vector3(-e + 0.4, 0, e * 0.2), 0.2, 6)
+			D.pallet(r, Vector3(-e + 0.5, 0, -e * 0.3), -0.1, 4)
+			D.flag(r, Vector3(e - 0.2, 0, -e + 0.2), 3.2, _team, out)
+			D.walker(r, faction, [Vector3(e, 0, -e), Vector3(e, 0, e * 0.3)], out, 0.8)
+		"defense":
+			D.flag(r, Vector3(e - 0.2, 0, e - 0.2), 2.8, _team, out)
+			D.blink_light(r, Vector3(0, h + 0.35, 0), amber, out, 0.8)
+			D.pallet(r, Vector3(-e + 0.4, 0, e - 0.4), 0.3, 4)
+			D.walker(r, faction, [Vector3(-e, 0, e), Vector3(e, 0, e)], out, 0.7)
+		"tech":
+			D.blink_light(r, Vector3(w * 0.3, h + 0.2, w * 0.3), accent, out, 1.1)
+			D.blink_light(r, Vector3(-w * 0.3, h + 0.2, -w * 0.3), accent, out, 1.1, 0.55)
+			if faction == "west":
+				D.planter(r, Vector3(-e + 0.2, 0.0, e), 0.55)
+				D.planter(r, Vector3(e - 0.2, 0.0, e), 0.55)
+			D.walker(r, faction, [Vector3(-e, 0, e), Vector3(e, 0, e), Vector3(e, 0, -e)], out, 0.9)
+		"super":
+			for k in 10:
+				var a = TAU * k / 10.0
+				D.blink_light(r, Vector3(cos(a) * w * 0.48, 0.45, sin(a) * w * 0.48), warn if k % 2 == 0 else amber, out, 1.6, k * 0.16)
+			D.blink_light(r, Vector3(0, h + 0.4, 0), warn, out, 0.7)
+			D.flag(r, Vector3(-e, 0, e), 3.6, _team, out)
+			D.flag(r, Vector3(e, 0, e), 3.6, _team, out)
+			D.walker(r, faction, [Vector3(-e * 1.05, 0, -e), Vector3(e * 1.05, 0, -e), Vector3(e * 1.05, 0, e)], out, 0.9)
+		"airfield":
+			D.flag(r, Vector3(e * 0.8, 0, -e * 0.8), 2.6, Color(1.0, 0.45, 0.1), out)
+			for k in 6:
+				D.blink_light(r, Vector3(-e + 0.2, 0.35, -e + 0.8 + k * (w * 0.19)), amber, out, 1.2, k * 0.2)
+			D.forklift(r, [Vector3(e * 0.7, 0, e * 0.6), Vector3(e * 0.7, 0, -e * 0.1)], out)
+			D.walker(r, faction, [Vector3(e, 0, e), Vector3(-e * 0.3, 0, e)], out, 0.9)
 
 ## Fraktionstypische Ausstattung rund um das Gebäude.
 static func _dress(r: Node3D, w: float, faction: String, role: String, out: Dictionary) -> void:

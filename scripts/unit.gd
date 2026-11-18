@@ -62,6 +62,10 @@ var _anim_t = 0.0
 var _fly_cur = 0.0
 
 # Fraktionsbesonderheiten
+var _dust_t = 0.0
+var _turret_rest = null
+var _recoil_tw: Tween
+var _flash_t = 0.0
 var fixed_wing = false    # Flächenflieger: kann nicht schweben
 var _bank = 0.0
 var shield = 0.0          # Westbund: Energieschild
@@ -134,6 +138,49 @@ func aim_point() -> Vector3:
 func muzzle_pos() -> Vector3:
 	var n: Node3D = turret if turret != null else body
 	return n.global_transform * muzzle_local
+
+## Geschützrückstoß: nur das Rohr (samt Mündungsbremse) fährt zurück und schiebt sich wieder vor.
+func _recoil() -> void:
+	var br = model.get("barrel")
+	if br == null or not visible:
+		return
+	if _turret_rest == null:
+		_turret_rest = br.position
+	if _recoil_tw != null and _recoil_tw.is_valid():
+		_recoil_tw.kill()
+	br.position = _turret_rest
+	var depth = 0.38 * float(def["scale"])
+	if weapon != null and weapon["type"] == "flak":
+		depth = 0.1
+	_recoil_tw = create_tween()
+	_recoil_tw.tween_property(br, "position", _turret_rest + Vector3(0, 0, -depth), 0.05)
+	_recoil_tw.tween_property(br, "position", _turret_rest, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+
+## Aufleuchtende Schildblase bei Treffern (Westbund).
+func _shield_flash() -> void:
+	if Game.time < _flash_t or not visible:
+		return
+	_flash_t = Game.time + 0.18
+	var s = MeshInstance3D.new()
+	var sm = SphereMesh.new()
+	sm.radius = max(radius * 1.35, 1.0)
+	sm.height = sm.radius * 1.5
+	sm.radial_segments = 20
+	sm.rings = 10
+	s.mesh = sm
+	var m = StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	m.albedo_color = Color(0.35, 0.8, 1.0, 0.45)
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	s.material_override = m
+	s.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	s.position = Vector3(0, body.position.y + float(model["height"]) * 0.4 * float(def["scale"]), 0)
+	add_child(s)
+	var tw = s.create_tween()
+	tw.tween_property(m, "albedo_color:a", 0.0, 0.3)
+	tw.tween_callback(s.queue_free)
 
 func dmg_mult() -> float:
 	return 1.0 + 0.2 * rank + 0.15 * salvage
@@ -485,6 +532,7 @@ func _do_burst(delta: float) -> void:
 	elif weapon["type"] == "artillery":
 		tp = burst_pos + Vector3(randf_range(-2, 2), 0, randf_range(-2, 2))
 	Weapons.fire(self, owner_id, weapon, muzzle_pos(), t, tp, dmg_mult())
+	_recoil()
 
 # ---------------------------------------------------------------- Sammeln
 
@@ -679,6 +727,12 @@ func _integrate(delta: float) -> void:
 
 func _animate(delta: float) -> void:
 	_anim_t += delta
+	# Staubfahne hinter fahrenden Bodenfahrzeugen
+	if is_vehicle and not flying and speed_now > 1.2 and visible:
+		_dust_t -= delta
+		if _dust_t <= 0.0:
+			_dust_t = 0.32
+			FX.dust(position - Vector3(sin(heading), 0, cos(heading)) * 1.8 + Vector3(0, 0.15, 0), 0.4)
 	var fwd = Vector3(sin(heading), 0, cos(heading))
 	if is_vehicle and not flying:
 		var n: Vector3 = Game.terrain.normal_at(position.x, position.z)
@@ -734,6 +788,7 @@ func take_damage(amount: float, attacker_pid: int, attacker) -> void:
 		var absorbed = min(shield, amount)
 		shield -= absorbed
 		amount -= absorbed
+		_shield_flash()
 		if Game.time > _shield_fx_t:
 			_shield_fx_t = Game.time + 0.4
 			FX.sparkle(aim_point(), Color(0.4, 0.85, 1.0))

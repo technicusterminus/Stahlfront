@@ -262,6 +262,8 @@ func start_match(cfg: Dictionary) -> void:
 		Game.explore(fp, 20.0)
 		cam.look_at_pos(fp)
 		cam.dist_target = 14.0
+	if args.has("recoiltest"):
+		_recoil_test()
 	if args.has("animalcam"):
 		var an = world.get_node("Animals")
 		if not an.herds.is_empty():
@@ -434,3 +436,26 @@ func _quit_after(sec: float) -> void:
 				nb += 1
 		print("P%d %s alive=%s credits=%d units=%d bldgs=%d kills=%d losses=%d income=%d rank=%d" % [p["id"], p["faction"], p["alive"], int(p["credits"]), nu, nb, p["kills"], p["losses"], int(p["income"]), p["rank"]])
 	get_tree().quit()
+
+## Messung: bewegt sich beim Schuss nur das Rohr, nicht der Turm?
+func _recoil_test() -> void:
+	await _wait(1.0)
+	var st: Vector3 = Game.players[0]["start"] + Vector3(0, 0, 30)
+	for id in ["west_tank", "red_tank", "red_arty", "west_aa", "red_heavy"]:
+		var u = Game.spawn_unit(id, 0, st + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)))
+		u.visible = true
+		await _wait(0.2)
+		var br = u.model.get("barrel")
+		if br == null:
+			print("RECOIL ", id, ": KEIN ROHR-OBJEKT")
+			continue
+		var tr = u.turret
+		var t0 = tr.position
+		var b0: Vector3 = br.position
+		u._recoil()
+		await _wait(0.06)
+		var b1: Vector3 = br.position
+		var t1 = tr.position
+		await _wait(0.5)
+		var b2: Vector3 = br.position
+		print("RECOIL %s: Rohr %s -> %s -> %s | Turm bewegt: %s" % [id, b0, b1, b2, str(t1.distance_to(t0) > 0.001)])
