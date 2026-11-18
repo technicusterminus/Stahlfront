@@ -83,14 +83,29 @@ def star(depth, loc, mat, r_out=0.3, r_in=0.12):
         pts.append((math.cos(a) * r, math.sin(a) * r))
     return S.prism_xz("Star", pts, depth, loc, mat, 0.0)
 
-def finish(role, name, cam, tgt, ground=(0.3, 0.32, 0.25), size=2048):
+def part(name, parts, pivot, parent=None, bake=0):
+    """Eigenes bewegliches Teil (Turret, Barrel, Spin): Teile verschmelzen, Ursprung auf den Drehpunkt setzen."""
+    o = parts[0]
+    if len(parts) > 1:
+        S.join_into(o, parts[1:])
+    o.name = name
+    S.activate(o)
+    bpy.context.scene.cursor.location = pivot
+    bpy.ops.object.origin_set(type="ORIGIN_CURSOR")
+    if bake:
+        S.bake(o, bake, os.path.join(root_dir, "models", "source", "textures"))
+    if parent is not None:
+        S.parent(o, parent)
+    return o
+
+def finish(role, name, cam, tgt, ground=(0.3, 0.32, 0.25), size=2048, extras=()):
     hull = P[0]
     S.join_into(hull, P[1:])
     hull.name = "Hull"
     tex = os.path.join(root_dir, "models", "source", "textures")
     S.bake(hull, size, tex)
     os.makedirs(os.path.join(root_dir, "models", "buildings"), exist_ok=True)
-    S.export(os.path.join(root_dir, "models", "buildings", "%s_%s.glb" % (name, role)), [hull])
+    S.export(os.path.join(root_dir, "models", "buildings", "%s_%s.glb" % (name, role)), [hull] + list(extras))
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(root_dir, "models", "source", "%s_%s.blend" % (name, role)))
     S.preview(os.path.join(root_dir, "shots", "%s_%s_preview.png" % (name, role)), target=tgt, cam_loc=cam, lens=42, ground=ground)
     print("BUILDING_OK", role, name)
