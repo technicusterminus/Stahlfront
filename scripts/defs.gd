@@ -239,7 +239,7 @@ func _resource_costs() -> void:
 		var c: float = b["cost"]
 		var r = {}
 		if b["role"] != "hq":
-			r["wood"] = round(c * 0.03 / 5.0) * 5.0
+			r["wood"] = round(c * 0.02 / 5.0) * 5.0
 		if b["role"] in ["factory", "airfield", "tech", "defense", "super"]:
 			r["steel"] = round(c * 0.025 / 5.0) * 5.0
 		if b["role"] == "tech":

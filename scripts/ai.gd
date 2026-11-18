@@ -91,10 +91,10 @@ func _economy() -> void:
 
 ## Welcher Rohstoff als Nächstes geholt wird: reihum, aber nie einer, von dem schon reichlich da ist.
 func _harvest_kind(i: int) -> String:
-	var cycle = ["supply", "iron", "wood", "oil", "supply", "gold"]
+	var cycle = ["supply", "iron", "supply", "wood", "supply", "oil", "supply", "supply", "gold"]
 	var p: Dictionary = Game.players[pid]
-	for k in 6:
-		var kind: String = cycle[(i + k) % 6]
+	for k in cycle.size():
+		var kind: String = cycle[(i + k) % cycle.size()]
 		var stock: float = p["credits"] if kind == "supply" else p["res"][kind]
 		var cap: float = 9000.0 if kind == "supply" else (200.0 if kind == "gold" else 450.0)
 		if stock < cap:
