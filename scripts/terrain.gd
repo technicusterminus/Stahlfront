@@ -18,6 +18,9 @@ var seed_used = 0
 var spec = {}
 var _ctx = {}
 var islands: Array = []
+var _zn1: FastNoiseLite
+var _zn2: FastNoiseLite
+var zone_tex: ImageTexture
 var _why = ""
 var _layout = 0       # Gewässerform: 0 Kreuz, 1 Windungen, 2 getrennte Seen, 3 Uferkanal
 
@@ -29,6 +32,14 @@ func generate(sp: Dictionary, starts: Array, depots: Array) -> void:
 	var water: float = sp["water"]
 	_layout = int(sp.get("layout", 0))
 	_ctx = Maps.sea_ctx(sp, starts)
+	_zn1 = FastNoiseLite.new()
+	_zn1.seed = int(sp["seed"]) + 61
+	_zn1.frequency = 0.010
+	_zn1.fractal_octaves = 3
+	_zn2 = FastNoiseLite.new()
+	_zn2.seed = int(sp["seed"]) + 67
+	_zn2.frequency = 0.013
+	_zn2.fractal_octaves = 3
 	var tries = 0
 	while tries < 24:
 		if tries == 12 and _layout != 0:
@@ -44,6 +55,30 @@ func generate(sp: Dictionary, starts: Array, depots: Array) -> void:
 	_build_mesh()
 	_build_water()
 	_build_props()
+
+## Vegetationszonen am Ort: r = trockene Steppe, g = Heide/Moor, b = Waldboden, a = Fels und Geröll;
+## der Rest ist Wiese. Gewichte gehen weich ineinander über.
+func zone_at(x: float, z: float) -> Color:
+	var a = _zn1.get_noise_2d(x, z)
+	var b = _zn2.get_noise_2d(x, z)
+	var dry = smoothstep(0.12, 0.42, a)
+	var heath = smoothstep(0.14, 0.44, -a) * (1.0 - dry)
+	var forest = smoothstep(0.10, 0.38, b) * (1.0 - dry) * (1.0 - heath * 0.6)
+	var rocky = smoothstep(0.28, 0.55, -b) * (1.0 - dry * 0.5)
+	var s = dry + heath + forest + rocky
+	if s > 1.0:
+		dry /= s
+		heath /= s
+		forest /= s
+		rocky /= s
+	return Color(dry, heath, forest, rocky)
+
+func _zone_image(res: int) -> Image:
+	var img = Image.create(res, res, false, Image.FORMAT_RGBA8)
+	for y in res:
+		for x in res:
+			img.set_pixel(x, y, zone_at((x + 0.5) / res * SIZE - Game.HALF, (y + 0.5) / res * SIZE - Game.HALF))
+	return img
 
 func bay_center(start: Vector2) -> Vector2:
 	return Maps.bay_center(start)
@@ -507,6 +542,8 @@ func _build_mesh() -> void:
 	mat.set_shader_parameter("fog_tex", Game.fog_tex)
 	mat.set_shader_parameter("occ_tex", Game.occ_tex)
 	mat.set_shader_parameter("map_size", float(SIZE))
+	zone_tex = ImageTexture.create_from_image(_zone_image(128))
+	mat.set_shader_parameter("zone_tex", zone_tex)
 
 	var mi = MeshInstance3D.new()
 	mi.mesh = am

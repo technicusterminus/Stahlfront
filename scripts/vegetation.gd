@@ -17,7 +17,9 @@ static func build(t, seed_val: int) -> void:
 	kind.seed = seed_val + 47
 	kind.frequency = 0.03
 
-	var grass_mesh = _clump(rng, 12, 0.6, 0.05, 0.32)
+	var grass_mesh = _clump(rng, 15, 0.55, 0.032, 0.30)
+	var short_mesh = _clump(rng, 13, 0.26, 0.028, 0.22)
+	var tall_mesh = _clump(rng, 13, 1.0, 0.03, 0.32)
 	var reed_mesh = _clump(rng, 7, 1.7, 0.035, 0.2)
 	var flower_mesh = _flowers(rng)
 	var bush_mesh = _blob_mesh(rng, 5, 0.55, 0.35)
@@ -28,6 +30,8 @@ static func build(t, seed_val: int) -> void:
 	var bush_m = _foliage(Color(0.38, 0.45, 0.3), Color(0.75, 0.8, 0.6), 0.05, 1.2, true, 0.2)
 
 	var grass := {}
+	var grass_s := {}
+	var grass_t := {}
 	var flowers := {}
 	var reeds := {}
 	var bushes := {}
@@ -40,7 +44,7 @@ static func build(t, seed_val: int) -> void:
 		while z < lim:
 			var px = x + rng.randf_range(-0.45, 0.45)
 			var pz = z + rng.randf_range(-0.45, 0.45)
-			z += 0.75
+			z += 0.64
 			var h: float = t.height_at(px, pz)
 			var n: Vector3 = t.normal_at(px, pz)
 			# Schilf am Ufer und im Flachwasser
@@ -52,21 +56,42 @@ static func build(t, seed_val: int) -> void:
 			if h < t.WATER_Y + 0.45 or n.y < 0.84:
 				continue
 			var d = dens.get_noise_2d(px, pz) * 0.5 + 0.5
-			if rng.randf() > d * 1.15:
+			var zr: Color = t.zone_at(px, pz)
+			var meadow = max(1.0 - (zr.r + zr.g + zr.b + zr.a), 0.0)
+			var dmul = meadow + zr.r * 0.75 + zr.g * 0.9 + zr.b * 0.95 + zr.a * 0.22
+			if rng.randf() > d * 1.15 * dmul:
 				continue
 			var dr = clamp(dry.get_noise_2d(px, pz) * 1.6 + 0.2, 0.0, 1.0)
 			var gc = Color(0.55, 0.8, 0.4).lerp(Color(0.95, 0.85, 0.5), dr * 0.7)
 			gc = gc.lerp(Color(0.4, 0.6, 0.3), rng.randf() * 0.3)
-			_add(grass, Vector3(px, h, pz), rng.randf_range(0.7, 1.3), rng, gc)
-			if rng.randf() < 0.035 * (1.0 - dr):
+			# Farbe nach Zone: Steppe strohgelb, Heide rötlich-braun, Waldboden dunkel, Fels grau-grün
+			gc = gc.lerp(Color(0.9, 0.8, 0.42), zr.r * 0.8).lerp(Color(0.62, 0.46, 0.44), zr.g * 0.8)
+			gc = gc.lerp(Color(0.28, 0.48, 0.26), zr.b * 0.7).lerp(Color(0.56, 0.6, 0.46), zr.a * 0.7)
+			var gs = rng.randf_range(0.7, 1.3)
+			var pick = rng.randf()
+			if pick < zr.g * 0.9 + zr.a * 0.85:
+				_add(grass_s, Vector3(px, h, pz), gs, rng, gc)
+			elif pick < zr.g * 0.9 + zr.a * 0.85 + zr.r * 1.1:
+				_add(grass_t, Vector3(px, h, pz), gs * rng.randf_range(0.85, 1.15), rng, gc)
+			else:
+				_add(grass, Vector3(px, h, pz), gs, rng, gc)
+			var fl = 0.035 * meadow * (1.0 - dr) + zr.g * 0.09 + zr.r * 0.012 + zr.b * 0.01
+			if rng.randf() < fl:
 				var fc = [Color(1, 1, 1), Color(1, 0.85, 0.2), Color(0.7, 0.45, 1.0), Color(0.95, 0.25, 0.2), Color(0.4, 0.6, 1.0)][rng.randi() % 5]
+				if zr.g > 0.4:
+					fc = [Color(0.75, 0.3, 0.7), Color(0.85, 0.4, 0.75), Color(0.6, 0.25, 0.6)][rng.randi() % 3]
+				elif zr.r > 0.4:
+					fc = [Color(1, 0.85, 0.25), Color(0.95, 0.6, 0.2)][rng.randi() % 2]
 				_add(flowers, Vector3(px, h, pz), rng.randf_range(0.8, 1.2), rng, fc)
-			if rng.randf() < 0.012 and not _in_flat(px, pz, flats):
+			if rng.randf() < 0.012 + zr.g * 0.02 + zr.b * 0.014 + zr.a * 0.004 and not _in_flat(px, pz, flats):
 				var bc = Color(0.3, 0.45, 0.2).lerp(Color(0.45, 0.42, 0.22), dr * 0.6 + rng.randf() * 0.2)
+				bc = bc.lerp(Color(0.4, 0.3, 0.3), zr.g * 0.7)
 				_add(bushes, Vector3(px, h - 0.1, pz), rng.randf_range(0.7, 1.6), rng, bc)
-		x += 0.75
+		x += 0.64
 
 	_emit_chunks(t, grass, grass_mesh, grass_m, 150.0)
+	_emit_chunks(t, grass_s, short_mesh, grass_m, 120.0)
+	_emit_chunks(t, grass_t, tall_mesh, grass_m, 150.0)
 	_emit_chunks(t, flowers, flower_mesh, flower_m, 130.0)
 	_emit_chunks(t, reeds, reed_mesh, reed_m, 170.0)
 	_emit_chunks(t, bushes, bush_mesh, bush_m, 220.0, true)

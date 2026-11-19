@@ -6,6 +6,7 @@ uniform sampler2D noise_n : hint_normal, repeat_enable, filter_linear_mipmap;
 uniform sampler2D fog_tex : filter_linear, repeat_disable;
 uniform float map_size = 240.0;
 uniform sampler2D occ_tex : filter_linear, repeat_disable;
+uniform sampler2D zone_tex : filter_linear, repeat_disable;
 
 varying vec3 wpos;
 float fog_at(vec2 uv) {
@@ -28,13 +29,21 @@ void fragment() {
 	float n1 = texture(noise_tex, wpos.xz * 0.018).r;
 	float n2 = texture(noise_tex, wpos.xz * 0.13 + vec2(0.37, 0.11)).r;
 	float n3 = texture(noise_tex, wpos.xz * 0.6).r;
+	vec4 zn = texture(zone_tex, wpos.xz / world_size + 0.5);
 	vec3 grass = mix(vec3(0.10, 0.17, 0.05), vec3(0.24, 0.30, 0.10), n2);
 	vec3 dirt = mix(vec3(0.22, 0.17, 0.11), vec3(0.40, 0.33, 0.22), n2);
+	// Vegetationszonen: trockene Steppe, Heide/Moor, Waldboden, Fels
+	grass = mix(grass, mix(vec3(0.38, 0.34, 0.15), vec3(0.54, 0.47, 0.23), n2), zn.r * 0.9);
+	grass = mix(grass, mix(vec3(0.20, 0.13, 0.15), vec3(0.32, 0.21, 0.24), n2), zn.g * 0.85);
+	grass = mix(grass, mix(vec3(0.045, 0.10, 0.04), vec3(0.10, 0.17, 0.06), n2), zn.b * 0.9);
+	dirt = mix(dirt, mix(vec3(0.46, 0.38, 0.24), vec3(0.58, 0.48, 0.30), n2), zn.r * 0.6);
+	dirt = mix(dirt, vec3(0.15, 0.11, 0.09), zn.g * 0.6);
 	vec3 rock = mix(vec3(0.15, 0.14, 0.13), vec3(0.27, 0.26, 0.24), n2 * 0.7 + n3 * 0.3);
 	vec3 sand = vec3(0.50, 0.44, 0.30);
 	float slope = 1.0 - wnrm.y;
 	vec3 col = mix(grass, dirt, smoothstep(0.42, 0.62, n1 * 0.7 + n2 * 0.3));
-	col = mix(col, rock, smoothstep(0.07, 0.2, slope));
+	col = mix(col, rock, smoothstep(0.07, 0.2, slope + zn.a * 0.12));
+	col = mix(col, rock * 1.12, zn.a * 0.5);
 	col = mix(sand, col, smoothstep(-1.0, 0.1, wpos.y));
 	col *= 0.93 + 0.14 * n3;
 	float rough = 0.93;

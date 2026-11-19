@@ -220,6 +220,7 @@ Missionen und spielbare Helden sind noch nicht umgesetzt.
 - **Rendering:** Forward+ mit SSAO, SSIL, Glow, ACES-Tonemapping, Volumennebel, 4-stufige Sonnenschatten.
 - **Gelände:** prozedural aus Rauschfeldern (Seen, Grate, Täler), Begehbarkeitsraster und Erreichbarkeitsprüfung; Material mit Gras, Erde, Fels, Sand und fraktionsspezifischen Basisböden (Betonplatten, Risse und Öl, festgefahrene Erde).
 - **Vegetation:** Wind-animiertes Gras in Kacheln mit Sichtweiten-Ausblendung, Blumen, Büsche, Schilf, Nadel- und Laubbäume, verformte Felsen mit Moos. Gras verschwindet unter Gebäuden.
+- **Vegetationszonen:** Wiese, trockene Steppe (hohes strohgelbes Gras), Heide und Moor (niedrig, rötlich, violette Blüten), Waldboden (dunkles Moos) und Fels und Geröll. Die Zonen gehen weich ineinander über, färben den Boden im Shader und steuern Dichte, Wuchshöhe, Farbe, Blumen und Büsche. Das Gras besteht aus dünnen, dicht stehenden Halmen in drei Wuchshöhen.
 - **Wasser:** Tiefenfarbe, Lichtbrechung, Uferschaum, Wellen.
 - **Tiere:** Hirschherden grasen und fliehen vor Einheiten und Gefechten; Vogelschwärme kreisen und fliegen bei Lärm auf.
 - **Material-Shader:** `shaders/hardsurface.gdshader` projiziert Tarnmuster, Blechfugen, Nieten, Rost, Schmutz und Mikro-Normalen im Objektraum; jede Fraktion hat eigene Parameter.
