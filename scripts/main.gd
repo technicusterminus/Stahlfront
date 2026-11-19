@@ -305,6 +305,26 @@ func start_match(cfg: Dictionary) -> void:
 		var bc0: Vector2 = Game.terrain.bay_center(Vector2(b0.x, b0.z))
 		cam.look_at_pos(Vector3(bc0.x, 0, bc0.y))
 		cam.dist_target = float(args.get("camdist", "40"))
+	if args.has("workershow"):
+		# Nahaufnahme der Arbeiterfiguren: stehend und in Schrittstellung, je Fraktion
+		var D = load("res://scripts/arch_detail.gd")
+		var o0: Vector3 = Game.players[0]["start"] + Vector3(0, 0, 10)
+		var gy: float = Game.terrain.ground_y(o0.x, o0.z)
+		var fi = 0
+		for fc in ["west", "red", "shadow"]:
+			for pose in 2:
+				var wk = D.worker(fc)
+				wk.position = Vector3(o0.x + fi * 0.9 - 2.2, gy, o0.z)
+				wk.rotation.y = 1.2
+				Game.fx_root.add_child(wk)
+				if pose == 1:
+					wk.find_child("LegL", true, false).rotation.x = 0.7
+					wk.find_child("ShinL", true, false).rotation.x = 0.2
+					wk.find_child("LegR", true, false).rotation.x = -0.4
+					wk.find_child("ShinR", true, false).rotation.x = 1.0
+				fi += 1
+		cam.look_at_pos(Vector3(o0.x, gy + 0.9, o0.z))
+		cam.dist_target = float(args.get("camdist", "4.5"))
 	if args.has("basecam"):
 		# Testbasis: alle Gebäudetypen fertig, das letzte als Baustelle
 		var fac0: String = Game.players[0]["faction"]

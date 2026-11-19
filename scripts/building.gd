@@ -314,13 +314,15 @@ func _play_anims(delta: float) -> void:
 							pn[nm] = n.find_child(nm, true, false)
 						a["p"] = pn
 					var pp: Dictionary = a["p"]
-					var sw = sin(t * a["s"] * 6.0) * 0.55
+					var ph = t * a["s"] * 6.0
+					var sw = sin(ph) * 0.6
 					if pp["LegL"]:
-						pp["LegL"].rotation.x = sw
-						pp["LegR"].rotation.x = -sw
+						pp["LegL"].rotation.x = 0.1 + sw
+						pp["LegR"].rotation.x = 0.1 - sw
 					if pp["ShinL"]:
-						pp["ShinL"].rotation.x = max(sw, 0.0) * 1.3
-						pp["ShinR"].rotation.x = max(-sw, 0.0) * 1.3
+						# Knie beugt beim Vorschwingen des Beins (Standbein bleibt fast gestreckt)
+						pp["ShinL"].rotation.x = 0.2 + max(-cos(ph), 0.0) * 1.1
+						pp["ShinR"].rotation.x = 0.2 + max(cos(ph), 0.0) * 1.1
 					if pp["ArmL"]:
 						pp["ArmL"].rotation.x = -sw * 0.8
 						pp["ArmR"].rotation.x = sw * 0.8

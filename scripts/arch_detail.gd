@@ -179,11 +179,16 @@ static func worker(faction: String) -> Node3D:
 		var left = sx < 0
 		var leg = M.node(n, Vector3(sx, 0.78, 0))
 		leg.name = "LegL" if left else "LegR"
-		M.cyl(leg, 0.075, 0.062, 0.4, Vector3(0, -0.2, 0), pants, Vector3.ZERO, 10)
-		M.sph(leg, 0.066, Vector3(0, -0.4, 0), pants)
+		leg.rotation.x = 0.1   # im Stand leicht gebeugt: Knie sichtbar
+		M.cyl(leg, 0.08, 0.06, 0.4, Vector3(0, -0.2, 0), pants, Vector3.ZERO, 10)
+		M.sph(leg, 0.085, Vector3(0, -0.07, -0.01), pants, Vector3(1.0, 1.4, 1.1))   # Oberschenkelmuskel
+		M.sph(leg, 0.075, Vector3(0, -0.4, 0.02), pants, Vector3(1.0, 0.95, 1.1))   # Kniescheibe
+		M.sph(leg, 0.058, Vector3(0, -0.4, 0.07), boot, Vector3(1.1, 0.8, 0.7))   # Knieschoner
 		var shin = M.node(leg, Vector3(0, -0.4, 0))
 		shin.name = "ShinL" if left else "ShinR"
-		M.cyl(shin, 0.062, 0.045, 0.34, Vector3(0, -0.18, 0), pants, Vector3.ZERO, 10)
+		shin.rotation.x = 0.28
+		M.cyl(shin, 0.058, 0.04, 0.34, Vector3(0, -0.18, 0), pants, Vector3.ZERO, 10)
+		M.sph(shin, 0.062, Vector3(0, -0.1, -0.025), pants, Vector3(1.0, 1.5, 1.0))   # Wade
 		M.sph(shin, 0.062, Vector3(0, -0.38, 0.045), boot, Vector3(0.95, 0.7, 1.7))
 	# Arme: Oberarm, Ellbogen, Unterarm, Hand
 	for sx in [-0.25, 0.25]:
