@@ -293,7 +293,7 @@ def head_shape(nx, ny, nz):
     y = y + dy * front
     return x, y, z
 
-def make_head(name, scale, mat_skin, mat_lip, keep=None):
+def make_head(name, scale, mat_skin, mat_lip, keep=None, smooth=0):
     """Kopfnetz. keep(nx,ny,nz) wählt Flächen (für Haar-/Bartschalen); ohne keep: ganzer Kopf mit Lippenmaterial."""
     bm = bmesh.new()
     bmesh.ops.create_uvsphere(bm, u_segments=80, v_segments=52, radius=1.0)
@@ -323,6 +323,16 @@ def make_head(name, scale, mat_skin, mat_lip, keep=None):
                 p.material_index = 1
     for p in me.polygons:
         p.use_smooth = True
+    if smooth > 0:
+        # Schalen (Haar, Bart, Lippen) weich runden, damit die Ränder nicht stufig sind
+        activate(ob)
+        md = ob.modifiers.new("Soft", "SUBSURF")
+        md.levels = smooth
+        md.render_levels = smooth
+        md.boundary_smooth = "ALL"
+        bpy.ops.object.modifier_apply(modifier="Soft")
+        for p in ob.data.polygons:
+            p.use_smooth = True
     return ob
 
 def gear(faction, variant, rig, M):
@@ -360,7 +370,8 @@ def gear(faction, variant, rig, M):
     # Gesicht: modellierter Kopf mit Augen, Brauen, Ohren; Haar und Bart als Schalen
     hide_hair = variant == "worker" and faction == "shadow"
     iris = {"west": "iris_blue", "red": "iris_grey", "shadow": "iris_brown"}[faction]
-    objs.append((make_head("Head", 1.0, M["skin"], M["lip"]), "head"))
+    objs.append((make_head("Head", 1.0, M["skin"], None), "head"))
+    objs.append((make_head("Lips", 1.012, M["lip"], None, keep=lambda x, y, z: y < -0.4 and (x / 0.27) ** 2 + ((z + 0.505) / 0.115) ** 2 < 1.0, smooth=1), "head"))
     for sx in (-0.043, 0.043):
         sg = 1 if sx > 0 else -1
         objs.append((prim("sphere", "EyeW", (sx, -0.094, 1.7), (0.031, 0.026, 0.023), M["eyew"]), "head"))
@@ -374,16 +385,16 @@ def gear(faction, variant, rig, M):
     if not hide_hair:
         if faction == "west":
             # kurzer Seitenscheitel: Schale über Stirn, Scheitel und Hinterkopf
-            hair = make_head("Hair", 1.045, M["hair"], None, keep=lambda x, y, z: z > 0.5 or (y > -0.05 and z > -0.25) or (abs(x) > 0.7 and z > 0.15))
+            hair = make_head("Hair", 1.045, M["hair"], None, keep=lambda x, y, z: z > 0.5 or (y > -0.05 and z > -0.25) or (abs(x) > 0.7 and z > 0.15), smooth=1)
         elif faction == "red":
-            hair = make_head("Hair", 1.025, M["hair"], None, keep=lambda x, y, z: z > 0.6 or (y > 0.0 and z > -0.2))
+            hair = make_head("Hair", 1.025, M["hair"], None, keep=lambda x, y, z: z > 0.6 or (y > 0.0 and z > -0.2), smooth=1)
         else:
-            hair = make_head("Hair", 1.07, M["hair"], None, keep=lambda x, y, z: z > 0.45 or (y > -0.1 and z > -0.45) or (abs(x) > 0.75 and z > -0.1))
+            hair = make_head("Hair", 1.07, M["hair"], None, keep=lambda x, y, z: z > 0.45 or (y > -0.1 and z > -0.45) or (abs(x) > 0.75 and z > -0.1), smooth=1)
         objs.append((hair, "head"))
     if faction == "red" and variant != "worker" or (faction == "red" and variant == "worker"):
-        objs.append((make_head("Stubble", 1.012, M["hair"], None, keep=lambda x, y, z: z < -0.4 and z > -0.9 and y < 0.0 and (abs(x) > 0.18 or z < -0.62 or z > -0.42)), "head"))
+        objs.append((make_head("Stubble", 1.012, M["hair"], None, keep=lambda x, y, z: z < -0.4 and z > -0.9 and y < 0.0 and (abs(x) > 0.18 or z < -0.62 or z > -0.42), smooth=1), "head"))
     if faction == "shadow":
-        objs.append((make_head("Beard", 1.04, M["hair"], None, keep=lambda x, y, z: z < -0.15 and z > -0.95 and y < 0.2 and not ((x / 0.3) ** 2 + ((z + 0.505) / 0.12) ** 2 < 1.0 and y < -0.3)), "head"))
+        objs.append((make_head("Beard", 1.04, M["hair"], None, keep=lambda x, y, z: z < -0.15 and z > -0.95 and y < 0.2 and not ((x / 0.3) ** 2 + ((z + 0.505) / 0.12) ** 2 < 1.0 and y < -0.3), smooth=1), "head"))
     # Reißverschluss mit Zipper, Werkzeuggürtel (Arbeiter)
     objs.append((prim("cube", "Zip", (0, -0.171, 1.28), (0.012, 0.008, 0.3), M["metal"]), "chest"))
     objs.append((prim("cube", "ZipPull", (0, -0.176, 1.4), (0.02, 0.008, 0.04), M["metal"], bevel=0.003), "chest"))
