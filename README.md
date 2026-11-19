@@ -255,6 +255,7 @@ Das Spiel lädt `.glb`-Dateien aus `models/units/` und `models/buildings/`, wenn
 | `tools/blender/make_airfield.py <west\|red\|shadow>` | Flugfelder |
 | `tools/blender/make_super.py <west\|red\|shadow>` | Superwaffen (Orbitalkanone, Atomsilo, Giftraketen-Silo) |
 | `tools/blender/make_vehicles.py <modell>` | Lkw, Flak, Artillerie, Raketenwerfer, Scud-Träger, Koloss, Hubschrauber, Jäger (Turm, Rohr, Rotor als eigene Teile) |
+| `tools/blender/make_ships.py <modell>` | Korvette, Kreuzer, Kanonenboot, Schlachtkreuzer, Kutter, Fregatte (gelofteter Rumpf, Turm/Rohr/Radar als eigene Teile; Flaggen, Besatzung, Rauch setzt `ships.gd:dress_custom` zur Laufzeit) |
 | `tools/blender/sf_bld.py` | gemeinsame Bausteine der Gebäudeskripte (Materialien, Fenster, bewegliche Teile) |
 | `tools/blender/sf_common.py` | Gemeinsame Bausteine: Grundkörper mit Fasen, Booleans, UV, Verschleiß-Shader, Backen von Farbe, Rauheit und Normalen, Export |
 

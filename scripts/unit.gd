@@ -763,6 +763,8 @@ func _animate(delta: float) -> void:
 		body.position.y = sin(_anim_t * 1.1) * 0.06
 		if visible and model.has("anims"):
 			ShipsScript.play(model["anims"], delta, Game.time)
+		if visible and model.get("spin") != null:
+			model["spin"].rotation.y += delta * 2.2
 	elif is_vehicle and not flying:
 		var n: Vector3 = Game.terrain.normal_at(position.x, position.z)
 		tilt_n = tilt_n.lerp(n, min(1.0, 6.0 * delta)).normalized()

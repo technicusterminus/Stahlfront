@@ -360,6 +360,8 @@ static func build_unit(model: String, col: Color, faction: String) -> Dictionary
 static func _build_unit(model: String, col: Color, faction: String) -> Dictionary:
 	var custom = load_custom("units", [faction + "_" + model, model], col)
 	if not custom.is_empty():
+		if model in ["corvette", "cruiser", "gunboat", "battleship", "skiff", "frigate"]:
+			load("res://scripts/ships.gd").dress_custom(custom, model, faction)
 		return custom
 	var root = Node3D.new()
 	var out = {"root": root, "turret": null, "muzzle": Vector3(0, 1.2, 1.0), "rotor": null, "height": 2.0}

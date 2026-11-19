@@ -198,6 +198,32 @@ static func build(r: Node3D, model: String, faction: String, pc: Material, out: 
 		"frigate": _frigate(r, pc, out)
 	out["height"] = 3.0
 
+## Laufzeit-Schmuck für Schiffe aus Blender: Flaggen, Besatzung, Rauch, Positionslichter, Radar.
+static func dress_custom(out: Dictionary, model: String, faction: String) -> void:
+	var r: Node3D = out["root"]
+	var spec = {
+		"corvette": {"flags": [[Vector3(0, 2.0, -0.2), 1.6, 0]], "nav": [0.85, 1.7, 0.18], "crew": [[Vector3(0.55, 1.0, 1.0), 0.4], [Vector3(-0.4, 1.0, -2.2), 2.6]], "smoke": []},
+		"cruiser": {"flags": [[Vector3(0, 3.5, -0.4), 2.6, 0]], "nav": [1.2, 2.5, -0.1], "crew": [[Vector3(-0.5, 1.45, 5.8), 0.2], [Vector3(0.5, 1.45, 5.6), 1.2]], "smoke": []},
+		"gunboat": {"flags": [[Vector3(0, 2.1, -1.6), 1.6, 0]], "nav": [1.0, 1.8, 0.1], "crew": [[Vector3(0.6, 1.0, 0.7), 0.6], [Vector3(-0.7, 1.0, -2.7), 2.4]], "smoke": [Vector3(0, 2.8, -2.6)]},
+		"battleship": {"flags": [[Vector3(0, 4.3, 0.1), 3.0, 0]], "nav": [1.35, 3.4, 0.7], "crew": [[Vector3(-0.7, 1.3, -6.6), 0.3], [Vector3(0.0, 1.3, -6.6), 1.0], [Vector3(0.7, 1.3, -6.6), 2.2]], "smoke": [Vector3(0, 3.9, -2.8), Vector3(0, 3.9, -4.3)]},
+		"skiff": {"flags": [[Vector3(0.7, 0.9, -2.3), 1.8, 0], [Vector3(-0.7, 0.9, -2.4), 2.1, 1]], "nav": [], "crew": [[Vector3(0.1, 0.55, -0.9), 3.0], [Vector3(-0.35, 0.55, 0.9), 0.2]], "smoke": []},
+		"frigate": {"flags": [[Vector3(0, 2.2, -3.0), 3.0, 1], [Vector3(0.9, 2.2, -4.2), 2.0, 0]], "nav": [0.8, 2.3, -2.7], "crew": [[Vector3(0.7, 1.0, 3.9), 0.2], [Vector3(-0.8, 1.0, -5.0), 2.9], [Vector3(1.0, 1.0, 1.4), 1.2]], "smoke": [Vector3(0.6, 3.25, -4.0)]},
+	}
+	if not spec.has(model):
+		return
+	var sp = spec[model]
+	for f in sp["flags"]:
+		D.flag(r, f[0], f[1], Color(0.05, 0.05, 0.05) if f[2] == 1 else M._team, out)
+	if sp["nav"].size() == 3:
+		_navlights(r, sp["nav"][0], sp["nav"][1], sp["nav"][2])
+	var k = 1
+	for c in sp["crew"]:
+		_crew(r, faction, c[0], c[1], out, k)
+		k += 1
+	for sm in sp["smoke"]:
+		_smoke(r, sm)
+	out["height"] = 3.0
+
 ## Animationen (Radar, Fahnen, Besatzung) für Einheiten; Gebäude haben ihr eigenes Gegenstück.
 static func play(anims: Array, delta: float, t: float) -> void:
 	for a in anims:
