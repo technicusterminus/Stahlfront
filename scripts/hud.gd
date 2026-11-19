@@ -27,6 +27,7 @@ var info_sub: Label
 var info_hp: ProgressBar
 var info_hp_lbl: Label
 var info_status: Label
+var opening_hint: Label
 var queue_box: HBoxContainer
 var prod_bar: ProgressBar
 var grid: GridContainer
@@ -50,6 +51,7 @@ var _btns: Array = []
 var _refresh_t = 0.0
 var _sell_armed = 0.0
 var _surrender_armed = false
+var _opening_complete := false
 const Maps = preload("res://scripts/maps.gd")
 var _cfg = {"faction": "west", "enemies": 1, "difficulty": 1, "spectate": false, "hour": 9.0, "daycycle": 14.0}
 var _map_layer: Control = null
@@ -230,6 +232,11 @@ func _build_bottom() -> void:
 	queue_box = HBoxContainer.new()
 	queue_box.add_theme_constant_override("separation", 4)
 	info.add_child(queue_box)
+	opening_hint = _label("", 14, Color(1.0, 0.86, 0.55))
+	opening_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	opening_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	opening_hint.hide()
+	info.add_child(opening_hint)
 	grid = GridContainer.new()
 	grid.columns = 5
 	grid.add_theme_constant_override("h_separation", 6)
@@ -645,6 +652,8 @@ func _open_map_dialog(summary: Label) -> void:
 
 func on_match_started() -> void:
 	set_game_ui(true)
+	_opening_complete = false
+	opening_hint.hide()
 	var p: Dictionary = Game.players[Game.human]
 	accent = p["color"]
 	apply_faction(p["faction"] if not Game.spectator else "west")
@@ -729,6 +738,9 @@ func _process(delta: float) -> void:
 		_refresh_t = 0.2
 		_refresh_grid()
 		_update_queue()
+		if not Game.spectator and not _opening_complete:
+			opening_hint.text = _opening_hint(p["faction"])
+			opening_hint.visible = not opening_hint.text.is_empty()
 		if powers_panel.visible:
 			_refresh_powers()
 	_update_info()
@@ -833,19 +845,50 @@ func _update_info() -> void:
 		info_status.text = st
 
 func _idle_hint() -> String:
-	var r = Game.roles(Game.human)
 	if Game.spectator:
 		return "Zuschauermodus: Die KI spielt gegen sich selbst. Leertaste springt zum Geschehen."
-	if not r.has("supply"):
-		return "Erster Schritt: Bauarbeiter auswählen und ein Nachschubzentrum nahe dem Depot bauen."
-	var fac: String = Game.players[Game.human]["faction"]
-	if Defs.factions[fac]["uses_power"] and not r.has("power"):
-		return "Als Nächstes: Kraftwerk bauen – Kaserne und Fabrik brauchen Strom."
-	if not r.has("barracks"):
-		return "Kaserne bauen, um Infanterie auszubilden."
-	if not r.has("factory"):
-		return "Fabrik bauen, um Fahrzeuge zu produzieren."
 	return "Tipp: H springt zum Hauptquartier, G öffnet die Generalsfähigkeiten."
+
+func _opening_hint(faction: String) -> String:
+	var roles := Game.roles(Game.human)
+	if roles.has("factory"):
+		_opening_complete = true
+		return ""
+	var role := "factory"
+	if not roles.has("supply"):
+		role = "supply"
+	elif Defs.factions[faction]["uses_power"] and not roles.has("power") and not roles.has("barracks"):
+		role = "power"
+	elif not roles.has("barracks"):
+		role = "barracks"
+	var id := faction + "_" + role
+	var name_of_building: String = Defs.buildings[id]["name"]
+	if Game.ctrl.mode == "place" and Game.ctrl.place_id == id:
+		if role == "supply":
+			return "Nahe einem Nachschubdepot platzieren. Grün zeigt einen gültigen Bauplatz."
+		return "Linksklick platziert das Gebäude, wenn das Bauphantom grün ist. Esc bricht ab."
+	var builder_name: String = Defs.units[Defs.dozer_of(faction)]["name"]
+	var site = null
+	for b in Game.buildings:
+		if b.owner_id == Game.human and b.alive and b.def["id"] == id:
+			site = b
+			break
+	var has_builder := false
+	for u in Game.units:
+		if u.owner_id != Game.human or not u.alive or u.def["role"] != "dozer":
+			continue
+		has_builder = true
+		if site != null and u.build_target == site:
+			return "%s im Bau (%d %%)" % [name_of_building, int(site.progress * 100)]
+	if not has_builder:
+		if roles.has("hq"):
+			return "Mit H zum Hauptquartier springen, es auswählen und dort %s ausbilden." % builder_name
+		return ""
+	if site != null:
+		return "%s auswählen und mit Rechtsklick auf die Baustelle den Bau fortsetzen." % builder_name
+	if Game.ctrl.selected_dozer() != null:
+		return "Unten „%s“ wählen%s." % [name_of_building, " und nahe einem Nachschubdepot bauen" if role == "supply" else ""]
+	return "%s auswählen und unten „%s“ wählen%s." % [builder_name, name_of_building, " (Bauplatz am Nachschubdepot)" if role == "supply" else ""]
 
 func _set_hp(hp: float, mhp: float) -> void:
 	var f: float = clamp(hp / max(mhp, 1.0), 0.0, 1.0)
@@ -1168,6 +1211,8 @@ func _draw_overlay() -> void:
 # ---------------------------------------------------------------- Ende
 
 func _on_match_end(won: bool) -> void:
+	_opening_complete = true
+	opening_hint.hide()
 	end_layer = _dim_layer()
 	var p = _center_panel(end_layer, 520)
 	var v: VBoxContainer = p.get_child(0)

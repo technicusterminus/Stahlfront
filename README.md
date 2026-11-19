@@ -4,6 +4,15 @@
 
 > Stand: spielbarer Prototyp (Skirmish gegen KI oder Zuschauermodus). Keine Kampagne, kein Mehrspieler, kein Ton. Siehe [Stand und bekannte Lücken](#stand-und-bekannte-lücken).
 
+## Visuelle Testfassung
+
+Öffne `project.godot` mit Godot 4.7, lass die Modelle importieren und starte mit F5. Unter Windows startet `Start-Stahlfront.cmd` das Spiel mit einem installierten Godot-4.7-Build. Beim ersten Durchlauf importiert Godot Land-, Luft- und Seemodelle sowie Gebäude und Texturen. Das kann einige Minuten dauern.
+
+- Der Westbund-Falke hat ein eigenes Modell mit geformter Wanne, niedrigerem Turm und einzeln bewegten Kettengliedern. Räder und Ketten verwenden in Godot instanzierte Meshes. Andere Bodenfahrzeuge neigen ihre Aufbauten beim Beschleunigen und Bremsen.
+- Die neun Modellvarianten für Infanterie, Panzerabwehrtrupps und Arbeiter haben kompaktere Ausrüstung, Helm- und Westendetails und gezielte Teammarkierungen. Ihre Animationen für Stehen, Gehen, Schießen und Fallen sind im GLB enthalten.
+- Bei Fahrzeugen, Luftfahrzeugen und Schiffen bleiben gebackene Texturen auf dem Originallack erhalten. Lackierte Oberflächen sind zurückhaltender eingefärbt, Kurvenbewegungen flüssiger und Heckwellen vom Tempo abhängig.
+- Gebäude erhalten differenzierte Oberflächen und Zugangsbereiche. In Fabriken und Werften bewegen sich Kran, Kette und Last getrennt, an Nachschubzentren fährt ein Lastschlitten, und am Flugfeld arbeiten Windsack und Lauflichter. Lüfter laufen bei Strommangel aus. Betriebsanzeigen und Fabrikschranken reagieren auf Produktion und Auslieferung.
+
 ---
 
 ## Inhalt
@@ -47,7 +56,7 @@ oder das Projekt im Godot-Editor öffnen und F5 drücken. Das Startmenü bietet:
 
 ## Spielprinzip
 
-Du startest mit einem Hauptquartier und einem Bauarbeiter und 5.000 Credits.
+Du startest mit einem Hauptquartier, 5.000 Credits und einem Bautrupp. Die Schattenfront beginnt mit zwei Arbeitern. Die Kommandoleiste zeigt während des Einstiegs den nächsten Bauschritt für deine Fraktion. Der Hinweis bleibt auch bei ausgewählten Einheiten sichtbar und endet mit der ersten fertigen Fahrzeugfabrik.
 
 1. **Nachschub:** Baue ein Nachschubzentrum nahe einem Depot. Es liefert einen Sammler-Lkw mit, der automatisch Credits aus dem Depot holt. Ohne Nachschubzentrum gibt es kein Einkommen.
 2. **Strom** (Westbund und Rote Allianz): Kraftwerke versorgen Produktionsgebäude. Bei Strommangel halbiert sich die Produktion, Abwehr und Superwaffe fallen aus. Die Schattenfront braucht keinen Strom.
@@ -331,16 +340,13 @@ powershell -File tools/balance_test.ps1 -Godot <pfad\zu\godot_console.exe> -Seed
 
 ## Stand und bekannte Lücken
 
-**Fertig:** drei Fraktionen mit Einheiten, Gebäuden, Fähigkeiten, Superwaffen und Besonderheiten · Luftwaffe · Nebel des Krieges · KI · Landschaft mit Vegetation, Wasser und Tieren · Story in drei Fassungen · Blender-Modelle für Panzer, Soldaten und alle Gebäude außer den Werften (Hauptquartiere, Fabriken, Kasernen, Kraftwerke, Nachschub, Abwehr, Forschung, Flugfelder, Superwaffen).
+**Spielbar:** Gefechte gegen KI und Zuschauermodus mit drei Fraktionen, Basisbau, Rohstoffwirtschaft, Land-, Luft- und Seeeinheiten, Generalsfähigkeiten und Superwaffen. Verfügbar sind 40 Standardkarten sowie ein Dialog für eigene Karten. Viele Einheiten und Gebäude haben eigene Blender-Modelle. Die [Modellübersicht](#eigene-modelle-und-blender-werkzeuge) listet die vorhandenen Exporte und die Modellskripte.
 
 **Offen:**
 
 - **Balance:** In KI-Messungen war die Schattenfront auffällig oft früh unterlegen; wird untersucht.
 - **Helden:** Die Story-Helden sind noch keine spielbaren Einheiten.
 - **Missionen und Kampagne:** noch keine.
-- **Ressourcen:** nur Credits; ein Ressourcenbaum (Öl, Holz, Eisen, Stahl, Gold) ist geplant.
-- **Seestreitkräfte** und größere Wasserflächen: geplant.
-- **Modelle:** Kraftwerke, Nachschubzentren, Flugfelder, Abwehr, Forschung und Superwaffen sowie alle Fahrzeuge außer dem Panzer sind noch Code-Modelle und deutlich gröber als die Blender-Modelle.
 - **Ton und Musik:** nicht vorhanden.
 - **Mehrspieler:** nicht vorhanden.
 - **Plattformen:** nur unter Windows 11 getestet.

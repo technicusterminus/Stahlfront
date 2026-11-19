@@ -6,8 +6,10 @@ uniform sampler2D camo : source_color, repeat_enable, filter_nearest_mipmap;
 uniform sampler2D grime : repeat_enable, filter_linear_mipmap;
 uniform sampler2D detail_n : hint_normal, repeat_enable, filter_linear_mipmap;
 uniform bool use_camo = true;
+uniform float camo_weight : hint_range(0.0, 1.0) = 1.0;
 uniform vec3 base_col : source_color = vec3(0.5);
 uniform float camo_scale = 0.12;
+uniform bool panel_lines = true;
 uniform float panel_scale = 1.2;
 uniform float panel_width = 0.03;
 uniform float rivet = 0.0;
@@ -48,26 +50,27 @@ void vertex() {
 void fragment() {
 	vec3 n = normalize(onrm);
 	vec3 an = abs(n);
-	vec3 col = use_camo ? tri_c(opos, n, camo_scale).rgb : base_col;
+	vec3 col = use_camo ? mix(base_col, tri_c(opos, n, camo_scale).rgb, camo_weight) : base_col;
 
 	float g = tri_g(opos, n, 0.35).r;           // grobe Flecken
 	float g2 = tri_g(opos * 3.7, n, 1.0).r;     // Koernung
 	float g3 = tri_g(opos * vec3(9.0, 1.2, 9.0), n, 1.0).r; // Schlieren nach unten
 
-	// Blechfugen: Linien entlang der beiden Achsen quer zur Flaechennormale
-	vec3 c = abs(fract(opos * panel_scale + 0.5) - 0.5) / panel_scale;
-	float lx = smoothstep(panel_width, panel_width * 0.35, c.x) * (1.0 - an.x);
-	float ly = smoothstep(panel_width, panel_width * 0.35, c.y) * (1.0 - an.y);
-	float lz = smoothstep(panel_width, panel_width * 0.35, c.z) * (1.0 - an.z);
-	float line = clamp(max(lx, max(ly, lz)), 0.0, 1.0);
-	float near_line = clamp(max(smoothstep(panel_width * 5.0, panel_width * 2.0, c.x) * (1.0 - an.x),
-		max(smoothstep(panel_width * 5.0, panel_width * 2.0, c.y) * (1.0 - an.y),
-			smoothstep(panel_width * 5.0, panel_width * 2.0, c.z) * (1.0 - an.z))), 0.0, 1.0);
-
-	// Nieten entlang der Fugen
-	vec3 q = fract(opos * panel_scale * 7.0) - 0.5;
-	q -= dot(q, n) * n;
-	float rv = rivet * near_line * (1.0 - line) * smoothstep(0.2, 0.12, length(q));
+	float line = 0.0;
+	float near_line = 0.0;
+	float rv = 0.0;
+	if (panel_lines) {
+		// Schmale Details weich ausblenden, sobald sie kleiner als ein Pixel werden.
+		vec3 c = abs(fract(opos * panel_scale + 0.5) - 0.5) / panel_scale;
+		vec3 coverage = 1.0 - smoothstep(vec3(panel_width), vec3(panel_width * 3.0), fwidth(opos));
+		vec3 seam = (1.0 - smoothstep(vec3(panel_width * 0.35), vec3(panel_width), c)) * (1.0 - an) * coverage;
+		line = max(seam.x, max(seam.y, seam.z));
+		vec3 near_seam = (1.0 - smoothstep(vec3(panel_width * 2.0), vec3(panel_width * 5.0), c)) * (1.0 - an) * coverage;
+		near_line = max(near_seam.x, max(near_seam.y, near_seam.z));
+		vec3 q = fract(opos * panel_scale * 7.0) - 0.5;
+		q -= dot(q, n) * n;
+		rv = rivet * near_line * (1.0 - line) * (1.0 - smoothstep(0.12, 0.2, length(q)));
+	}
 
 	// Rost: fleckig, entlang der Fugen und als Laufspuren
 	float rmask = smoothstep(1.0 - rust, 1.0, g * 0.7 + g2 * 0.3 + near_line * 0.25 + (g3 - 0.5) * 0.3);

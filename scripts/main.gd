@@ -317,8 +317,8 @@ func start_match(cfg: Dictionary) -> void:
 				wk.position = Vector3(o0.x + fi * 0.9 - 2.2, gy, o0.z)
 				wk.rotation.y = 1.2
 				Game.fx_root.add_child(wk)
-				var wap = wk.get_meta("ap", null)
-				if pose == 1 and wap != null:
+				if pose == 1 and wk.has_meta("ap"):
+					var wap: AnimationPlayer = wk.get_meta("ap")
 					wap.play("Walk")
 				fi += 1
 		cam.look_at_pos(Vector3(o0.x, gy + 1.4, o0.z))

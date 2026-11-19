@@ -51,6 +51,8 @@ var ring: MeshInstance3D
 var muzzle_local = Vector3.ZERO
 var _dust_t = 0.0
 var scaffold: Node3D
+var _service_state := -1
+var _service_open_until := 0.0
 
 func setup(d: Dictionary, pid: int, center: Vector2i, c: Array) -> void:
 	def = d
@@ -220,6 +222,7 @@ func _exit_point() -> Vector3:
 	return Game.cell_center(c)
 
 func _spawn(uid: String) -> void:
+	_service_open_until = Game.time + 1.1
 	_spawn_one(uid, Vector3.ZERO)
 	# Rote Allianz: Massenaushebung – Infanterie kommt paarweise
 	if Defs.units[uid]["pair"]:
@@ -256,6 +259,8 @@ func _physics_process(delta: float) -> void:
 	if visible and model.has("anims"):
 		_play_anims(delta)
 	var pw = powered()
+	if visible:
+		_update_service_signal(delta, pw)
 	if not queue.is_empty():
 		var speed: float = (1.0 if pw else 0.5) * Game.income_mult(owner_id)
 		prod_t += delta * speed
@@ -277,6 +282,22 @@ func _physics_process(delta: float) -> void:
 		if _income_t >= 10.0:
 			_income_t = 0.0
 			Game.players[owner_id]["credits"] += 30.0
+
+func _update_service_signal(delta: float, has_power: bool) -> void:
+	var signal_data: Dictionary = model["service_signal"]
+	var active := not queue.is_empty() or Game.time < _service_open_until
+	if def["role"] == "super":
+		active = super_ready
+	model["work_motion"].advance(delta, has_power, active)
+	var new_state := 2 if not has_power else (1 if active else 0)
+	if new_state != _service_state:
+		_service_state = new_state
+		var lamp: MeshInstance3D = signal_data["lamp"]
+		lamp.material_override = signal_data["materials"][new_state]
+	var arm: Node3D = signal_data.get("arm")
+	if arm != null:
+		var opening := has_power and (Game.time < _service_open_until or prod_progress() > 0.87)
+		arm.rotation.z = move_toward(arm.rotation.z, -1.32 if opening else 0.0, delta * 2.2)
 
 ## Leben im Gebäude: Lüfter, Blinklichter, Fahnen, Arbeiter, Kräne, Pressen.
 func _play_anims(delta: float) -> void:
@@ -313,8 +334,8 @@ func _play_anims(delta: float) -> void:
 						for nm in ["LegL", "LegR", "ShinL", "ShinR", "ArmL", "ArmR", "ForeL", "ForeR"]:
 							pn[nm] = n.find_child(nm, true, false)
 						a["p"] = pn
-					var apn = n.get_meta("ap", null)
-					if apn != null:
+					if n.has_meta("ap"):
+						var apn: AnimationPlayer = n.get_meta("ap")
 						if apn.current_animation != "Walk":
 							apn.play("Walk")
 						apn.speed_scale = clamp(a["s"] * 0.9, 0.6, 2.0)
