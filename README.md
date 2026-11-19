@@ -257,6 +257,7 @@ Das Spiel lädt `.glb`-Dateien aus `models/units/` und `models/buildings/`, wenn
 | `tools/blender/make_vehicles.py <modell>` | Lkw, Flak, Artillerie, Raketenwerfer, Scud-Träger, Koloss, Hubschrauber, Jäger (Turm, Rohr, Rotor als eigene Teile) |
 | `tools/blender/make_ships.py <modell>` | Korvette, Kreuzer, Kanonenboot, Schlachtkreuzer, Kutter, Fregatte (gelofteter Rumpf, Turm/Rohr/Radar als eigene Teile; Flaggen, Besatzung, Rauch setzt `ships.gd:dress_custom` zur Laufzeit) |
 | `tools/blender/make_docks.py <fraktion>` | Marinewerft, Schiffswerft, Schmugglerhafen (Halle, 9 m Steg mit Pfählen und Fendern, Kran bzw. Radar als drehendes Teil `Spin`) |
+| `tools/blender/make_trucks.py <fraktion>` | Nachschub-Lkw je Fraktion: Kofferlaster (West), Armeelaster mit Plane (Rot), Schrott-Pickup (Schatten) |
 | `tools/blender/sf_bld.py` | gemeinsame Bausteine der Gebäudeskripte (Materialien, Fenster, bewegliche Teile) |
 | `tools/blender/sf_common.py` | Gemeinsame Bausteine: Grundkörper mit Fasen, Booleans, UV, Verschleiß-Shader, Backen von Farbe, Rauheit und Normalen, Export |
 
