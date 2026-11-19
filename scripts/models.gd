@@ -160,14 +160,15 @@ static func hard(kind: String, col := Color.WHITE) -> Material:
 			m.set_shader_parameter("rough_v", maxf(st["rough"], 0.50))
 			m.set_shader_parameter("normal_depth", st["nd"] * 0.64)
 			m.set_shader_parameter("dirt", st["dirt"] * 0.65)
-		"ceramic":
+		"ceramic", "turret_ceramic", "industrial":
 			m.set_shader_parameter("panel_lines", false)
 			m.set_shader_parameter("metallic_v", 0.16)
 			m.set_shader_parameter("rough_v", 0.59)
 			m.set_shader_parameter("grain", 0.13)
 			m.set_shader_parameter("rust", 0.025)
-			m.set_shader_parameter("dirt", 0.24)
+			m.set_shader_parameter("dirt", 0.098 if kind == "turret_ceramic" else 0.27)
 			m.set_shader_parameter("normal_depth", 0.24)
+			m.set_shader_parameter("coating_wear", 0.84 if kind == "ceramic" else 0.55)
 		"dark":
 			base = Color(0.07, 0.07, 0.075)
 		"steel":
@@ -403,7 +404,8 @@ static func _teamcolor(n: Node, col: Color) -> void:
 			elif m is BaseMaterial3D and not _bld and not _soldier and _fac != "":
 				var surface := String(m.resource_name)
 				if surface.begins_with("FalkeArmor"):
-					mi.set_surface_override_material(i, hard("ceramic", m.albedo_color))
+					var treatment := "ceramic" if mi.name == "FalkeHull" else "turret_ceramic"
+					mi.set_surface_override_material(i, hard(treatment, m.albedo_color))
 				# Schiffe und Nachschubfahrzeuge können bereits feste, bemalte Rümpfe haben.
 				elif surface.begins_with("Hull") or surface.begins_with("TruckRust") or surface.begins_with("RustBlue") or surface.begins_with("TruckRedPaint"):
 					mi.set_surface_override_material(i, _painted_finish(m, Color.WHITE, false))

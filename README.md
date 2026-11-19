@@ -8,10 +8,10 @@
 
 Öffne `project.godot` mit Godot 4.7, lass die Modelle importieren und starte mit F5. Unter Windows startet `Start-Stahlfront.cmd` das Spiel mit einem installierten Godot-4.7-Build. Beim ersten Durchlauf importiert Godot Land-, Luft- und Seemodelle sowie Gebäude und Texturen. Das kann einige Minuten dauern.
 
-- Der Westbund-Falke hat ein eigenes Modell mit geformter Wanne, niedrigerem Turm und einzeln bewegten Kettengliedern. Räder und Ketten verwenden in Godot instanzierte Meshes. Andere Bodenfahrzeuge neigen ihre Aufbauten beim Beschleunigen und Bremsen.
+- Der Westbund-Falke hat ein eigenes Modell mit geformter Wanne, niedrigerem Turm und einzeln bewegten Kettengliedern. Der Lack zeigt in der Nahsicht Abrieb und vertikale Laufspuren. Am Laufwerk setzt sich mehr Staub ab als am Turm. Räder und Ketten verwenden in Godot instanzierte Meshes. Andere Bodenfahrzeuge neigen ihre Aufbauten beim Beschleunigen und Bremsen.
 - Die neun Modellvarianten für Infanterie, Panzerabwehrtrupps und Arbeiter haben kompaktere Ausrüstung, Helm- und Westendetails und gezielte Teammarkierungen. Ihre Animationen für Stehen, Gehen, Schießen und Fallen sind im GLB enthalten.
 - Bei Fahrzeugen, Luftfahrzeugen und Schiffen bleiben gebackene Texturen auf dem Originallack erhalten. Lackierte Oberflächen sind zurückhaltender eingefärbt, Kurvenbewegungen flüssiger und Heckwellen vom Tempo abhängig.
-- Gebäude erhalten differenzierte Oberflächen und Zugangsbereiche. In Fabriken und Werften bewegen sich Kran, Kette und Last getrennt, an Nachschubzentren fährt ein Lastschlitten, und am Flugfeld arbeiten Windsack und Lauflichter. Lüfter laufen bei Strommangel aus. Betriebsanzeigen und Fabrikschranken reagieren auf Produktion und Auslieferung.
+- Gebäude erhalten differenzierte Oberflächen und Zugangsbereiche. In Fabriken und Werften schließt der Greifer an der Kiste, hebt sie, setzt sie an der zweiten Station ab und fährt leer zurück. Rollen, Winde und einzelne Kettenglieder bewegen sich mit. An Nachschubzentren fährt ein Lastschlitten, und am Flugfeld arbeiten Windsack und Lauflichter. Lüfter laufen bei Strommangel aus. Betriebsanzeigen und Fabrikschranken reagieren auf Produktion und Auslieferung.
 
 ---
 
@@ -253,6 +253,7 @@ Das Spiel lädt `.glb`-Dateien aus `models/units/` und `models/buildings/`, wenn
 | Skript | Ergebnis |
 |---|---|
 | `tools/blender/make_tank.py` | Kampfpanzer mit drehbarem Turm, gebackene PBR-Texturen |
+| `tools/blender/export_falke_game.py` | Westbund-Falke aus `models/source/west_falke.blend` als GLB für Godot |
 | `tools/blender/make_soldier.py` | Soldaten (Infanterist, Panzerjäger, Arbeiter) je Fraktion, Rig und Animationen Idle/Walk/Shoot/Die |
 | `tools/blender/make_west_hq.py`, `make_red_hq.py`, `make_shadow_hq.py` | Hauptquartiere |
 | `tools/blender/make_factories.py <west\|red\|shadow>` | Fabriken |
