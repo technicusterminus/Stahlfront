@@ -313,8 +313,8 @@ func _play_anims(delta: float) -> void:
 						for nm in ["LegL", "LegR", "ShinL", "ShinR", "ArmL", "ArmR", "ForeL", "ForeR"]:
 							pn[nm] = n.find_child(nm, true, false)
 						a["p"] = pn
-					var apn = n.get_meta("ap", null)
-					if apn != null:
+					if n.has_meta("ap"):
+						var apn: AnimationPlayer = n.get_meta("ap")
 						if apn.current_animation != "Walk":
 							apn.play("Walk")
 						apn.speed_scale = clamp(a["s"] * 0.9, 0.6, 2.0)
