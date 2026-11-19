@@ -285,6 +285,8 @@ static func load_custom(dir: String, names: Array, col: Color) -> Dictionary:
 		_soldier = dir == "units" and (String(n).ends_with("inf") or String(n).ends_with("inf_at") or String(n).ends_with("worker"))
 		_teamcolor(inst, col)
 		_soldier = false
+		if dir == "units" and (String(n).ends_with("inf") or String(n).ends_with("inf_at") or String(n).ends_with("worker")):
+			_individualize(inst)
 		var out = {"root": root, "turret": null, "muzzle": Vector3(0, 1.2, 1.0), "rotor": null,
 			"tail_rotor": null, "spin": null, "height": 2.0, "smoke": [], "custom": true}
 		var t = inst.find_child("Turret", true, false)
@@ -334,6 +336,24 @@ static func _rel(n: Node3D, ancestor: Node3D) -> Transform3D:
 			tf = (cur as Node3D).transform * tf
 		cur = cur.get_parent()
 	return tf
+
+const SKIN_TONES = [Color(0.93, 0.78, 0.66), Color(0.8, 0.6, 0.46), Color(0.66, 0.46, 0.33), Color(0.46, 0.3, 0.21), Color(0.97, 0.84, 0.72), Color(0.58, 0.4, 0.28)]
+const HAIR_TONES = [Color(0.08, 0.06, 0.05), Color(0.28, 0.18, 0.09), Color(0.5, 0.36, 0.17), Color(0.62, 0.62, 0.6), Color(0.04, 0.04, 0.04), Color(0.38, 0.22, 0.1)]
+
+## Jede Figur bekommt Hautton und Haarfarbe: die Materialien Skin, SkinDark und Hair werden je Instanz ersetzt.
+static func _individualize(n: Node) -> void:
+	var tone: Color = SKIN_TONES[randi() % SKIN_TONES.size()]
+	var hair: Color = HAIR_TONES[randi() % HAIR_TONES.size()]
+	for mi in n.find_children("*", "MeshInstance3D", true, false):
+		var mesh: MeshInstance3D = mi
+		for i in mesh.mesh.get_surface_count():
+			var mt = mesh.mesh.surface_get_material(i)
+			if mt is BaseMaterial3D:
+				var nm = String(mt.resource_name)
+				if nm == "Skin" or nm == "SkinDark" or nm == "Hair":
+					var dm: BaseMaterial3D = mt.duplicate()
+					dm.albedo_color = tone if nm == "Skin" else (tone.darkened(0.35) if nm == "SkinDark" else hair)
+					mesh.set_surface_override_material(i, dm)
 
 static func _teamcolor(n: Node, col: Color) -> void:
 	if n is MeshInstance3D:
