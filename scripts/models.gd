@@ -301,6 +301,10 @@ static func load_custom(dir: String, names: Array, col: Color) -> Dictionary:
 			var nd = inst.find_child(key[0], true, false)
 			if nd != null:
 				out[key[1]] = nd
+		var rotors = []
+		for nd2 in inst.find_children("Rotor*", "Node3D", true, false):
+			rotors.append(nd2)
+		out["rotors"] = rotors
 		# Animierte Modelle (Soldaten): AnimationPlayer mitliefern, Schleifen setzen
 		var aps = inst.find_children("*", "AnimationPlayer", true, false)
 		if not aps.is_empty():

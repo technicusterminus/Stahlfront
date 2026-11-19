@@ -358,6 +358,8 @@ func start_match(cfg: Dictionary) -> void:
 		_defense_test()
 	if args.has("boomtest"):
 		_boom_test()
+	if args.has("rotortest"):
+		_rotor_test()
 	if args.has("animalcam"):
 		var an = world.get_node("Animals")
 		if not an.herds.is_empty():
@@ -535,6 +537,19 @@ func _quit_after(sec: float) -> void:
 func _delayed_png(t: float, file: String) -> void:
 	await _wait(t)
 	get_viewport().get_texture().get_image().save_png(ProjectSettings.globalize_path("res://shots/%s" % file))
+
+## Misst, ob sich die Rotoren von Drohnen und Hubschraubern einzeln drehen.
+func _rotor_test() -> void:
+	await _wait(1.0)
+	var st: Vector3 = Game.players[0]["start"] + Vector3(0, 0, 20)
+	for id in ["west_drone", "west_dozer", "west_heli", "red_heli"]:
+		var u = Game.spawn_unit(id, 0, st)
+		await _wait(0.3)
+		var rs: Array = u.model.get("rotors", [])
+		var a0 = rs.map(func(r): return snappedf(r.rotation.y, 0.01))
+		await _wait(0.2)
+		var a1 = rs.map(func(r): return snappedf(r.rotation.y, 0.01))
+		print("ROTOR %s: %d Rotoren  vorher %s  nachher %s" % [id, rs.size(), str(a0), str(a1)])
 
 ## Zeigt drei Explosionsgrößen nebeneinander (für Bildproben mit --shot und --shotdelay).
 func _boom_test() -> void:

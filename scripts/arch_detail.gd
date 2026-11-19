@@ -142,7 +142,8 @@ static func vehicle(p: Node3D, model: String, pos: Vector3, rot_y: float, s := 0
 	p.add_child(v)
 	return v
 
-## Kleine Arbeiterfigur mit beweglichen Beinen.
+## Kleine Arbeiterfigur: rundliche Glieder mit Knie, Ellbogen, Händen und Füßen; Beine und Arme sind
+## einzeln beweglich (LegL/LegR mit ShinL/ShinR, ArmL/ArmR mit ForeL/ForeR).
 static func worker(faction: String) -> Node3D:
 	var n = Node3D.new()
 	var suit: Color
@@ -158,22 +159,65 @@ static func worker(faction: String) -> Node3D:
 			suit = Color(0.62, 0.53, 0.38)
 			hat = Color(0.25, 0.22, 0.18)
 	var sm = M.mat(suit, 0.0, 0.85)
-	for sx in [-0.09, 0.09]:
-		var leg = M.node(n, Vector3(sx, 0.75, 0))
-		leg.name = "LegL" if sx < 0 else "LegR"
-		M.box(leg, Vector3(0.13, 0.75, 0.15), Vector3(0, -0.37, 0), M.mat(suit.darkened(0.3), 0, 0.9))
-	M.box(n, Vector3(0.38, 0.55, 0.24), Vector3(0, 1.03, 0), sm)
-	if faction == "west":
-		M.box(n, Vector3(0.4, 0.12, 0.26), Vector3(0, 1.1, 0), M.glow(Color(0.9, 1.0, 0.3), 1.2))
-	M.sph(n, 0.13, Vector3(0, 1.43, 0), M.mat(Color(0.78, 0.6, 0.47), 0, 0.8))
-	if faction == "shadow":
-		M.box(n, Vector3(0.3, 0.12, 0.3), Vector3(0, 1.5, 0), M.mat(hat, 0, 0.9))
-		M.box(n, Vector3(0.28, 0.1, 0.05), Vector3(0, 1.38, 0.13), M.mat(Color(0.55, 0.2, 0.15), 0, 0.9))
-	else:
-		M.sph(n, 0.15, Vector3(0, 1.5, 0), M.mat(hat, 0.2, 0.5), Vector3(1, 0.6, 1.1))
+	var pants = M.mat(suit.darkened(0.32), 0.0, 0.9)
+	var skin = M.mat(Color(0.78, 0.6, 0.47), 0, 0.8)
+	var boot = M.mat(Color(0.12, 0.1, 0.09), 0.1, 0.8)
+	var glove = M.mat(Color(0.25, 0.22, 0.18) if faction != "west" else Color(0.9, 0.9, 0.92), 0.0, 0.8)
+	# Becken und Rumpf: weich geformt
+	M.sph(n, 0.15, Vector3(0, 0.8, 0), pants, Vector3(1.15, 0.8, 0.95))
+	M.sph(n, 0.2, Vector3(0, 1.1, 0), sm, Vector3(1.1, 1.3, 0.8))
+	M.cyl(n, 0.13, 0.15, 0.2, Vector3(0, 0.95, 0), sm, Vector3.ZERO, 10)
+	M.sph(n, 0.1, Vector3(-0.24, 1.27, 0), sm)
+	M.sph(n, 0.1, Vector3(0.24, 1.27, 0), sm)
+	M.cyl(n, 0.05, 0.06, 0.1, Vector3(0, 1.35, 0), skin, Vector3.ZERO, 8)
+	M.sph(n, 0.125, Vector3(0, 1.47, 0), skin, Vector3(0.95, 1.05, 1.0))
+	M.sph(n, 0.025, Vector3(0, 1.45, 0.12), M.mat(Color(0.65, 0.48, 0.38), 0, 0.8))
+	# Gürtel
+	M.cyl(n, 0.17, 0.17, 0.05, Vector3(0, 0.86, 0), M.mat(Color(0.15, 0.12, 0.1), 0.2, 0.7), Vector3.ZERO, 12)
+	# Beine: Oberschenkel, Knie, Wade mit Stiefel
+	for sx in [-0.095, 0.095]:
+		var left = sx < 0
+		var leg = M.node(n, Vector3(sx, 0.78, 0))
+		leg.name = "LegL" if left else "LegR"
+		M.cyl(leg, 0.075, 0.062, 0.4, Vector3(0, -0.2, 0), pants, Vector3.ZERO, 10)
+		M.sph(leg, 0.066, Vector3(0, -0.4, 0), pants)
+		var shin = M.node(leg, Vector3(0, -0.4, 0))
+		shin.name = "ShinL" if left else "ShinR"
+		M.cyl(shin, 0.062, 0.045, 0.34, Vector3(0, -0.18, 0), pants, Vector3.ZERO, 10)
+		M.sph(shin, 0.062, Vector3(0, -0.38, 0.045), boot, Vector3(0.95, 0.7, 1.7))
+	# Arme: Oberarm, Ellbogen, Unterarm, Hand
+	for sx in [-0.25, 0.25]:
+		var left2 = sx < 0
+		var arm = M.node(n, Vector3(sx, 1.27, 0))
+		arm.name = "ArmL" if left2 else "ArmR"
+		M.cyl(arm, 0.058, 0.05, 0.3, Vector3(0, -0.15, 0), sm, Vector3.ZERO, 8)
+		M.sph(arm, 0.052, Vector3(0, -0.3, 0), sm)
+		var fore = M.node(arm, Vector3(0, -0.3, 0))
+		fore.name = "ForeL" if left2 else "ForeR"
+		fore.rotation.x = -0.35
+		M.cyl(fore, 0.05, 0.04, 0.28, Vector3(0, -0.14, 0), sm, Vector3.ZERO, 8)
+		M.sph(fore, 0.055, Vector3(0, -0.3, 0), glove)
+	match faction:
+		"west":
+			# Leuchtweste, Helm mit Visier
+			M.sph(n, 0.215, Vector3(0, 1.13, 0), M.glow(Color(0.9, 1.0, 0.3), 1.2), Vector3(1.12, 0.45, 0.85))
+			M.sph(n, 0.15, Vector3(0, 1.53, 0), M.mat(hat, 0.2, 0.5), Vector3(1.0, 0.65, 1.1))
+			M.sph(n, 0.07, Vector3(0, 1.49, 0.1), M.mat(Color(0.1, 0.2, 0.3), 0.8, 0.1), Vector3(1.3, 0.5, 0.6))
+		"red":
+			# Schirmmütze mit Stern, Schulterklappen
+			M.sph(n, 0.14, Vector3(0, 1.54, 0), M.mat(hat, 0.1, 0.7), Vector3(1.0, 0.55, 1.05))
+			M.box(n, Vector3(0.2, 0.025, 0.1), Vector3(0, 1.5, 0.13), M.mat(hat.darkened(0.4), 0.1, 0.7), Vector3(0.15, 0, 0))
+			M.sph(n, 0.02, Vector3(0, 1.55, 0.14), M.glow(Color(1.0, 0.82, 0.2), 1.0))
+			for sx in [-0.24, 0.24]:
+				M.box(n, Vector3(0.12, 0.02, 0.1), Vector3(sx, 1.33, 0), M.mat(Color(0.7, 0.6, 0.25), 0.4, 0.5))
+		_:
+			# Kopftuch, Hut mit Krempe, Rucksack
+			M.sph(n, 0.135, Vector3(0, 1.53, 0), M.mat(hat, 0, 0.9), Vector3(1.0, 0.5, 1.05))
+			M.cyl(n, 0.2, 0.2, 0.025, Vector3(0, 1.53, 0), M.mat(hat, 0, 0.9), Vector3.ZERO, 14)
+			M.sph(n, 0.1, Vector3(0, 1.41, 0.07), M.mat(Color(0.55, 0.2, 0.15), 0, 0.9), Vector3(1.1, 0.55, 0.8))
+			M.sph(n, 0.17, Vector3(0, 1.12, -0.19), M.mat(Color(0.35, 0.28, 0.18), 0, 0.9), Vector3(1.0, 1.3, 0.7))
 	n.scale = Vector3.ONE * 1.15
 	return n
-
 ## Arbeiter, der einen Rundweg (lokale Punkte) abläuft.
 static func walker(p: Node3D, faction: String, pts: Array, out: Dictionary, speed := 1.2) -> void:
 	var w = worker(faction)

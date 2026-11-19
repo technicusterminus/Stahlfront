@@ -308,13 +308,24 @@ func _play_anims(delta: float) -> void:
 					n.position += d.normalized() * step
 					n.rotation.y = lerp_angle(n.rotation.y, atan2(d.x, d.z), min(1.0, 6.0 * delta))
 				if not a.get("vehicle", false):
-					var sw = sin(t * a["s"] * 6.0) * 0.5
-					var ll = n.get_node_or_null("LegL")
-					var lr = n.get_node_or_null("LegR")
-					if ll:
-						ll.rotation.x = sw
-					if lr:
-						lr.rotation.x = -sw
+					if not a.has("p"):
+						var pn = {}
+						for nm in ["LegL", "LegR", "ShinL", "ShinR", "ArmL", "ArmR", "ForeL", "ForeR"]:
+							pn[nm] = n.find_child(nm, true, false)
+						a["p"] = pn
+					var pp: Dictionary = a["p"]
+					var sw = sin(t * a["s"] * 6.0) * 0.55
+					if pp["LegL"]:
+						pp["LegL"].rotation.x = sw
+						pp["LegR"].rotation.x = -sw
+					if pp["ShinL"]:
+						pp["ShinL"].rotation.x = max(sw, 0.0) * 1.3
+						pp["ShinR"].rotation.x = max(-sw, 0.0) * 1.3
+					if pp["ArmL"]:
+						pp["ArmL"].rotation.x = -sw * 0.8
+						pp["ArmR"].rotation.x = sw * 0.8
+						pp["ForeL"].rotation.x = -0.35 - abs(sw) * 0.4
+						pp["ForeR"].rotation.x = -0.35 - abs(sw) * 0.4
 			"slide":
 				var k = 0.5 + 0.5 * sin(t * a["s"])
 				a["n"].position = (a["a"] as Vector3).lerp(a["b"], k)

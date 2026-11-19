@@ -360,3 +360,256 @@ elif which in ("west_jet", "red_jet"):
     mz = S.empty("Muzzle", (0, -2.4, -0.3), None)
     extras.append(mz)
     finish_unit(which, cam=(-8, -9, 5), tgt=(0, 0, 0))
+
+# ---------------------------------------------------------------- Rest der Fahrzeuge
+
+elif which == "dozer":
+    BODY = B.M("DozerYellow", (0.95, 0.72, 0.1), 0.4, 0.5, 0.5, 0.6)
+    tracks(-1.0, 3.4, 0.6, 0.7)
+    tracks(1.0, 3.4, 0.6, 0.7)
+    P.append(S.box("Body", (1.6, 3.0, 0.8), (0, 0.2, 1.0), BODY, 0.08))
+    P.append(S.box("Hood", (1.4, 1.2, 0.5), (0, -0.9, 1.5), BODY, 0.08))
+    P.append(S.box("Cab", (1.3, 1.2, 1.1), (0, 0.6, 1.95), TP, 0.08))
+    P.append(S.box("CabRoof", (1.5, 1.4, 0.08), (0, 0.6, 2.55), DK, 0.02))
+    P.append(S.box("Windshield", (1.2, 0.05, 0.6), (0, 0.0, 2.1), GLS, 0.0))
+    for sx in (-1, 1):
+        P.append(S.box("SideWindow", (0.05, 0.8, 0.55), (sx * 0.66, 0.6, 2.1), GLS, 0.0))
+        P.append(S.cyl("CagePost", 0.04, 1.1, (sx * 0.7, -0.05, 2.0), DK, 6))
+    # Schild mit Hydraulik, Heckreißer
+    P.append(S.box("Blade", (2.8, 0.25, 0.9), (0, -2.1, 0.7), ST, 0.05, rot=(-0.2, 0, 0)))
+    P.append(S.box("BladeEdge", (2.8, 0.1, 0.12), (0, -2.2, 0.27), DK, 0.02))
+    for sx in (-0.8, 0.8):
+        P.append(S.box("Arm", (0.15, 1.5, 0.15), (sx, -1.4, 0.85), ST, 0.02))
+        P.append(S.cyl("Cylinder", 0.07, 0.9, (sx, -1.0, 1.15), DK, 8, rot=(math.pi / 2 - 0.3, 0, 0)))
+    P.append(S.box("Ripper", (1.2, 0.2, 0.2), (0, 1.9, 0.7), ST, 0.02))
+    for k in range(3):
+        P.append(S.box("Tooth", (0.1, 0.12, 0.6), (-0.4 + k * 0.4, 2.0, 0.45), DK, 0.01))
+    P.append(S.cyl("Exhaust", 0.07, 1.1, (0.55, -0.9, 2.1), ST, 8))
+    P.append(S.sphere("Beacon", 0.12, (0.5, 0.6, 2.7), GLO, segs=10, rings=6))
+    P.append(S.box("Grille", (1.1, 0.05, 0.35), (0, -1.5, 1.4), DK, 0.0))
+    headlights(-1.52, 1.45, 0.5)
+    finish_unit("dozer")
+
+elif which in ("technical", "technical_aa"):
+    aa = which == "technical_aa"
+    P.append(S.box("Frame", (1.8, 4.0, 0.5), (0, 0, 0.8), TP, 0.06))
+    axles([-1.3, 1.2], 0.95, 0.4)
+    P.append(S.box("Cab", (1.7, 1.3, 0.75), (0, -0.6, 1.4), TP, 0.08))
+    P.append(S.box("CabRoof", (1.75, 1.35, 0.07), (0, -0.6, 1.8), TP, 0.02))
+    P.append(S.box("Windshield", (1.6, 0.05, 0.45), (0, -1.27, 1.5), GLS, 0.0))
+    P.append(S.box("Hood", (1.6, 0.9, 0.3), (0, -1.5, 1.2), TP, 0.06))
+    P.append(S.box("BullBar", (1.7, 0.1, 0.5), (0, -2.05, 0.9), DK, 0.02))
+    for sx in (-1, 1):
+        P.append(S.cyl("BarPost", 0.04, 0.5, (sx * 0.7, -2.05, 1.0), DK, 6))
+        P.append(S.box("BedSide", (0.08, 2.0, 0.45), (sx * 0.85, 1.0, 1.25), TP, 0.02))
+        P.append(S.box("Mirror", (0.08, 0.12, 0.25), (sx * 1.0, -0.95, 1.55), DK, 0.02))
+    P.append(S.box("Tailgate", (1.8, 0.08, 0.45), (0, 2.0, 1.25), TP, 0.02))
+    P.append(S.box("Bed", (1.7, 2.0, 0.08), (0, 1.0, 1.05), DK, 0.0))
+    P.append(S.cyl("Spare", 0.38, 0.2, (0, 2.1, 1.3), RB, 14, rot=(math.pi / 2, 0, 0)))
+    P.append(S.box("RollBar", (1.7, 0.08, 0.08), (0, 0.05, 1.95), DK, 0.0))
+    headlights(-2.0, 1.2, 0.6)
+    P.append(S.cyl("Exhaust", 0.06, 1.0, (0.9, 0.3, 0.55), ST, 8, rot=(math.pi / 2, 0, 0)))
+    P.append(S.cyl("Antenna", 0.012, 2.4, (-0.8, 0.2, 2.9), DK, 6))
+    P.append(S.box("Rag", (0.02, 0.5, 0.3), (-0.8, 0.0, 3.9), RS, 0.0))
+    T.append(S.cyl("Pole", 0.08, 0.8, (0, 1.0, 1.5), DK, 8))
+    if aa:
+        e = 0.5
+        T.append(S.box("Shield", (0.9, 0.08, 0.6), (0, 0.75, 2.2), DK, 0.02))
+        for sx in (-0.2, 0.2):
+            tip = barrel_cyl(BR, (sx, 0.9, 2.3), e, 1.6, 0.06, ST)
+        T.append(S.box("Mount", (0.7, 0.4, 0.3), (0, 1.0, 2.0), DK, 0.04))
+        mzp = (0, tip[1] - 0.1, tip[2])
+    else:
+        T.append(S.box("Receiver", (0.25, 0.6, 0.25), (0, 0.9, 2.05), DK, 0.03))
+        T.append(S.box("Shield", (0.7, 0.06, 0.4), (0, 0.6, 2.15), ST, 0.01))
+        T.append(S.box("Ammo", (0.25, 0.3, 0.2), (0.3, 1.1, 1.95), OL, 0.03))
+        tip = barrel_cyl(BR, (0, 0.2, 2.05), 0.0, 1.0, 0.05, ST)
+        mzp = (0, tip[1], tip[2])
+    turret = B.part("Turret", T, (0, 1.0, 1.5))
+    barrel = B.part("Barrel", BR, (0, 0.8, 2.1), parent=turret)
+    mz = S.empty("Muzzle", mzp, turret)
+    extras.extend([turret, barrel, mz])
+    finish_unit(which)
+
+elif which == "buggy":
+    wheel(-1.0, -1.2, 0.55, 0.5)
+    wheel(1.0, -1.2, 0.55, 0.5)
+    wheel(-1.0, 1.2, 0.55, 0.5)
+    wheel(1.0, 1.2, 0.55, 0.5)
+    P.append(S.box("Chassis", (1.4, 3.2, 0.35), (0, 0, 0.75), RS, 0.05))
+    P.append(S.box("Hood", (1.2, 1.0, 0.3), (0, -1.1, 1.0), TP, 0.06))
+    P.append(S.box("Seat", (0.9, 0.5, 0.5), (0, 0.4, 1.15), WD, 0.04))
+    P.append(S.box("SeatBack", (0.9, 0.1, 0.6), (0, 0.7, 1.5), WD, 0.04))
+    for sx in (-0.6, 0.6):
+        P.append(S.cyl("CagePost", 0.04, 1.0, (sx, -0.3, 1.35), DK, 6))
+        P.append(S.cyl("CagePostB", 0.04, 1.0, (sx, 0.8, 1.35), DK, 6))
+        P.append(S.cyl("CageRail", 0.04, 1.4, (sx, 0.25, 1.85), DK, 6, rot=(math.pi / 2, 0, 0)))
+        P.append(S.cyl("Pipe", 0.05, 1.2, (sx * 0.9, 1.2, 0.95), ST, 8, rot=(math.pi / 2, 0, 0)))
+    P.append(S.cyl("CageTop", 0.04, 1.3, (0, 0.8, 1.85), DK, 6, rot=(0, math.pi / 2, 0)))
+    P.append(S.box("Engine", (0.8, 0.7, 0.6), (0, 1.35, 1.1), DK, 0.06))
+    P.append(S.cyl("Fuel", 0.18, 0.5, (0.45, 0.7, 1.3), RS, 10, rot=(0, math.pi / 2, 0)))
+    P.append(S.box("Spare", (0.9, 0.2, 0.1), (0, 1.7, 1.55), DK, 0.0))
+    headlights(-1.6, 1.0, 0.45)
+    P.append(S.cyl("Antenna", 0.012, 2.0, (0.55, 1.0, 2.8), DK, 6))
+    P.append(S.box("Rag", (0.02, 0.5, 0.25), (0.55, 0.8, 3.7), RS, 0.0))
+    T.append(S.cyl("Mount", 0.1, 0.4, (0, -0.3, 1.2), DK, 8))
+    e = 0.3
+    c = (0, -0.3 - math.cos(e) * 0.2, 1.7)
+    T.append(S.box("Pod", (1.1, 1.1, 0.5), c, OL, 0.06, rot=(-e, 0, 0)))
+    for ix in range(3):
+        px = -0.35 + ix * 0.35
+        T.append(S.cyl("Tube", 0.12, 0.1, (px, c[1] - 0.55, c[2] + 0.1), DK, 8, rot=(math.pi / 2 - e, 0, 0)))
+        T.append(S.sphere("Rocket", 0.07, (px, c[1] - 0.58, c[2] + 0.12), YE, segs=8, rings=4))
+    turret = B.part("Turret", T, (0, -0.3, 1.2))
+    mz = S.empty("Muzzle", (0, c[1] - 0.7, c[2] + 0.15), turret)
+    extras.extend([turret, mz])
+    finish_unit("buggy")
+
+elif which in ("toxin_truck", "bombtruck"):
+    bomb = which == "bombtruck"
+    P.append(S.box("Chassis", (1.9, 4.4, 0.4), (0, 0, 0.75), DK, 0.04))
+    axles([-1.5, 0.35, 1.5], 1.0, 0.5)
+    P.append(S.box("Cab", (1.9, 1.2, 1.2), (0, -1.55, 1.5), TP, 0.08))
+    P.append(S.box("Windshield", (1.7, 0.05, 0.45), (0, -2.17, 1.75), GLS, 0.0))
+    P.append(S.box("CabRoof", (1.95, 1.25, 0.07), (0, -1.55, 2.12), TP, 0.02))
+    for sx in (-1, 1):
+        P.append(S.box("Mirror", (0.08, 0.14, 0.3), (sx * 1.15, -2.0, 1.8), DK, 0.02))
+    P.append(S.box("Grille", (1.4, 0.06, 0.45), (0, -2.19, 1.15), DK, 0.0))
+    P.append(S.box("Bumper", (1.95, 0.2, 0.25), (0, -2.25, 0.85), ST, 0.03))
+    headlights(-2.2, 0.95, 0.65)
+    P.append(S.cyl("Exhaust", 0.07, 1.4, (0.92, -0.9, 1.9), ST, 8))
+    if bomb:
+        barrel_m = B.M("BombBarrel", (0.55, 0.12, 0.08), 0.5, 0.55, 0.6, 0.7)
+        for ix in range(2):
+            for iz in range(3):
+                bx, by = -0.45 + ix * 0.9, -0.2 + iz * 0.9 - 0.4
+                P.append(S.cyl("Barrel", 0.38, 1.0, (bx, by + 0.4, 1.45), barrel_m, 14))
+                P.append(S.cyl("Ring", 0.39, 0.06, (bx, by + 0.4, 1.6), YE, 14))
+                P.append(S.cyl("Cap", 0.2, 0.05, (bx, by + 0.4, 1.96), DK, 10))
+        P.append(S.box("Tarp", (1.7, 2.6, 0.05), (0, 0.9, 2.1), B.M("TarpDark", (0.3, 0.27, 0.18), 0.0, 0.95, 0.2, 0.6), 0.0))
+        P.append(S.box("Timer", (0.5, 0.3, 0.3), (0, 0.1, 2.3), DK, 0.03))
+        P.append(S.sphere("Fuse", 0.08, (0.15, -0.05, 2.5), LR, segs=8, rings=4))
+        for k in range(5):
+            P.append(S.cyl("Wire", 0.015, 1.0, (-0.3 + k * 0.15, 0.3 + k * 0.15, 2.15), DK, 4, rot=(math.pi / 2, 0, 0.3 * k)))
+        P.append(S.sphere("Beacon", 0.13, (0, -1.55, 2.3), LR, segs=10, rings=6))
+        P.append(S.sphere("SkullHead", 0.2, (0, -2.22, 1.75), WH, scale=(1, 0.3, 1), segs=10, rings=6))
+        finish_unit("bombtruck")
+    else:
+        TOXG = B.M("ToxicGreen", (0.3, 0.75, 0.15), 0.4, 0.4, 0.5, 0.6)
+        P.append(S.cyl("Tank", 0.8, 2.6, (0, 0.75, 1.75), TOXG, 18, rot=(math.pi / 2, 0, 0)))
+        for k in range(3):
+            P.append(S.cyl("Band", 0.82, 0.12, (0, -0.3 + k * 1.0, 1.75), DK, 18, rot=(math.pi / 2, 0, 0)))
+        P.append(S.cyl("Ring", 0.82, 0.2, (0, 0.2, 1.75), LAN, 18, rot=(math.pi / 2, 0, 0)))
+        P.append(S.cyl("Hatch", 0.25, 0.1, (0, 0.9, 2.55), ST, 12))
+        P.append(S.box("Sign", (0.7, 0.04, 0.5), (0, 2.12, 1.75), YE, 0.01))
+        for sx in (-1, 1):
+            P.append(S.cyl("Pipe", 0.07, 2.4, (sx * 0.85, 0.7, 1.15), ST, 8, rot=(math.pi / 2, 0, 0)))
+            P.append(S.cyl("Valve", 0.14, 0.1, (sx * 0.9, 1.6, 1.15), RS, 10, rot=(0, math.pi / 2, 0)))
+        T.append(S.cyl("TBase", 0.28, 0.5, (0, -0.6, 2.45), DK, 10))
+        T.append(S.box("Pump", (0.5, 0.5, 0.4), (0, -0.4, 2.55), ST, 0.04))
+        tip = barrel_cyl(BR, (0, -0.8, 2.6), 0.0, 1.0, 0.08, ST)
+        BR.append(S.cyl("Nozzle", 0.14, 0.2, (0, tip[1] - 0.05, tip[2]), DK, 10, rot=(math.pi / 2, 0, 0)))
+        turret = B.part("Turret", T, (0, -0.6, 2.45))
+        barrel = B.part("Barrel", BR, (0, -0.8, 2.6), parent=turret)
+        mz = S.empty("Muzzle", (0, tip[1] - 0.3, tip[2]), turret)
+        extras.extend([turret, barrel, mz])
+        finish_unit("toxin_truck")
+
+elif which in ("drone", "builddrone"):
+    build = which == "builddrone"
+    k = 1.5 if build else 1.0
+    P.append(S.box("Core", (1.0 * k, 1.4 * k, 0.35 * k), (0, 0, 0), TP, 0.05))
+    P.append(S.box("Top", (0.8 * k, 1.2 * k, 0.12 * k), (0, 0, 0.22 * k), DK, 0.02))
+    P.append(S.sphere("Camera", 0.18 * k, (0, -0.65 * k, -0.12 * k), GLS, segs=12, rings=8))
+    for i in range(4):
+        a = math.pi / 4 + i * math.pi / 2
+        ax, ay = math.cos(a) * k, math.sin(a) * k
+        P.append(S.box("Arm", (0.12 * k, 1.0 * k, 0.08 * k), (ax * 0.5, ay * 0.5, 0), DK, 0.01, rot=(0, 0, a - math.pi / 2)))
+        P.append(S.cyl("Motor", 0.12 * k, 0.2 * k, (ax, ay, 0.08 * k), ST, 10))
+        RP = [S.box("Blade", (0.9 * k, 0.07 * k, 0.015), (ax, ay, 0.2 * k), DK, 0.0), S.box("Blade", (0.07 * k, 0.9 * k, 0.015), (ax, ay, 0.2 * k), DK, 0.0)]
+        extras.append(B.part("Rotor%d" % (i + 1), RP, (ax, ay, 0.2 * k)))
+    P.append(S.sphere("LightR", 0.07, (0.5 * k, 0.7 * k, 0), LR, segs=8, rings=4))
+    P.append(S.sphere("LightG", 0.07, (-0.5 * k, 0.7 * k, 0), LAN, segs=8, rings=4))
+    P.append(S.sphere("Dome", 0.2 * k, (0, 0.2 * k, 0.32 * k), GLB, segs=10, rings=6))
+    if build:
+        P.append(S.box("Mast", (0.1, 0.1, 0.9), (0, -0.3, -0.55), ST, 0.01))
+        P.append(S.box("Gripper", (0.5, 0.35, 0.08), (0, -0.3, -1.05), B.M("DroneYellow", (0.95, 0.72, 0.1), 0.4, 0.5, 0.3, 0.4), 0.02))
+        for sx in (-0.2, 0.2):
+            P.append(S.box("Claw", (0.06, 0.3, 0.25), (sx, -0.3, -1.2), ST, 0.01))
+        P.append(S.sphere("Warn", 0.1, (0, 0.3, 0.45), GLO, segs=8, rings=4))
+    else:
+        P.append(S.cyl("Lens", 0.14, 0.25, (0, 0.1, -0.28), DK, 10))
+        P.append(S.sphere("LensGlow", 0.09, (0, 0.1, -0.42), GLB, segs=8, rings=4))
+    finish_unit(which, cam=(-5, -6, 3), tgt=(0, 0, 0))
+
+elif which in ("west_bomber", "red_bomber"):
+    west = which == "west_bomber"
+    if west:
+        P.append(S.sphere("Body", 1.0, (0, -0.3, 0), TP, scale=(1.0, 2.6, 0.45), segs=28, rings=14))
+        for sx in (-1, 1):
+            P.append(S.box("Wing", (4.6, 2.9, 0.14), (sx * 2.7, 0.7, -0.05), TP, 0.04, rot=(0, sx * 0.03, sx * 0.5)))
+            P.append(S.sphere("Engine", 0.3, (sx * 1.1, 1.7, 0), GLB, scale=(1, 1.5, 1), segs=10, rings=6))
+            P.append(S.box("Intake", (0.5, 0.4, 0.15), (sx * 1.1, 0.4, 0.2), DK, 0.03))
+            P.append(S.box("WingEdge", (4.0, 0.06, 0.05), (sx * 2.7, -0.6, -0.03), GLB, 0.0, rot=(0, 0, sx * 0.5)))
+            P.append(S.sphere("Nav", 0.06, (sx * 4.8, 1.5, -0.1), LR if sx < 0 else LAN, segs=8, rings=4))
+        P.append(S.sphere("Canopy", 0.45, (0, -1.4, 0.3), GLS, scale=(0.9, 1.5, 0.6), segs=16, rings=8))
+        P.append(S.box("BombBay", (1.3, 2.0, 0.06), (0, 0.2, -0.45), DK, 0.02))
+        P.append(S.box("Spine", (0.5, 2.0, 0.08), (0, 0.5, 0.22), DK, 0.02))
+    else:
+        P.append(S.sphere("Fuselage", 1.0, (0, 0, 0), TP, scale=(0.95, 4.4, 0.9), segs=28, rings=14))
+        P.append(S.cyl("Nose", 0.8, 2.0, (0, -4.5, 0), TP, 14, r2=0.03, rot=(math.pi / 2, 0, 0)))
+        P.append(S.sphere("Canopy", 0.5, (0, -2.4, 0.55), GLS, scale=(0.9, 1.6, 0.7), segs=16, rings=8))
+        for sx in (-1, 1):
+            P.append(S.box("Wing", (4.2, 2.0, 0.16), (sx * 2.8, 0.3, -0.1), TP, 0.04, rot=(0, sx * 0.04, sx * 0.12)))
+            for ex in (1.6, 3.4):
+                P.append(S.cyl("Nacelle", 0.34, 1.6, (sx * ex, -0.3, -0.2), DK, 14, rot=(math.pi / 2, 0, 0)))
+                P.append(S.cyl("Intake", 0.45, 0.06, (sx * ex, -1.15, -0.2), ST, 14, rot=(math.pi / 2, 0, 0)))
+                P.append(S.sphere("Glow", 0.16, (sx * ex, 0.55, -0.2), GLO, segs=8, rings=4))
+            P.append(S.box("Fin", (0.09, 1.4, 1.6), (sx * 1.0, 4.2, 1.0), TP, 0.03))
+            P.append(S.box("Stab", (2.4, 1.0, 0.08), (sx * 1.2, 4.3, 0.15), TP, 0.02))
+            P.append(S.sphere("Nav", 0.06, (sx * 4.9, 0.3, -0.15), LR if sx < 0 else LAN, segs=8, rings=4))
+        P.append(S.box("BombBay", (1.0, 3.0, 0.07), (0, 0.0, -0.8), DK, 0.02))
+        import sf_bld
+        for sx in (-1, 1):
+            P.append(sf_bld.star(0.03, (sx * 2.6, 0.5, 0.0), YE))
+    mz = S.empty("Muzzle", (0, 0.0, -0.8), None)
+    extras.append(mz)
+    finish_unit(which, cam=(-11, -12, 7), tgt=(0, 0, 0))
+
+elif which in ("glider", "sprayer"):
+    spray = which == "sprayer"
+    WOOD = B.M("WoodBiplane", (0.4, 0.28, 0.16), 0.0, 0.9, 0.3, 0.8)
+    CAN = B.M("CanvasPlane", (0.55, 0.5, 0.35), 0.0, 0.95, 0.2, 0.6)
+    P.append(S.box("Fuselage", (0.55, 2.8, 0.55), (0, 0, 0.3), TP, 0.08))
+    P.append(S.box("Engine", (0.4, 0.9, 0.4), (0, -1.6, 0.3), DK, 0.05))
+    for sx in (-0.12, 0.12):
+        P.append(S.cyl("Exhaust", 0.04, 0.4, (sx * 2, -1.35, 0.5), ST, 6, rot=(math.pi / 2, 0, 0)))
+    P.append(S.box("Fin", (0.12, 0.9, 0.8), (0, 1.7, 0.75), TP, 0.03))
+    P.append(S.box("Stab", (1.6, 0.6, 0.05), (0, 1.7, 0.45), CAN, 0.0))
+    for z in (0.0, 0.95):
+        P.append(S.box("Wing", (4.2, 1.0, 0.07), (0, -0.2, z + 0.1), CAN if z == 0.0 else TP, 0.01))
+    for sx in (-1.5, 1.5):
+        P.append(S.box("StrutA", (0.05, 0.05, 0.95), (sx, -0.1, 0.55), WOOD, 0.0))
+        P.append(S.box("StrutB", (0.05, 0.05, 0.95), (sx, -0.45, 0.55), WOOD, 0.0))
+    P.append(S.box("CentreStrut", (0.05, 0.05, 0.5), (0.3, -0.1, 0.55), WOOD, 0.0, rot=(0, 0.3, 0)))
+    for sx in (-0.35, 0.35):
+        P.append(S.cyl("Wheel", 0.14, 0.12, (sx, 0.0, -0.1), RB, 10, rot=(0, math.pi / 2, 0)))
+        P.append(S.box("Gear", (0.05, 0.05, 0.4), (sx * 0.8, 0.0, 0.1), DK, 0.0))
+    P.append(S.box("Cockpit", (0.4, 0.5, 0.15), (0, 0.4, 0.65), DK, 0.02))
+    P.append(S.sphere("Pilot", 0.13, (0, 0.4, 0.78), B.M("PilotHelmet", (0.2, 0.18, 0.16), 0.0, 0.9, 0.2, 0.4), segs=8, rings=5))
+    P.append(S.box("Goggles", (0.18, 0.04, 0.05), (0, 0.28, 0.8), GLS, 0.0))
+    PR = [S.box("Blade", (1.5, 0.06, 0.08), (0, -2.05, 0.3), WOOD, 0.0), S.sphere("Spinner", 0.12, (0, -2.1, 0.3), ST, segs=8, rings=5)]
+    prop = B.part("Prop", PR, (0, -2.05, 0.3))
+    extras.append(prop)
+    if spray:
+        P.append(S.cyl("Tank", 0.45, 1.4, (0, 0.2, -0.45), B.M("SprayTank", (0.35, 0.7, 0.2), 0.3, 0.5, 0.4, 0.6), 14, rot=(math.pi / 2, 0, 0)))
+        P.append(S.box("Boom", (4.0, 0.06, 0.06), (0, 0.2, -0.85), ST, 0.0))
+        for k in range(7):
+            P.append(S.cyl("Nozzle", 0.03, 0.2, (-1.8 + k * 0.6, 0.2, -1.0), ST, 6))
+        mz = S.empty("Muzzle", (0, 0.2, -1.0), None)
+    else:
+        P.append(S.box("Gun", (0.08, 1.0, 0.08), (0.0, -1.0, 0.75), DK, 0.0))
+        P.append(S.box("GunBox", (0.2, 0.4, 0.2), (0, -0.4, 0.75), DK, 0.02))
+        mz = S.empty("Muzzle", (0, -1.7, 0.7), None)
+    extras.append(mz)
+    finish_unit(which, cam=(-7, -8, 4), tgt=(0, 0, 0.4))

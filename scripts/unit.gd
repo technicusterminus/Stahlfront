@@ -780,8 +780,13 @@ func _animate(delta: float) -> void:
 			var prop = model.get("prop")
 			if prop:
 				prop.rotation.z += 45.0 * delta
+		var rots: Array = model.get("rotors", [])
 		var rot: Node3D = model["rotor"]
-		if rot:
+		if not rots.is_empty():
+			# jeder Rotor dreht um seine eigene Achse, benachbarte gegenläufig
+			for ri in rots.size():
+				(rots[ri] as Node3D).rotation.y += (32.0 if ri % 2 == 0 else -32.0) * delta
+		elif rot:
 			rot.rotation.y += 28.0 * delta
 		var tr = model.get("tail_rotor")
 		if tr:
