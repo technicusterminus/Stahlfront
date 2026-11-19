@@ -80,12 +80,20 @@ Die Karte hat einen **Mittelsee**, vier **Kanäle** zu den Ecken und je eine **B
 | **Rote Allianz** | Schiffswerft mit Sägedach, Schlot, Drehkran | Sturm-Kanonenboot: billig und robust | Oktober-Schlachtkreuzer: drei Doppelgeschütze, zerlegt Gebäude |
 | **Schattenfront** | Schmugglerhafen aus Holz, Zeltplane, Ausguck | Schmuggler-Kutter: schnell, MG | Piraten-Fregatte: Raketensalven, Containerstapel, Totenkopfflagge |
 
-Alle Schiffe haben Reling, Bullaugen, Rettungsboote, Besatzung, drehendes Radar, wehende Flaggen und Rauch. Die KI baut eine Werft und eine Flotte von höchstens sechs Schiffen, die ab drei Schiffen die Werft oder Küste des Gegners angreift. Test: `--seashow` stellt Werft und alle Schiffe in die Heimatbucht. Test der Abwehrbauten: `--defensetest` (Drehung, Ausrichtung, Schaden je Fraktion).
+Alle Schiffe haben Reling, Bullaugen, Rettungsboote, Besatzung, drehendes Radar, wehende Flaggen und Rauch. Die KI baut eine Werft und eine Flotte von höchstens sechs Schiffen, die ab drei Schiffen die Werft oder Küste des Gegners angreift. Test: `--seashow` stellt Werft und alle Schiffe in die Heimatbucht. Test der Abwehrbauten: `--defensetest` (Drehung, Ausrichtung, Schaden je Fraktion). Karten: `--map=1..40`, `--size= --water= --islands= --resources= --hills= --forest= --seed=` und `--mapimg=datei.png` (Kartenbild in `shots/`); Tageszeit: `--hour=` und `--daycycle=` (Minuten pro Tag); Explosionen: `--boomtest`; Menü: `--mapdialog`, `--menupick=N`.
 
 Der **Nebel des Krieges** verdeckt Gelände, das du noch nicht erkundet hast. Bauplätze müssen erkundet sein.
 
 ---
 
+### Karten und Tageszeit
+
+Im Startmenü öffnet **Karte und Tageszeit …** einen Dialog mit Vorschau:
+
+- **40 Standardkarten:** zehn Landschaftstypen (Kreuzsee, Windungen, Seenplatte, Uferkanal, Hochland, Inselmeer, Waldwelt, Steppe, Schären, Klamm) in je vier Größen und Abwandlungen.
+- **Regler für eigene Karten:** Größe (160 bis 336 m), Wasseranteil, Inseln, Rohstoffe, Hügel, Wald, dazu Gewässerform und Zufallszahl. Die Vorschau zeigt Gewässer, Höhen, Startpunkte und Vorkommen. „Zufällige Karte" würfelt alles.
+- **Gewässerformen:** *Kreuzsee* (Mittelsee mit vier Kanälen zu den Buchten), *Windungen* (geschwungene Kanäle), *Getrennte Seen* (eigene See je Basis, keine Seeverbindung), *Uferkanal* (Kanal entlang dreier Ränder). Landbrücken sichern, dass alle Basen und Vorkommen zu Fuß erreichbar bleiben.
+- **Tag und Nacht:** Startzeit und Tagesdauer (fest, 6, 14 oder 30 Minuten pro Tag). Sonne und Mond wandern, Himmel, Nebel und Belichtung wechseln, die Uhr steht in der Kopfleiste. Nachts sehen Einheiten und Gebäude etwa ein Viertel weniger weit.
 ## Die Fraktionen
 
 | | **Westbund** | **Rote Allianz** | **Schattenfront** |

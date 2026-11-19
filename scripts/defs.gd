@@ -115,13 +115,13 @@ func _west() -> void:
 		"weapon": W("bullet", 10.0, 14.0, 0.5), "desc": "Gut gegen Infanterie."})
 	U("west_at", {"name": "Panzerjäger", "cost": 300, "time": 6.0, "hp": 110.0, "speed": 4.3, "armor": "inf", "model": "inf_at", "built_at": "barracks",
 		"weapon": W("rocket", 42.0, 17.0, 2.2, {"air": true}), "desc": "Raketen gegen Fahrzeuge und Luft."})
-	U("west_tank", {"name": "Falke-Kampfpanzer", "cost": 900, "time": 10.0, "hp": 560.0, "speed": 6.6, "armor": "heavy", "model": "tank", "built_at": "factory",
+	U("west_tank", {"name": "Falke-Kampfpanzer", "cost": 850, "time": 10.0, "hp": 610.0, "speed": 6.6, "armor": "heavy", "model": "tank", "built_at": "factory",
 		"weapon": W("shell", 62.0, 18.0, 2.0, {"splash": 1.5}), "prereq": [], "desc": "Rückgrat der Panzertruppe."})
 	U("west_aa", {"name": "Hornet-Flakwagen", "cost": 700, "time": 8.0, "hp": 300.0, "speed": 8.8, "model": "aa", "built_at": "factory",
 		"weapon": W("flak", 14.0, 22.0, 0.25, {"air": true}), "desc": "Zerlegt Luftziele und Infanterie."})
 	U("west_arty", {"name": "Lanzen-Raketenwerfer", "cost": 1200, "time": 14.0, "hp": 260.0, "speed": 5.6, "model": "rocketlauncher", "built_at": "factory",
 		"weapon": W("artillery", 55.0, 44.0, 6.0, {"splash": 5.0, "burst": 4, "min_range": 9.0}), "prereq": ["tech"], "desc": "Weitreichende Raketenartillerie."})
-	U("west_laser", {"name": "Bastion-Laserpanzer", "cost": 1600, "time": 16.0, "hp": 760.0, "speed": 5.6, "armor": "heavy", "model": "laser_tank", "built_at": "factory", "scale": 1.15,
+	U("west_laser", {"name": "Bastion-Laserpanzer", "cost": 1500, "time": 16.0, "hp": 830.0, "speed": 5.6, "armor": "heavy", "model": "laser_tank", "built_at": "factory", "scale": 1.15,
 		"weapon": W("laser", 78.0, 20.0, 1.6, {"air": true}), "prereq": ["tech"], "desc": "Laser trifft alles, auch Luftziele."})
 	U("west_heli", {"name": "Sperber-Kampfheli", "cost": 1500, "time": 14.0, "hp": 380.0, "speed": 13.0, "armor": "air", "flying": true, "model": "heli", "built_at": "airfield", "sight": 22.0,
 		"weapon": W("rocket", 34.0, 18.0, 1.1, {"burst": 2}), "desc": "Schneller Jäger für Bodenziele."})
