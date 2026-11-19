@@ -144,7 +144,21 @@ static func vehicle(p: Node3D, model: String, pos: Vector3, rot_y: float, s := 0
 
 ## Kleine Arbeiterfigur: rundliche Glieder mit Knie, Ellbogen, Händen und Füßen; Beine und Arme sind
 ## einzeln beweglich (LegL/LegR mit ShinL/ShinR, ArmL/ArmR mit ForeL/ForeR).
+## Arbeiter/Besatzung: das organische, geriggte Blender-Modell (Idle/Walk) in Gebäudegröße;
+## nur ohne Modell fällt es auf die Zylinderfigur zurück.
 static func worker(faction: String) -> Node3D:
+	var c = M.load_custom("units", [faction + "_worker"], M._team)
+	if c.is_empty():
+		return _worker_basic(faction)
+	var holder = Node3D.new()
+	var r: Node3D = c["root"]
+	r.scale = Vector3.ONE * 0.78
+	holder.add_child(r)
+	if c.has("anim") and c["anim"] != null:
+		holder.set_meta("ap", c["anim"])
+	return holder
+
+static func _worker_basic(faction: String) -> Node3D:
 	var n = Node3D.new()
 	var suit: Color
 	var hat: Color

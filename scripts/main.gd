@@ -317,13 +317,11 @@ func start_match(cfg: Dictionary) -> void:
 				wk.position = Vector3(o0.x + fi * 0.9 - 2.2, gy, o0.z)
 				wk.rotation.y = 1.2
 				Game.fx_root.add_child(wk)
-				if pose == 1:
-					wk.find_child("LegL", true, false).rotation.x = 0.7
-					wk.find_child("ShinL", true, false).rotation.x = 0.2
-					wk.find_child("LegR", true, false).rotation.x = -0.4
-					wk.find_child("ShinR", true, false).rotation.x = 1.0
+				var wap = wk.get_meta("ap", null)
+				if pose == 1 and wap != null:
+					wap.play("Walk")
 				fi += 1
-		cam.look_at_pos(Vector3(o0.x, gy + 0.9, o0.z))
+		cam.look_at_pos(Vector3(o0.x, gy + 1.4, o0.z))
 		cam.dist_target = float(args.get("camdist", "4.5"))
 	if args.has("basecam"):
 		# Testbasis: alle Gebäudetypen fertig, das letzte als Baustelle

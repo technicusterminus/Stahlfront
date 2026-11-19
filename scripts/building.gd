@@ -313,6 +313,11 @@ func _play_anims(delta: float) -> void:
 						for nm in ["LegL", "LegR", "ShinL", "ShinR", "ArmL", "ArmR", "ForeL", "ForeR"]:
 							pn[nm] = n.find_child(nm, true, false)
 						a["p"] = pn
+					var apn = n.get_meta("ap", null)
+					if apn != null:
+						if apn.current_animation != "Walk":
+							apn.play("Walk")
+						apn.speed_scale = clamp(a["s"] * 0.9, 0.6, 2.0)
 					var pp: Dictionary = a["p"]
 					var ph = t * a["s"] * 6.0
 					var sw = sin(ph) * 0.6
