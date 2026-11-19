@@ -264,81 +264,126 @@ def boot_parts(side, M, objs):
     objs.append((prim("cyl", "Hem", (x, 0.022, 0.25), (0.15, 0.145, 0.07), M["team"], v=14), sb))
     objs.append((prim("cyl", "BootTop", (x, 0.025, 0.268), (0.13, 0.125, 0.02), M["sole"], v=14), sb))
 
+
+HEAD_C = Vector((0.0, -0.004, 1.69))
+HEAD_A = Vector((0.1, 0.118, 0.132))
+
+def _G(x, z, x0, z0, sx, sz):
+    return math.exp(-((x - x0) / sx) ** 2 - ((z - z0) / sz) ** 2)
+
+def head_shape(nx, ny, nz):
+    """Menschliche Kopfform aus einer Kugel: Kiefer, Nase, Brauenwulst, Augenhöhlen, Wangenknochen, Lippen, Kinn."""
+    x, y, z = nx, ny, nz
+    if z < -0.2:
+        t = (-z - 0.2) / 0.8
+        x *= 1.0 - 0.34 * t ** 1.1
+    front = max(0.0, -y)
+    dy = 0.0
+    for sg in (-1, 1):
+        dy += 0.11 * _G(x, z, 0.45 * sg, 0.1, 0.2, 0.1)        # Augenhöhlen (nach innen)
+        dy -= 0.06 * _G(x, z, 0.55 * sg, -0.15, 0.2, 0.15)     # Wangenknochen
+        dy -= 0.12 * _G(x, z, 0.19 * sg, -0.22, 0.09, 0.07)    # Nasenflügel
+    dy -= 0.34 * _G(x, z, 0.0, -0.22, 0.13, 0.1)               # Nasenspitze
+    dy -= 0.14 * _G(x, z, 0.0, 0.05, 0.07, 0.24)               # Nasenrücken
+    dy -= 0.08 * _G(x, z, 0.0, 0.31, 0.6, 0.08)                # Brauenwulst
+    dy += 0.06 * _G(x, z, 0.0, -0.5, 0.3, 0.03)                # Mundspalte
+    dy -= 0.09 * _G(x, z, 0.0, -0.435, 0.26, 0.05)             # Oberlippe
+    dy -= 0.09 * _G(x, z, 0.0, -0.575, 0.22, 0.055)            # Unterlippe
+    dy -= 0.1 * _G(x, z, 0.0, -0.82, 0.3, 0.1)                 # Kinn
+    y = y + dy * front
+    return x, y, z
+
+def make_head(name, scale, mat_skin, mat_lip, keep=None):
+    """Kopfnetz. keep(nx,ny,nz) wählt Flächen (für Haar-/Bartschalen); ohne keep: ganzer Kopf mit Lippenmaterial."""
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=80, v_segments=52, radius=1.0)
+    for v in bm.verts:
+        v.co.x, v.co.y, v.co.z = head_shape(v.co.x, v.co.y, v.co.z)
+    if keep is not None:
+        dele = []
+        for f in bm.faces:
+            c = f.calc_center_median()
+            if not keep(c.x, c.y, c.z):
+                dele.append(f)
+        bmesh.ops.delete(bm, geom=dele, context="FACES")
+    for v in bm.verts:
+        v.co = Vector((v.co.x * HEAD_A.x * scale, v.co.y * HEAD_A.y * scale, v.co.z * HEAD_A.z * scale)) + HEAD_C
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    ob = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(ob)
+    me.materials.append(mat_skin)
+    if mat_lip is not None:
+        me.materials.append(mat_lip)
+        for p in me.polygons:
+            c = (p.center - HEAD_C)
+            nx, ny, nz = c.x / HEAD_A.x, c.y / HEAD_A.y, c.z / HEAD_A.z
+            if ny < -0.4 and (nx / 0.27) ** 2 + ((nz + 0.505) / 0.115) ** 2 < 1.0:
+                p.material_index = 1
+    for p in me.polygons:
+        p.use_smooth = True
+    return ob
+
 def gear(faction, variant, rig, M):
     objs = []
     # Kopfbedeckung
     if variant == "worker" and faction == "shadow":
         # Kopftuch statt Helm, Schutzbrille auf der Stirn, Tuch vor dem Mund
-        objs.append((prim("sphere", "Headscarf", (0, 0.01, 1.76), (0.27, 0.28, 0.17), M["cloth"]), "head"))
-        objs.append((prim("cube", "Knot", (0.0, 0.14, 1.72), (0.07, 0.05, 0.08), M["cloth"], bevel=0.015), "head"))
-        objs.append((prim("cube", "GoggleBand", (0, -0.0, 1.76), (0.26, 0.25, 0.03), M["gear"]), "head"))
+        objs.append((prim("sphere", "Headscarf", (0, 0.01, 1.8), (0.265, 0.28, 0.15), M["cloth"]), "head"))
+        objs.append((prim("cube", "Knot", (0.0, 0.14, 1.76), (0.07, 0.05, 0.08), M["cloth"], bevel=0.015), "head"))
+        objs.append((prim("cube", "GoggleBand", (0, -0.0, 1.775), (0.255, 0.25, 0.026), M["gear"]), "head"))
         for sx in (-0.05, 0.05):
-            objs.append((prim("cyl", "Goggle", (sx, -0.115, 1.765), (0.075, 0.075, 0.03), M["visor"], rot=(math.pi / 2, 0, 0), v=12), "head"))
-        objs.append((prim("cube", "Mask", (0, -0.11, 1.615), (0.15, 0.06, 0.07), M["scarf"], bevel=0.02), "head"))
+            objs.append((prim("cyl", "Goggle", (sx, -0.125, 1.775), (0.07, 0.07, 0.03), M["visor"], rot=(math.pi / 2, 0, 0), v=12), "head"))
+        objs.append((prim("cube", "Mask", (0, -0.075, 1.575), (0.2, 0.1, 0.06), M["scarf"], bevel=0.02), "head"))
     elif variant == "worker":
-        h = prim("sphere", "Helmet", (0, 0.0, 1.76), (0.27, 0.29, 0.17), M["hard"])
+        h = prim("sphere", "Helmet", (0, 0.0, 1.79), (0.255, 0.275, 0.15), M["hard"])
         objs.append((h, "head"))
-        objs.append((prim("cube", "Brim", (0, -0.12, 1.72), (0.22, 0.1, 0.02), M["hard"]), "head"))
-        objs.append((prim("cube", "Ridge", (0, 0.0, 1.84), (0.04, 0.26, 0.02), M["hard"], bevel=0.008), "head"))
-        if faction == "west":
-            objs.append((prim("cube", "Glasses", (0, -0.118, 1.705), (0.2, 0.02, 0.04), M["visor"], bevel=0.008), "head"))
-        else:
-            objs.append((prim("sphere", "Star", (0, -0.14, 1.78), (0.045, 0.02, 0.045), M["gold"]), "head"))
+        objs.append((prim("cube", "Brim", (0, -0.115, 1.775), (0.17, 0.06, 0.014), M["hard"], rot=(-0.12, 0, 0), bevel=0.005), "head"))
+        objs.append((prim("cube", "Ridge", (0, 0.0, 1.865), (0.035, 0.24, 0.016), M["hard"], bevel=0.008), "head"))
+        if faction != "west":
+            objs.append((prim("sphere", "Star", (0, -0.135, 1.81), (0.04, 0.018, 0.04), M["gold"]), "head"))
     elif faction == "west":
-        h = prim("sphere", "Helmet", (0, 0.01, 1.76), (0.27, 0.29, 0.2), M["team"])
+        h = prim("sphere", "Helmet", (0, 0.01, 1.79), (0.26, 0.285, 0.17), M["team"])
         objs.append((h, "head"))
-        objs.append((prim("cube", "Visor", (0, -0.12, 1.71), (0.17, 0.03, 0.05), M["visor"], bevel=0.01), "head"))
-        objs.append((prim("cube", "NV", (0, -0.1, 1.84), (0.06, 0.06, 0.05), M["gear"], bevel=0.01), "head"))
+        objs.append((prim("cube", "Visor", (0, -0.125, 1.775), (0.15, 0.026, 0.04), M["visor"], bevel=0.01), "head"))
+        objs.append((prim("cube", "NV", (0, -0.1, 1.88), (0.06, 0.06, 0.05), M["gear"], bevel=0.01), "head"))
     elif faction == "red":
-        objs.append((prim("cyl", "Cap", (0, 0.01, 1.78), (0.25, 0.25, 0.12), M["team"], v=16), "head"))
-        objs.append((prim("cube", "Peak", (0, -0.13, 1.74), (0.18, 0.09, 0.02), M["gear"]), "head"))
-        objs.append((prim("sphere", "Star", (0, -0.13, 1.8), (0.04, 0.02, 0.04), M["gold"]), "head"))
+        objs.append((prim("cyl", "Cap", (0, 0.01, 1.8), (0.24, 0.24, 0.12), M["team"], v=16), "head"))
+        objs.append((prim("cube", "Peak", (0, -0.125, 1.77), (0.17, 0.07, 0.016), M["gear"], rot=(-0.1, 0, 0)), "head"))
+        objs.append((prim("sphere", "Star", (0, -0.12, 1.815), (0.035, 0.016, 0.035), M["gold"]), "head"))
         objs.append((prim("cyl", "Collar", (0, 0.0, 1.5), (0.22, 0.2, 0.08), M["team"], v=14), "chest"))
     else:
-        objs.append((prim("sphere", "Turban", (0, 0.01, 1.77), (0.27, 0.27, 0.18), M["cloth"]), "head"))
-        objs.append((prim("cube", "Scarf", (0, -0.1, 1.62), (0.2, 0.07, 0.09), M["scarf"], bevel=0.02), "head"))
+        objs.append((prim("sphere", "Turban", (0, 0.01, 1.8), (0.265, 0.27, 0.155), M["cloth"]), "head"))
+        objs.append((prim("cube", "Scarf", (0, -0.06, 1.545), (0.2, 0.12, 0.07), M["scarf"], bevel=0.02), "head"))
         objs.append((prim("cube", "Bandolier", (0, -0.13, 1.3), (0.06, 0.04, 0.42), M["gear"], rot=(0, 0.6, 0)), "chest"))
-    # Gesicht: Lider, Iris, Brauen, Nasenrücken mit Flügeln und Löchern, Lippen, Kinn, Wangen, Ohren, Frisur
+    # Gesicht: modellierter Kopf mit Augen, Brauen, Ohren; Haar und Bart als Schalen
     hide_hair = variant == "worker" and faction == "shadow"
     iris = {"west": "iris_blue", "red": "iris_grey", "shadow": "iris_brown"}[faction]
-    for sx in (-0.045, 0.045):
+    objs.append((make_head("Head", 1.0, M["skin"], M["lip"]), "head"))
+    for sx in (-0.043, 0.043):
         sg = 1 if sx > 0 else -1
-        objs.append((prim("sphere", "EyeW", (sx, -0.106, 1.7), (0.042, 0.022, 0.028), M["eyew"]), "head"))
-        objs.append((prim("sphere", "Iris", (sx, -0.116, 1.7), (0.026, 0.012, 0.026), M[iris]), "head"))
-        objs.append((prim("sphere", "Pupil", (sx, -0.121, 1.7), (0.012, 0.008, 0.012), M["pupil"]), "head"))
-        objs.append((prim("sphere", "LidUp", (sx, -0.108, 1.716), (0.047, 0.026, 0.016), M["skin"]), "head"))
-        objs.append((prim("sphere", "LidLow", (sx, -0.108, 1.683), (0.045, 0.022, 0.011), M["skin"]), "head"))
-        objs.append((prim("cube", "Lash", (sx, -0.119, 1.711), (0.05, 0.006, 0.005), M["hair"]), "head"))
-        objs.append((prim("cube", "Brow", (sx, -0.111, 1.74), (0.058, 0.016, 0.016), M["hair"], rot=(0, 0, 0.2 * sg), bevel=0.004), "head"))
-        objs.append((prim("sphere", "Ear", (sx * 2.55, 0.0, 1.68), (0.02, 0.04, 0.056), M["skin"]), "head"))
-        objs.append((prim("sphere", "EarInner", (sx * 2.45, -0.006, 1.68), (0.012, 0.024, 0.036), M["skin_dark"]), "head"))
-        objs.append((prim("sphere", "Cheek", (sx * 1.55, -0.09, 1.652), (0.055, 0.05, 0.05), M["skin"]), "head"))
-        objs.append((prim("sphere", "Nostril", (sx * 0.42, -0.133, 1.652), (0.012, 0.014, 0.01), M["skin_dark"]), "head"))
-        objs.append((prim("sphere", "NoseWing", (sx * 0.5, -0.12, 1.656), (0.018, 0.022, 0.024), M["skin"]), "head"))
-    objs.append((prim("cube", "NoseBridge", (0, -0.116, 1.69), (0.026, 0.026, 0.06), M["skin"], rot=(0.25, 0, 0), bevel=0.008), "head"))
-    objs.append((prim("sphere", "NoseTip", (0, -0.133, 1.66), (0.032, 0.036, 0.034), M["skin"]), "head"))
-    objs.append((prim("cube", "MouthLine", (0, -0.118, 1.625), (0.062, 0.01, 0.006), M["skin_dark"]), "head"))
-    objs.append((prim("sphere", "LipUp", (0, -0.118, 1.632), (0.058, 0.02, 0.014), M["lip"]), "head"))
-    objs.append((prim("sphere", "LipLow", (0, -0.116, 1.617), (0.05, 0.02, 0.016), M["lip"]), "head"))
-    objs.append((prim("sphere", "Chin", (0, -0.1, 1.583), (0.062, 0.05, 0.046), M["skin"]), "head"))
-    objs.append((prim("sphere", "Jaw", (0, -0.04, 1.585), (0.15, 0.13, 0.07), M["skin"]), "head"))
+        objs.append((prim("sphere", "EyeW", (sx, -0.094, 1.7), (0.031, 0.026, 0.023), M["eyew"]), "head"))
+        objs.append((prim("sphere", "Iris", (sx, -0.105, 1.7), (0.018, 0.01, 0.018), M[iris]), "head"))
+        objs.append((prim("sphere", "Pupil", (sx, -0.11, 1.7), (0.008, 0.006, 0.008), M["pupil"]), "head"))
+        objs.append((prim("sphere", "LidUp", (sx, -0.095, 1.711), (0.035, 0.028, 0.01), M["skin"]), "head"))
+        objs.append((prim("cube", "Brow", (sx, -0.115, 1.735), (0.052, 0.014, 0.013), M["hair"], rot=(0, 0, 0.18 * sg), bevel=0.004), "head"))
+        objs.append((prim("sphere", "Ear", (sx * 2.5, 0.012, 1.682), (0.016, 0.034, 0.05), M["skin"]), "head"))
+        objs.append((prim("sphere", "EarInner", (sx * 2.38, 0.008, 1.682), (0.008, 0.02, 0.032), M["skin_dark"]), "head"))
     objs.append((prim("sphere", "AdamsApple", (0, -0.045, 1.52), (0.022, 0.024, 0.026), M["skin"]), "head"))
     if not hide_hair:
         if faction == "west":
-            objs.append((prim("sphere", "Hair", (0, 0.035, 1.725), (0.25, 0.25, 0.2), M["hair"]), "head"))
-            objs.append((prim("cube", "Fringe", (-0.02, -0.095, 1.765), (0.17, 0.04, 0.035), M["hair"], rot=(0, 0, -0.12), bevel=0.01), "head"))
-            objs.append((prim("sphere", "Sideburn", (0.108, -0.03, 1.69), (0.02, 0.04, 0.06), M["hair"]), "head"))
-            objs.append((prim("sphere", "Sideburn", (-0.108, -0.03, 1.69), (0.02, 0.04, 0.06), M["hair"]), "head"))
+            # kurzer Seitenscheitel: Schale über Stirn, Scheitel und Hinterkopf
+            hair = make_head("Hair", 1.045, M["hair"], None, keep=lambda x, y, z: z > 0.5 or (y > -0.05 and z > -0.25) or (abs(x) > 0.7 and z > 0.15))
         elif faction == "red":
-            objs.append((prim("sphere", "Hair", (0, 0.02, 1.735), (0.242, 0.24, 0.16), M["hair"]), "head"))
-            objs.append((prim("sphere", "Sideburn", (0.108, -0.03, 1.7), (0.016, 0.034, 0.05), M["hair"]), "head"))
-            objs.append((prim("sphere", "Sideburn", (-0.108, -0.03, 1.7), (0.016, 0.034, 0.05), M["hair"]), "head"))
-            objs.append((prim("sphere", "Stubble", (0, -0.1, 1.585), (0.056, 0.03, 0.036), M["hair"]), "head"))
+            hair = make_head("Hair", 1.025, M["hair"], None, keep=lambda x, y, z: z > 0.6 or (y > 0.0 and z > -0.2))
         else:
-            objs.append((prim("sphere", "Hair", (0, 0.04, 1.72), (0.27, 0.28, 0.24), M["hair"]), "head"))
+            hair = make_head("Hair", 1.07, M["hair"], None, keep=lambda x, y, z: z > 0.45 or (y > -0.1 and z > -0.45) or (abs(x) > 0.75 and z > -0.1))
+        objs.append((hair, "head"))
+    if faction == "red" and variant != "worker" or (faction == "red" and variant == "worker"):
+        objs.append((make_head("Stubble", 1.012, M["hair"], None, keep=lambda x, y, z: z < -0.4 and z > -0.9 and y < 0.0 and (abs(x) > 0.18 or z < -0.62 or z > -0.42)), "head"))
     if faction == "shadow":
-        objs.append((prim("sphere", "Beard", (0, -0.085, 1.575), (0.12, 0.09, 0.09), M["hair"]), "head"))
-        objs.append((prim("sphere", "Moustache", (0, -0.126, 1.64), (0.07, 0.022, 0.02), M["hair"]), "head"))
+        objs.append((make_head("Beard", 1.04, M["hair"], None, keep=lambda x, y, z: z < -0.15 and z > -0.95 and y < 0.2 and not ((x / 0.3) ** 2 + ((z + 0.505) / 0.12) ** 2 < 1.0 and y < -0.3)), "head"))
     # Reißverschluss mit Zipper, Werkzeuggürtel (Arbeiter)
     objs.append((prim("cube", "Zip", (0, -0.171, 1.28), (0.012, 0.008, 0.3), M["metal"]), "chest"))
     objs.append((prim("cube", "ZipPull", (0, -0.176, 1.4), (0.02, 0.008, 0.04), M["metal"], bevel=0.003), "chest"))
