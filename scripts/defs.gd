@@ -172,9 +172,11 @@ func _red() -> void:
 		"fixed_wing": true, "turn": 0.6, "prereq": ["tech"], "weapon": W("bomb", 170.0, 7.0, 5.0, {"splash": 5.5, "burst": 5}), "desc": "Schwerer viermotoriger Bomber mit Teppichabwurf. Langsam, zäh und vernichtend."})
 	U("red_gunboat", {"name": "Sturm-Kanonenboot", "cost": 700, "time": 9.0, "hp": 450.0, "speed": 9.0, "armor": "light", "model": "gunboat", "naval": true, "built_at": "dock", "sight": 24.0,
 		"weapon": W("shell", 42.0, 21.0, 1.6, {"splash": 1.2}), "desc": "Gepanzertes Kanonenboot. Billig, robust, gut gegen Küstenfahrzeuge."})
+	U("red_speedboat", {"name": "Raketen-Schnellboot", "cost": 600, "time": 7.0, "hp": 230.0, "speed": 14.5, "armor": "light", "model": "speedboat", "naval": true, "built_at": "dock", "sight": 24.0,
+		"weapon": W("rocket", 38.0, 22.0, 1.7, {"splash": 1.4, "burst": 2}), "desc": "Flaches Schnellboot mit Torpedorohren und Raketenpaar. Sehr schnell, aber zerbrechlich: jagt Schiffe und Küstenfahrzeuge."})
 	U("red_battleship", {"name": "Oktober-Schlachtkreuzer", "cost": 2200, "time": 22.0, "hp": 1900.0, "speed": 5.0, "armor": "heavy", "model": "battleship", "naval": true, "built_at": "dock", "sight": 28.0, "scale": 1.3,
 		"weapon": W("artillery", 95.0, 56.0, 4.5, {"splash": 5.5, "burst": 2, "min_range": 14.0}), "prereq": ["tech"], "desc": "Schwimmende Festung mit Doppelgeschützen. Zerlegt Gebäude aus großer Distanz."})
-	B("red_dock", {"name": "Schiffswerft", "cost": 1300, "time": 18.0, "hp": 1700.0, "size": 4, "power": -2, "produces": ["red_gunboat", "red_battleship"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Kriegsschiffe."})
+	B("red_dock", {"name": "Schiffswerft", "cost": 1300, "time": 18.0, "hp": 1700.0, "size": 4, "power": -2, "produces": ["red_gunboat", "red_speedboat", "red_battleship"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Kriegsschiffe."})
 	B("red_hq", {"name": "Hauptquartier", "cost": 2500, "time": 40.0, "hp": 3600.0, "size": 5, "power": 5, "produces": ["red_dozer"], "sight": 24.0, "desc": "Herz der Basis. Baut Bautraktoren."})
 	B("red_power", {"name": "Kohlekraftwerk", "cost": 800, "time": 12.0, "hp": 1000.0, "power": 10, "desc": "Liefert 10 Strom."})
 	B("red_supply", {"name": "Versorgungsdepot", "cost": 1500, "time": 15.0, "hp": 1600.0, "power": -1, "produces": ["red_harv"], "desc": "Lager für Nachschub. Liefert einen Lkw mit."})
@@ -212,9 +214,11 @@ func _shadow() -> void:
 		"fixed_wing": true, "turn": 1.2, "weapon": W("toxin", 20.0, 5.5, 0.4, {"splash": 4.0}), "desc": "Doppeldecker, der Gift auf Bodentruppen sprüht. Tödlich gegen Infanterie."})
 	U("shadow_skiff", {"name": "Schmuggler-Kutter", "cost": 500, "time": 6.0, "hp": 280.0, "speed": 11.5, "armor": "light", "model": "skiff", "naval": true, "built_at": "dock", "sight": 24.0,
 		"weapon": W("bullet", 12.0, 16.0, 0.3, {"air": true}), "desc": "Schneller Kutter mit Bord-MG. Billig, wendig und bei Überfällen kaum zu fassen."})
+	U("shadow_jetski", {"name": "Jetski-Räuber", "cost": 250, "time": 4.0, "hp": 110.0, "speed": 16.5, "armor": "light", "model": "jetski", "naval": true, "built_at": "dock", "sight": 22.0,
+		"weapon": W("bullet", 8.0, 14.0, 0.25, {"air": true}), "desc": "Geschrotteter Wasserroller mit MG. Winzig, billig und rasend schnell: Schwärme zerlegen Nachschub und Bautrupps am Ufer."})
 	U("shadow_frigate", {"name": "Piraten-Fregatte", "cost": 1500, "time": 15.0, "hp": 900.0, "speed": 6.5, "armor": "heavy", "model": "frigate", "naval": true, "built_at": "dock", "sight": 26.0, "scale": 1.1,
 		"weapon": W("rocket", 46.0, 30.0, 2.6, {"splash": 2.5, "burst": 4}), "prereq": ["tech"], "desc": "Zusammengeschweißte Raketenfregatte. Feuert Salven auf alles, was sich am Ufer bewegt."})
-	B("shadow_dock", {"name": "Schmugglerhafen", "cost": 1200, "time": 16.0, "hp": 1300.0, "size": 4, "produces": ["shadow_skiff", "shadow_frigate"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Schiffe aus Schrott und Beutegut."})
+	B("shadow_dock", {"name": "Schmugglerhafen", "cost": 1200, "time": 16.0, "hp": 1300.0, "size": 4, "produces": ["shadow_skiff", "shadow_jetski", "shadow_frigate"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Schiffe aus Schrott und Beutegut."})
 	B("shadow_hq", {"name": "Versteck", "cost": 2000, "time": 35.0, "hp": 3000.0, "size": 5, "produces": ["shadow_dozer"], "sight": 24.0, "desc": "Herz der Basis. Bildet Arbeiter aus."})
 	B("shadow_supply", {"name": "Umschlagplatz", "cost": 1500, "time": 15.0, "hp": 1300.0, "produces": ["shadow_harv"], "desc": "Lager für Nachschub. Liefert einen Pickup mit."})
 	B("shadow_barracks", {"name": "Ausbildungslager", "cost": 500, "time": 10.0, "hp": 1000.0, "produces": ["shadow_inf", "shadow_at"], "desc": "Bildet Kämpfer aus."})

@@ -207,6 +207,8 @@ static func dress_custom(out: Dictionary, model: String, faction: String) -> voi
 		"gunboat": {"flags": [[Vector3(0, 2.1, -1.6), 1.6, 0]], "nav": [1.0, 1.8, 0.1], "crew": [[Vector3(0.6, 1.0, 0.7), 0.6], [Vector3(-0.7, 1.0, -2.7), 2.4]], "smoke": [Vector3(0, 2.8, -2.6)]},
 		"battleship": {"flags": [[Vector3(0, 4.3, 0.1), 3.0, 0]], "nav": [1.35, 3.4, 0.7], "crew": [[Vector3(-0.7, 1.3, -6.6), 0.3], [Vector3(0.0, 1.3, -6.6), 1.0], [Vector3(0.7, 1.3, -6.6), 2.2]], "smoke": [Vector3(0, 3.9, -2.8), Vector3(0, 3.9, -4.3)]},
 		"skiff": {"flags": [[Vector3(0.7, 0.9, -2.3), 1.8, 0], [Vector3(-0.7, 0.9, -2.4), 2.1, 1]], "nav": [], "crew": [[Vector3(0.1, 0.55, -0.9), 3.0], [Vector3(-0.35, 0.55, 0.9), 0.2]], "smoke": []},
+		"speedboat": {"flags": [[Vector3(0.2, 1.85, -1.0), 1.1, 0]], "nav": [0.5, 1.2, 0.4], "crew": [[Vector3(0.0, 0.62, -0.7), 0.2]], "smoke": []},
+		"jetski": {"flags": [], "nav": [], "crew": [[Vector3(0.0, 0.5, -0.5), 0.0]], "smoke": []},
 		"frigate": {"flags": [[Vector3(0, 2.2, -3.0), 3.0, 1], [Vector3(0.9, 2.2, -4.2), 2.0, 0]], "nav": [0.8, 2.3, -2.7], "crew": [[Vector3(0.7, 1.0, 3.9), 0.2], [Vector3(-0.8, 1.0, -5.0), 2.9], [Vector3(1.0, 1.0, 1.4), 1.2]], "smoke": [Vector3(0.6, 3.25, -4.0)]},
 	}
 	if not spec.has(model):

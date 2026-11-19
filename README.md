@@ -80,7 +80,7 @@ Die Karte hat einen **Mittelsee**, vier **Kanäle** zu den Ecken und je eine **B
 | **Rote Allianz** | Schiffswerft mit Sägedach, Schlot, Drehkran | Sturm-Kanonenboot: billig und robust | Oktober-Schlachtkreuzer: drei Doppelgeschütze, zerlegt Gebäude |
 | **Schattenfront** | Schmugglerhafen aus Holz, Zeltplane, Ausguck | Schmuggler-Kutter: schnell, MG | Piraten-Fregatte: Raketensalven, Containerstapel, Totenkopfflagge |
 
-Alle Schiffe haben Reling, Bullaugen, Rettungsboote, Besatzung, drehendes Radar, wehende Flaggen und Rauch. Die KI baut eine Werft und eine Flotte von höchstens sechs Schiffen, die ab drei Schiffen die Werft oder Küste des Gegners angreift. Test: `--seashow` stellt Werft und alle Schiffe in die Heimatbucht. Test der Abwehrbauten: `--defensetest` (Drehung, Ausrichtung, Schaden je Fraktion). Karten: `--map=1..40`, `--size= --water= --islands= --resources= --hills= --forest= --seed=` und `--mapimg=datei.png` (Kartenbild in `shots/`); Tageszeit: `--hour=` und `--daycycle=` (Minuten pro Tag); Explosionen: `--boomtest`; Menü: `--mapdialog`, `--menupick=N`.
+Alle Schiffe haben Reling, Bullaugen, Rettungsboote, Besatzung, drehendes Radar, wehende Flaggen und Rauch. Die KI baut eine Werft und eine Flotte von höchstens sechs Schiffen, die ab drei Schiffen die Werft oder Küste des Gegners angreift. Test: `--seashow` stellt Werft und alle Schiffe in die Heimatbucht. Test der Abwehrbauten: `--defensetest` (Drehung, Ausrichtung, Schaden je Fraktion). Karten: `--map=1..40`, `--size= --water= --islands= --resources= --hills= --forest= --seed=` und `--mapimg=datei.png` (Kartenbild in `shots/`); Tageszeit: `--hour=` und `--daycycle=` (Minuten pro Tag); Explosionen: `--boomtest`; Menü: `--mapdialog`, `--menupick=N`. Schnellboot (Rote Allianz) und Jetski (Schattenfront) sind schnelle, zerbrechliche Ergänzungen der Werft; der Westbund hat mit der Korvette sein Schnellschiff.
 
 Der **Nebel des Krieges** verdeckt Gelände, das du noch nicht erkundet hast. Bauplätze müssen erkundet sein.
 
@@ -255,7 +255,7 @@ Das Spiel lädt `.glb`-Dateien aus `models/units/` und `models/buildings/`, wenn
 | `tools/blender/make_airfield.py <west\|red\|shadow>` | Flugfelder |
 | `tools/blender/make_super.py <west\|red\|shadow>` | Superwaffen (Orbitalkanone, Atomsilo, Giftraketen-Silo) |
 | `tools/blender/make_vehicles.py <modell>` | Lkw, Flak, Artillerie, Raketenwerfer, Scud-Träger, Koloss, Hubschrauber, Jäger (Turm, Rohr, Rotor als eigene Teile) |
-| `tools/blender/make_ships.py <modell>` | Korvette, Kreuzer, Kanonenboot, Schlachtkreuzer, Kutter, Fregatte (gelofteter Rumpf, Turm/Rohr/Radar als eigene Teile; Flaggen, Besatzung, Rauch setzt `ships.gd:dress_custom` zur Laufzeit) |
+| `tools/blender/make_ships.py <modell>` | Korvette, Kreuzer, Kanonenboot, Schlachtkreuzer, Kutter, Fregatte, Raketen-Schnellboot (Rot), Jetski-Räuber (Schatten) (gelofteter Rumpf, Turm/Rohr/Radar als eigene Teile; Flaggen, Besatzung, Rauch setzt `ships.gd:dress_custom` zur Laufzeit) |
 | `tools/blender/make_docks.py <fraktion>` | Marinewerft, Schiffswerft, Schmugglerhafen (Halle, 9 m Steg mit Pfählen und Fendern, Kran bzw. Radar als drehendes Teil `Spin`) |
 | `tools/blender/make_trucks.py <fraktion>` | Nachschub-Lkw je Fraktion: Kofferlaster (West), Armeelaster mit Plane (Rot), Schrott-Pickup (Schatten) |
 | `tools/blender/sf_bld.py` | gemeinsame Bausteine der Gebäudeskripte (Materialien, Fenster, bewegliche Teile) |

@@ -89,7 +89,7 @@ def sb(L, prof, halfw, mat, x=0.0, bevel=0.1):
 
 def dk(z):
     t = max(0.0, min(1.0, (z + HL * 0.5) / HL))
-    return HD + 0.55 * pow(t, 3.0)
+    return HD + 0.55 * min(1.0, HD) * pow(t, 3.0)
 
 
 # ---------------------------------------------------------------- Rumpf
@@ -611,3 +611,64 @@ elif which == "frigate":
     bx(BR, (1.4, 0.05, 0.06), (0, 1.65, 3.2), DK, bevel=0.0)
     turret_parts((0, 1.0, 3.0), (0, 1.45, 3.0), (0, 1.9, 4.5))
     finish_unit("frigate", cam=(-12, -14, 8), tgt=(0, 0, 1.6))
+
+elif which == "speedboat":
+    # Rote Allianz: Raketen-Schnellboot — flach, keilförmig, Torpedorohre, Raketenpaar, Doppelmotor
+    hull(6.4, 1.9, 0.62, 0.45, HULLR, BAND_DK, 0.9, BANDR)
+    fit(ports=False, rivets=True, rail=False)
+    # Schanzkleid-Bug und geduckter Brückenaufbau mit Neigung
+    sb(P, [(-1.7, 0.64), (-1.5, 1.2), (-0.2, 1.3), (0.5, 0.95), (0.7, 0.66)], 0.55, HULLR2, bevel=0.1)
+    bx(P, (0.95, 0.22, 0.06), (0, 1.12, 0.52), GLS, rot=(-0.6, 0, 0), bevel=0.0)
+    for sx in (-1.0, 1.0):
+        bx(P, (0.05, 0.22, 0.9), (sx * 0.56, 1.12, -0.7), GLS, bevel=0.0)
+    cy(P, 0.04, 0.05, 1.0, (0.2, 1.85, -1.0), DK, seg=6)
+    radar((0, 1.3, -1.2), 0.6)
+    # Heck: zwei Außenborder-Gondeln mit Auspuff, Schraubenschutz
+    for sx in (-0.45, 0.45):
+        rbx(P, (0.42, 0.5, 0.7), (sx, 0.8, -3.0), DK, r=0.08)
+        cy(P, 0.12, 0.12, 0.5, (sx, 0.45, -3.3), ST, rot=(math.pi / 2, 0, 0), seg=10)
+        cy(P, 0.17, 0.17, 0.05, (sx, 0.2, -3.45), ST, rot=(0, 0, math.pi / 2), seg=10)
+    # Torpedorohre seitlich, schräg nach vorn, mit roten Spitzen
+    for sx in (-1.0, 1.0):
+        cy(P, 0.13, 0.13, 1.5, (sx * 0.62, 0.85, -0.5), ST, rot=(math.pi / 2 - 0.08, 0, 0), seg=12)
+        cy(P, 0.0, 0.12, 0.25, (sx * 0.62, 0.8, 0.35), BANDR, rot=(math.pi / 2 - 0.08, 0, 0), seg=12)
+        bx(P, (0.08, 0.1, 0.3), (sx * 0.62, 0.7, -1.0), DK)
+    deckbox((-0.3, 0.62, -2.0), 0.3, (0.3, 0.34, 0.24))
+    hatch((0.0, 0.62, -0.2), 0.22)
+    # Bugwaffe: kleiner Drehturm mit Raketenpaar
+    cy(T, 0.38, 0.45, 0.22, (0, 0.8, 1.7), TP, seg=18)
+    sp(T, 0.36, (0, 0.92, 1.7), TP, (1, 0.6, 1.1))
+    for sx in (-0.2, 0.2):
+        rbx(BR, (0.22, 0.22, 1.1), (sx, 1.05, 2.1), HULLR2, rot=(-0.2, 0, 0), r=0.06)
+        cy(BR, 0.0, 0.08, 0.2, (sx, 1.1, 2.7), BANDR, rot=(math.pi / 2 - 0.2, 0, 0), seg=10)
+    turret_parts((0, 0.72, 1.7), (0, 1.05, 1.7), (0, 1.1, 2.8))
+    finish_unit("speedboat", cam=(-7, -8, 5), tgt=(0, 0, 0.6))
+
+elif which == "jetski":
+    # Schattenfront: Jetski-Räuber — Schrottlack, Sitzbank, Lenker, MG vorn, Plattenschutz
+    hull(2.8, 0.95, 0.38, 0.25, RUSTH, BOARD, 0.8, BAND_DK)
+    for i, (z, sd) in enumerate(((-0.7, 1), (0.1, -1), (0.7, 1))):
+        t_ = (z + HL * 0.5) / HL
+        patch(sd * (sidex(t_, 0.2) + 0.03), 0.2, z, 0.5, 0.2, (RUST2, RUST3, PLATE)[i], sd)
+    # Sitzbank, Heckhöcker, Lenkersäule mit Lenker und Scheibe
+    rbx(P, (0.46, 0.2, 1.1), (0, 0.55, -0.55), DK, r=0.07)
+    rbx(P, (0.4, 0.28, 0.4), (0, 0.6, -1.15), RUSTH, r=0.08)
+    cy(P, 0.05, 0.06, 0.55, (0, 0.65, 0.35), DK, rot=(0.3, 0, 0), seg=8)
+    bx(P, (0.62, 0.05, 0.05), (0, 0.92, 0.45), ST, bevel=0.0)
+    for sx in (-1, 1):
+        cy(P, 0.025, 0.025, 0.18, (sx * 0.31, 0.92, 0.45), RB, rot=(0, 0, math.pi / 2), seg=6)
+    bx(P, (0.34, 0.2, 0.03), (0, 0.98, 0.55), GLS, rot=(-0.6, 0, 0), bevel=0.0)
+    # Düse mit Ring, Seitenwülste aus Reifenstücken, Fahnenstock mit Lumpen
+    cy(P, 0.17, 0.2, 0.3, (0, 0.28, -1.5), ST, rot=(math.pi / 2, 0, 0), seg=12)
+    cy(P, 0.13, 0.13, 0.05, (0, 0.28, -1.68), DK, rot=(math.pi / 2, 0, 0), seg=12)
+    for sx in (-1, 1):
+        cy(P, 0.1, 0.1, 1.0, (sx * 0.5, 0.28, -0.4), RB, rot=(math.pi / 2, 0, 0), seg=10)
+    cy(P, 0.012, 0.015, 1.1, (0.2, 1.0, -1.15), DK, seg=5)
+    bx(P, (0.02, 0.35, 0.16), (0.2, 1.45, -1.3), B.M("Rag", (0.06, 0.06, 0.06), 0.0, 0.95, 0.2, 0.5), bevel=0.0)
+    # MG mit Schild vorn
+    cy(T, 0.05, 0.05, 0.3, (0, 0.5, 0.85), DK, seg=8)
+    rbx(T, (0.2, 0.18, 0.34), (0, 0.72, 0.85), DK, r=0.03)
+    rbx(T, (0.3, 0.26, 0.05), (0, 0.76, 1.02), PLATE, r=0.015)
+    cy(BR, 0.025, 0.025, 0.7, (0, 0.72, 1.3), DK, rot=(math.pi / 2, 0, 0), seg=6)
+    turret_parts((0, 0.45, 0.85), (0, 0.72, 0.85), (0, 0.72, 1.7))
+    finish_unit("jetski", cam=(-4, -5, 3), tgt=(0, 0, 0.4))
