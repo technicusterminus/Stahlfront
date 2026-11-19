@@ -78,6 +78,11 @@ var _shield_fx_t = 0.0
 var stealthed = false     # Schattenfront: Tarnung
 var _still_t = 0.0
 var _last_fire_t = -99.0
+var _last_animated_shot := -99.0
+var _previous_visual_speed := 0.0
+var _suspension_pitch := 0.0
+var _suspension_velocity := 0.0
+var _previous_visual_heading := 0.0
 var salvage = 0           # Schattenfront: Schrottbergung (0..3)
 var aura = false          # Rote Allianz: Propaganda in Reichweite
 var _aura_t = 0.0
@@ -762,8 +767,10 @@ func _animate(delta: float) -> void:
 		if speed_now > 1.2:
 			_dust_t -= delta
 			if _dust_t <= 0.0:
-				_dust_t = 0.55
-				FX.ring(position - Vector3(sin(heading), 0, cos(heading)) * radius * 0.9 + Vector3(0, 0.0, 0), Color(0.92, 0.97, 1.0, 0.55), radius * 0.8, 1.1)
+				var pace := clampf(speed_now / maxf(float(def["speed"]), 1.0), 0.0, 1.0)
+				_dust_t = lerpf(0.68, 0.32, pace)
+				var stern: Vector3 = position - Vector3(sin(heading), 0, cos(heading)) * radius * 1.1
+				FX.ring(stern, Color(0.88, 0.94, 0.96, lerpf(0.14, 0.47, pace)), radius * lerpf(0.48, 0.92, pace), 1.23)
 	if is_vehicle and not flying and not naval and speed_now > 1.2 and visible:
 		_dust_t -= delta
 		if _dust_t <= 0.0:
@@ -787,6 +794,7 @@ func _animate(delta: float) -> void:
 		tilt_n = tilt_n.lerp(n, min(1.0, 6.0 * delta)).normalized()
 		var f = (fwd - tilt_n * fwd.dot(tilt_n)).normalized()
 		transform.basis = Basis(tilt_n.cross(f).normalized(), tilt_n, f)
+		_animate_chassis(delta)
 	else:
 		transform.basis = Basis(Vector3.UP, heading)
 	if flying:
@@ -795,10 +803,14 @@ func _animate(delta: float) -> void:
 		body.position.y = _fly_cur
 		body.rotation.x = clamp(speed_now / def["speed"], 0.0, 1.0) * (0.0 if fixed_wing else 0.18)
 		if fixed_wing:
-			body.rotation.z = -_bank * 0.7
+			body.rotation.z = lerpf(body.rotation.z, -_bank * 0.7, minf(1.0, 5.0 * delta))
 			var prop = model.get("prop")
 			if prop:
 				prop.rotation.z += 45.0 * delta
+		else:
+			var turn_rate := angle_difference(_previous_visual_heading, heading) / maxf(delta, 0.001)
+			body.rotation.z = lerpf(body.rotation.z, clampf(-turn_rate * 0.075, -0.27, 0.27), minf(1.0, 4.0 * delta))
+			_previous_visual_heading = heading
 		var rots: Array = model.get("rotors", [])
 		var rot: Node3D = model["rotor"]
 		if not rots.is_empty():
@@ -825,12 +837,28 @@ func _animate(delta: float) -> void:
 				ap.speed_scale = clamp(speed_now / 4.0, 0.6, 1.6)
 			else:
 				ap.speed_scale = 1.0
-			if want_anim == "Shoot" and Game.time - _last_fire_t < 0.05:
+			if want_anim == "Shoot" and _last_animated_shot != _last_fire_t:
+				_last_animated_shot = _last_fire_t
 				ap.seek(0.0, true)
 		elif speed_now > 0.4:
 			body.position.y = abs(sin(_anim_t * 9.0)) * 0.1
 		else:
 			body.position.y = 0.0
+
+func _animate_chassis(delta: float) -> void:
+	var impulse := clampf((speed_now - _previous_visual_speed) * 0.055, -0.2, 0.2)
+	_previous_visual_speed = speed_now
+	_suspension_velocity += impulse
+	_suspension_velocity -= _suspension_pitch * 48.0 * delta
+	_suspension_velocity *= exp(-7.5 * delta)
+	_suspension_pitch = clampf(_suspension_pitch + _suspension_velocity * delta, -0.065, 0.065)
+	var chassis: Node3D = model.get("chassis", body)
+	chassis.rotation.x = _suspension_pitch
+	var tracks = model.get("track_visual")
+	if tracks != null:
+		var camera: Camera3D = Game.cam.cam
+		var near_camera := visible and camera.global_position.distance_squared_to(global_position) < 110.0 * 110.0
+		tracks.advance(delta, speed_now * delta / body.scale.x, near_camera)
 
 # ---------------------------------------------------------------- Schaden
 

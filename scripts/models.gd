@@ -30,6 +30,7 @@ static var _team = Color.WHITE
 static var _bld = false
 static var _tex = {}
 static var _soldier = false
+static var _painted_materials = {}
 
 const STYLE = {
 	"west":   {"panel": 1.7, "pw": 0.018, "rivet": 0.0, "rust": 0.03, "dirt": 0.18, "metal": 0.55, "rough": 0.3, "grain": 0.1, "nd": 0.35, "ds": 2.4, "camo_scale": 0.075},
@@ -131,18 +132,42 @@ static func hard(kind: String, col := Color.WHITE) -> Material:
 	m.set_shader_parameter("detail_scale", st["ds"])
 	m.set_shader_parameter("camo_scale", st["camo_scale"])
 	m.set_shader_parameter("use_camo", kind == "camo" or kind == "uniform")
+	if kind == "camo":
+		# Lackierte Flächen reflektieren anders als blankes Metall. Kleine Fugen
+		# und zurückhaltender Schmutz lassen die Form in der RTS-Kamera lesbar.
+		m.set_shader_parameter("metallic_v", 0.13)
+		m.set_shader_parameter("rough_v", maxf(st["rough"], 0.48))
+		m.set_shader_parameter("panel_width", st["pw"] * 0.55)
+		m.set_shader_parameter("rivet", st["rivet"] * 0.45)
+		m.set_shader_parameter("dirt", st["dirt"] * 0.6)
+		m.set_shader_parameter("normal_depth", st["nd"] * 0.5)
+		m.set_shader_parameter("camo_weight", 0.68)
 	if kind == "uniform":
 		m.set_shader_parameter("camo_scale", st["camo_scale"] * 6.0)
-		m.set_shader_parameter("panel_scale", 0.01)
-		m.set_shader_parameter("rivet", 0.0)
+		m.set_shader_parameter("panel_lines", false)
 		m.set_shader_parameter("metallic_v", 0.0)
-		m.set_shader_parameter("rough_v", 0.9)
+		m.set_shader_parameter("rough_v", 0.83)
 		m.set_shader_parameter("rust", 0.0)
+		m.set_shader_parameter("dirt", 0.08)
+		m.set_shader_parameter("normal_depth", 0.13)
+		m.set_shader_parameter("camo_weight", 0.62)
 	m.set_shader_parameter("camo", camo_tex(_fac, _team))
 	var base := col
 	match kind:
 		"roof":
-			base = _team.lerp(Color(0.4, 0.4, 0.38), 0.3)
+			base = _team.lerp(Color(0.31, 0.32, 0.31), 0.53)
+			m.set_shader_parameter("metallic_v", 0.14)
+			m.set_shader_parameter("rough_v", maxf(st["rough"], 0.50))
+			m.set_shader_parameter("normal_depth", st["nd"] * 0.64)
+			m.set_shader_parameter("dirt", st["dirt"] * 0.65)
+		"ceramic":
+			m.set_shader_parameter("panel_lines", false)
+			m.set_shader_parameter("metallic_v", 0.16)
+			m.set_shader_parameter("rough_v", 0.59)
+			m.set_shader_parameter("grain", 0.13)
+			m.set_shader_parameter("rust", 0.025)
+			m.set_shader_parameter("dirt", 0.24)
+			m.set_shader_parameter("normal_depth", 0.24)
 		"dark":
 			base = Color(0.07, 0.07, 0.075)
 		"steel":
@@ -151,6 +176,8 @@ static func hard(kind: String, col := Color.WHITE) -> Material:
 			m.set_shader_parameter("rough_v", st["rough"] * 0.6)
 		"olive":
 			base = {"west": Color(0.3, 0.32, 0.34), "red": Color(0.2, 0.23, 0.13), "shadow": Color(0.42, 0.34, 0.22)}[_fac]
+		"camo", "uniform":
+			base = {"west": Color(0.35, 0.39, 0.43), "red": Color(0.31, 0.34, 0.25), "shadow": Color(0.47, 0.4, 0.31)}[_fac]
 		"wall", "concrete":
 			base = col
 			m.set_shader_parameter("metallic_v", 0.05 if kind == "concrete" or _fac != "west" else 0.3)
@@ -356,20 +383,84 @@ static func _individualize(n: Node) -> void:
 					mesh.set_surface_override_material(i, dm)
 
 static func _teamcolor(n: Node, col: Color) -> void:
-	if n is MeshInstance3D:
+	if n is MeshInstance3D and n.mesh != null:
 		var mi = n as MeshInstance3D
 		for i in mi.mesh.get_surface_count():
 			var m = mi.mesh.surface_get_material(i)
 			if m is BaseMaterial3D and "team" in String(m.resource_name).to_lower():
-				if _fac != "":
-					# Fraktionslack (Tarnmuster, Fugen, Rost) bzw. Uniform-Tarnmuster statt Einheitsfarbe
+				if m.resource_name == "TeamMarking":
+					mi.set_surface_override_material(i, mat(col.lerp(Color(0.29, 0.31, 0.32), 0.17), 0.03, 0.54))
+				elif not _bld and not _soldier and m.albedo_texture != null and _fac != "":
+					mi.set_surface_override_material(i, _painted_finish(m, col))
+				elif _bld and m.albedo_texture != null and _fac != "":
+					mi.set_surface_override_material(i, _painted_finish(m, col))
+				elif _fac != "":
 					mi.set_surface_override_material(i, hard("uniform" if _soldier else ("roof" if _bld else "camo")))
 				else:
 					var dm: BaseMaterial3D = m.duplicate()
 					dm.albedo_color = col.lerp(Color(0.45, 0.45, 0.42), 0.25)
 					mi.set_surface_override_material(i, dm)
+			elif m is BaseMaterial3D and not _bld and not _soldier and _fac != "":
+				var surface := String(m.resource_name)
+				if surface.begins_with("FalkeArmor"):
+					mi.set_surface_override_material(i, hard("ceramic", m.albedo_color))
+				# Schiffe und Nachschubfahrzeuge können bereits feste, bemalte Rümpfe haben.
+				elif surface.begins_with("Hull") or surface.begins_with("TruckRust") or surface.begins_with("RustBlue") or surface.begins_with("TruckRedPaint"):
+					mi.set_surface_override_material(i, _painted_finish(m, Color.WHITE, false))
+			elif m is BaseMaterial3D and _bld:
+				var architecture := _architecture_finish(m)
+				if architecture != null:
+					mi.set_surface_override_material(i, architecture)
 	for c in n.get_children():
 		_teamcolor(c, col)
+
+static func _painted_finish(source: BaseMaterial3D, col: Color, livery := true) -> BaseMaterial3D:
+	# Preserve baked albedo, normals and roughness. Paint carries a restrained
+	# team tint while the existing flags and markings carry the bright color.
+	var key := "%d/%s/%s/%s/%s" % [source.get_instance_id(), _fac, col.to_html(), _bld, livery]
+	if not _painted_materials.has(key):
+		var painted: BaseMaterial3D = source.duplicate()
+		if livery:
+			var fallback: Color
+			if _bld:
+				fallback = {"west": Color(0.38, 0.48, 0.63), "red": Color(0.58, 0.24, 0.20), "shadow": Color(0.59, 0.46, 0.29)}[_fac]
+			else:
+				fallback = {"west": Color(0.43, 0.52, 0.59), "red": Color(0.38, 0.44, 0.31), "shadow": Color(0.57, 0.47, 0.34)}[_fac]
+			painted.albedo_color = source.albedo_color * fallback.lerp(col, 0.13)
+		painted.metallic = minf(source.metallic, 0.22)
+		painted.roughness = maxf(source.roughness, 0.52)
+		_painted_materials[key] = painted
+	return _painted_materials[key]
+
+static func _architecture_finish(source: BaseMaterial3D) -> BaseMaterial3D:
+	var surface := String(source.resource_name)
+	var tint := Color.WHITE
+	var roughness := 0.56
+	var metal_limit := 0.16
+	if surface.begins_with("Panel"):
+		tint = Color(0.82, 0.88, 0.91)
+	elif surface.begins_with("Concrete") or surface.begins_with("Brick") or surface.begins_with("Rock"):
+		tint = Color(0.89, 0.87, 0.83)
+		roughness = 0.82
+		metal_limit = 0.0
+	elif surface.begins_with("Wood") or surface.begins_with("Canvas") or surface.begins_with("Sandbag"):
+		tint = Color(0.87, 0.80, 0.71)
+		roughness = 0.88
+		metal_limit = 0.0
+	elif surface.begins_with("Tin") or surface.begins_with("Rust"):
+		tint = Color(0.89, 0.84, 0.78)
+		roughness = 0.64
+		metal_limit = 0.34
+	else:
+		return null
+	var key := "facade/%d" % source.get_instance_id()
+	if not _painted_materials.has(key):
+		var finish: BaseMaterial3D = source.duplicate()
+		finish.albedo_color = source.albedo_color * tint
+		finish.roughness = maxf(source.roughness, roughness)
+		finish.metallic = minf(source.metallic, metal_limit)
+		_painted_materials[key] = finish
+	return _painted_materials[key]
 
 static func build_unit(model: String, col: Color, faction: String) -> Dictionary:
 	set_style(faction, col, false)
@@ -380,6 +471,12 @@ static func build_unit(model: String, col: Color, faction: String) -> Dictionary
 static func _build_unit(model: String, col: Color, faction: String) -> Dictionary:
 	var custom = load_custom("units", [faction + "_" + model, model], col)
 	if not custom.is_empty():
+		if custom["root"].find_child("TrackPrototype", true, false) != null:
+			var track_visual = load("res://scripts/tracked_visual.gd").new()
+			custom["root"].add_child(track_visual)
+			track_visual.setup(custom["root"])
+			custom["track_visual"] = track_visual
+			custom["chassis"] = custom["root"].find_child("Chassis", true, false)
 		if model in ["corvette", "cruiser", "gunboat", "battleship", "skiff", "frigate", "speedboat", "jetski", "submarine", "minisub", "carrier"]:
 			load("res://scripts/ships.gd").dress_custom(custom, model, faction)
 		return custom
@@ -819,8 +916,65 @@ static func build_plane(col: Color) -> Node3D:
 static func build_building(d: Dictionary, col: Color) -> Dictionary:
 	set_style(d["faction"], col, true)
 	var out = _build_building(d, col)
+	_service_area(out, d, col)
 	clear_style()
 	return out
+
+static func _service_area(out: Dictionary, d: Dictionary, col: Color) -> void:
+	# Ein kleiner, fraktionsübergreifender Funktionsbereich am Rand des Fundaments.
+	var root: Node3D = out["root"]
+	var half := float(d["size"])
+	var dock: bool = d["role"] == "dock"
+	var side := -1.0 if dock else 1.0
+	var z := side * (half - 0.12)
+	var border := mat(col.lerp(Color(0.24, 0.24, 0.22), 0.26), 0.05, 0.68)
+	var approach := mat(Color(0.24, 0.25, 0.24), 0.0, 0.92)
+	var stripe := mat(Color(0.73, 0.66, 0.44), 0.0, 0.78)
+	var metal := mat(Color(0.11, 0.12, 0.13), 0.35, 0.65)
+	var role: String = d["role"]
+	var lane := minf(half * 0.83, 2.4)
+	_bt.clear()
+	if role in ["factory", "supply", "dock", "airfield"]:
+		_bb(Vector3(lane * 2.0, 0.06, 0.74), Vector3(0, 0.085, z), approach)
+		for x in [-lane, lane]:
+			for stripe_index in 3:
+				_bb(Vector3(0.09, 0.025, 0.43), Vector3(x, 0.13, z + (stripe_index - 1) * 0.21), stripe, Vector3(0, side * 0.48, 0))
+		if role == "factory" or role == "supply":
+			for x in [-lane * 0.78, lane * 0.78]:
+				_bb(Vector3(0.09, 0.13, 0.75), Vector3(x, 0.15, z), metal)
+		elif role == "airfield":
+			for x in [-lane * 0.63, 0.0, lane * 0.63]:
+				_bb(Vector3(0.17, 0.055, 0.17), Vector3(x, 0.144, z), mat(Color(0.67, 0.74, 0.8), 0.0, 0.42, 0.32))
+	elif role in ["hq", "tech", "barracks"]:
+		for stripe_index in 4:
+			_bb(Vector3(0.18, 0.045, 0.53), Vector3((stripe_index - 1.5) * 0.32, 0.135, z), stripe)
+	else:
+		for x in [-lane * 0.67, lane * 0.67]:
+			_bb(Vector3(0.36, 0.27, 0.42), Vector3(x, 0.19, z), metal)
+			_bb(Vector3(0.33, 0.055, 0.054), Vector3(x, 0.34, z + side * 0.12), stripe)
+	var signal_x := minf(half - 0.40, lane + 0.51)
+	var signal_z := side * (half + 0.22)
+	_bb(Vector3(0.39, 0.11, 0.42), Vector3(signal_x, 0.065, signal_z), approach)
+	_bb(Vector3(0.25, 0.81, 0.24), Vector3(signal_x, 0.45, signal_z), metal)
+	_bb(Vector3(0.27, 0.16, 0.26), Vector3(signal_x, 0.70, signal_z), border)
+	_flush(root)
+	var idle := mat(Color(0.32, 0.52, 0.42), 0.0, 0.36, 0.45)
+	var active := mat(Color(0.30, 0.80, 0.55), 0.0, 0.33, 1.7)
+	var reserve := mat(Color(0.96, 0.57, 0.19), 0.0, 0.37, 0.8)
+	var lamp := box(root, Vector3(0.18, 0.102, 0.18), Vector3(signal_x, 0.91, signal_z), idle)
+	out["service_signal"] = {"lamp": lamp, "materials": [idle, active, reserve]}
+	var work_motion = load("res://scripts/building_motion.gd").new()
+	work_motion.setup(d, col, side)
+	root.add_child(work_motion)
+	out["work_motion"] = work_motion
+	if role == "factory":
+		var arm := Node3D.new()
+		arm.position = Vector3(signal_x - 0.1, 0.70, signal_z)
+		root.add_child(arm)
+		box(arm, Vector3(1.53, 0.081, 0.107), Vector3(-0.77, 0, 0), metal)
+		for stripe_index in 4:
+			box(arm, Vector3(0.14, 0.083, 0.111), Vector3(-0.17 - stripe_index * 0.36, 0, 0), stripe)
+		out["service_signal"]["arm"] = arm
 
 static func _build_building(d: Dictionary, col: Color) -> Dictionary:
 	var custom = load_custom("buildings", [String(d["faction"]) + "_" + String(d["role"])], col)
@@ -1059,11 +1213,12 @@ static func _dress(r: Node3D, w: float, faction: String, role: String, out: Dict
 	var team = mat(_team, 0.1, 0.6)
 	match faction:
 		"west":
-			# Leuchtband am Sockel
-			var gm = glow(Color(0.35, 0.75, 1.0), 3.0)
+			# Einlassmarkierungen aus beschichtetem Metall, jeweils an den Ecken.
+			var gm = mat(_team.lerp(Color(0.31, 0.34, 0.38), 0.18), 0.08, 0.56)
 			for sx in [-1, 1]:
-				box(r, Vector3(0.05, 0.05, w + 0.5), Vector3(sx * (e + 0.2), 0.12, 0), gm)
-				box(r, Vector3(w + 0.5, 0.05, 0.05), Vector3(0, 0.12, sx * (e + 0.2)), gm)
+				for sz in [-1, 1]:
+					box(r, Vector3(0.08, 0.10, 0.78), Vector3(sx * (e + 0.16), 0.15, sz * (e - 0.42)), gm)
+					box(r, Vector3(0.78, 0.10, 0.08), Vector3(sx * (e - 0.42), 0.15, sz * (e + 0.16)), gm)
 			# Lichtmasten vorne
 			for sx in [-1, 1]:
 				var p = Vector3(sx * (e + 0.1), 0, e + 0.1)
