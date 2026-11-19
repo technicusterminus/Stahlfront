@@ -811,6 +811,12 @@ static func _build_building(d: Dictionary, col: Color) -> Dictionary:
 		var ce = cw * 0.5 + 0.6
 		load("res://scripts/arch_detail.gd").walker(custom["root"], d["faction"],
 			[Vector3(-ce, 0, ce), Vector3(ce, 0, ce), Vector3(ce, 0, -ce), Vector3(-ce, 0, -ce)], custom, 1.1)
+		if d["role"] == "dock":
+			_life(custom["root"], cw, d["faction"], "dock", custom)
+			if d["faction"] == "red":
+				custom["smoke"] = [Vector3(cw * 0.36, 5.3, -cw * 0.38)]
+			elif d["faction"] == "shadow":
+				custom["smoke"] = [Vector3(cw * 0.3, 3.5, -cw * 0.4)]
 		if d["faction"] == "shadow" and d["role"] == "hq":
 			load("res://scripts/fx.gd").flame(custom["root"], Vector3(-2.3, 0.15, 3.1), 1.0)
 		if d["faction"] == "shadow" and d["role"] == "barracks":
