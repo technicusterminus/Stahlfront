@@ -40,6 +40,10 @@ func launch(s, p: int, weapon: Dictionary, from: Vector3, tgt, to: Vector3, dama
 			speed = 38.0
 			homing = target != null
 			arc = dist * 0.08
+		"torpedo":
+			speed = 20.0
+			homing = target != null
+			arc = 0.0
 		"artillery":
 			speed = 32.0
 			arc = clamp(dist * 0.35, 6.0, 22.0)
@@ -83,7 +87,7 @@ func _build_visual() -> void:
 		_rocket_mat = m2
 	mesh = MeshInstance3D.new()
 	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	if w["type"] == "rocket" or w["type"] == "artillery" or w["type"] == "bomb":
+	if w["type"] == "rocket" or w["type"] == "artillery" or w["type"] == "bomb" or w["type"] == "torpedo":
 		mesh.mesh = _rocket_mesh
 		mesh.material_override = _rocket_mat
 		mesh.rotation.x = PI / 2
@@ -135,6 +139,9 @@ func _impact() -> void:
 			FX.explosion(tpos, 1.7)
 		"rocket":
 			FX.explosion(tpos, 0.6)
+		"torpedo":
+			FX.explosion(tpos, 1.3)
+			FX.ring(tpos + Vector3(0, 0.1, 0), Color(0.8, 0.95, 1.0, 0.8), 4.0, 0.8)
 		_:
 			FX.explosion(tpos, 0.5)
 	if trail != null:

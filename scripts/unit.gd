@@ -192,7 +192,7 @@ func dmg_mult() -> float:
 
 ## Ist die Einheit fuer einen Gegner an dieser Position sichtbar/angreifbar?
 func detectable_from(p: Vector3) -> bool:
-	return not stealthed or Game.flat_dist(position, p) < 7.0
+	return not stealthed or Game.flat_dist(position, p) < (10.0 if def["submerged"] else 7.0)
 
 ## Kurzbeschreibung der aktiven Fraktionseffekte (fuer die Infoleiste).
 func trait_text() -> String:
@@ -334,7 +334,10 @@ func _regen(delta: float) -> void:
 	if max_shield > 0.0 and shield < max_shield and Game.time - last_hit_t > 4.0:
 		shield = min(max_shield, shield + max_shield * 0.12 * delta)
 	# Schattenfront: Tarnung bei Stillstand
-	if def["stealth"]:
+	if def["submerged"]:
+		# U-Boote bleiben getaucht (auch in Fahrt) und tauchen nur nach einem Schuss kurz auf
+		_set_stealth(Game.time - _last_fire_t > 3.5)
+	elif def["stealth"]:
 		if speed_now > 0.3 or Game.time - _last_fire_t < 3.0:
 			_still_t = 0.0
 		else:
@@ -760,7 +763,8 @@ func _animate(delta: float) -> void:
 		var pitch = sin(_anim_t * 1.3) * rough * 2.0 - clamp(speed_now / max(float(def["speed"]), 1.0), 0.0, 1.0) * 0.025
 		var roll = sin(_anim_t * 0.9 + 1.0) * rough * 2.4
 		transform.basis = Basis(Vector3.UP, heading) * Basis.from_euler(Vector3(pitch, 0, roll))
-		body.position.y = sin(_anim_t * 1.1) * 0.06
+		var dive = -0.55 if (def["submerged"] and stealthed) else 0.0
+		body.position.y = lerp(body.position.y, dive + sin(_anim_t * 1.1) * 0.06, min(1.0, 2.0 * delta))
 		if visible and model.has("anims"):
 			ShipsScript.play(model["anims"], delta, Game.time)
 		if visible and model.get("spin") != null:

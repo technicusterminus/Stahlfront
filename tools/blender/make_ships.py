@@ -672,3 +672,135 @@ elif which == "jetski":
     cy(BR, 0.025, 0.025, 0.7, (0, 0.72, 1.3), DK, rot=(math.pi / 2, 0, 0), seg=6)
     turret_parts((0, 0.45, 0.85), (0, 0.72, 0.85), (0, 0.72, 1.7))
     finish_unit("jetski", cam=(-4, -5, 3), tgt=(0, 0, 0.4))
+
+elif which in ("submarine", "minisub"):
+    # U-Boote: zigarrenförmiger Druckkörper (Drehkörper um die Längsachse), Turm, Ruder, Tauchflächen, Schraube
+    big = which == "submarine"
+    L_, R_, Y0 = (13.0, 1.25, -0.28) if big else (7.2, 0.78, -0.2)
+    HL, HD, HB = L_, R_ * 0.9, R_ * 2.0
+
+    def tube(length, rad, y0, mat_side, mat_band, nose=0.12, tail=0.26, rings=48, segs=30):
+        verts, faces, mats = [], [], []
+        for i in range(rings + 1):
+            t = i / rings
+            if t < nose:
+                r = rad * math.sqrt(max(0.0, 1.0 - ((nose - t) / nose) ** 2))
+                r = max(r, rad * 0.04)
+            elif t > 1.0 - tail:
+                u = (t - (1.0 - tail)) / tail
+                r = rad * (1.0 - 0.86 * (u ** 1.5))
+            else:
+                r = rad
+            z = -length * 0.5 + t * length
+            for j in range(segs):
+                a = math.tau * j / segs
+                x = math.cos(a) * r * 1.0
+                yy = y0 + math.sin(a) * r * 0.96
+                verts.append((x, -z, yy))
+        for i in range(rings):
+            for j in range(segs):
+                j2 = (j + 1) % segs
+                a_, b_ = i * segs + j, (i + 1) * segs + j
+                faces.append((a_, b_, (i + 1) * segs + j2, i * segs + j2))
+                ang = math.tau * (j + 0.5) / segs
+                low = math.sin(ang) * rad
+                mats.append(1 if (mat_band is not None and 0.0 < low - (-y0) + 0.28 and low - (-y0) < 0.28 + 0.34 and abs(low - (-y0)) < 0.5) else 0)
+        faces.append(tuple(range(segs - 1, -1, -1)))
+        mats.append(0)
+        faces.append(tuple(range(rings * segs, (rings + 1) * segs)))
+        mats.append(0)
+        me = bpy.data.meshes.new("SubMesh")
+        me.from_pydata(verts, [], faces)
+        for mt in (mat_side, mat_band if mat_band is not None else mat_side):
+            me.materials.append(mt)
+        for p_, mi in zip(me.polygons, mats):
+            p_.material_index = mi
+            p_.use_smooth = True
+        me.update()
+        ob = bpy.data.objects.new("HullShape", me)
+        S.scene.collection.objects.link(ob)
+        bm_ = bmesh.new()
+        bm_.from_mesh(me)
+        bmesh.ops.recalc_face_normals(bm_, faces=bm_.faces)
+        bm_.to_mesh(me)
+        bm_.free()
+        P.append(ob)
+
+    if big:
+        tube(L_, R_, Y0, HULLR, BANDR)
+        # Deckskasko: schmaler, dunkler Gehwegstreifen mit Ablaufschlitzen
+        bx(P, (0.7, 0.05, 9.5), (0, Y0 + R_ * 0.96 + 0.01, -0.5), DK, bevel=0.01)
+        for k in range(20):
+            bx(P, (0.7, 0.012, 0.03), (0, Y0 + R_ * 0.96 + 0.045, -5.0 + k * 0.5), HULLR2, bevel=0.0)
+        for k in range(14):
+            for sd in (-1, 1):
+                bx(P, (0.025, 0.06, 0.2), (sd * 0.18, Y0 + R_ * 0.98 + 0.08, -4.8 + k * 0.7), ST, bevel=0.005)
+        # Turm: Seitenprofil mit abgerundeter Front, Brückenrand, Periskope, Funkmast, Schnorchel, Radar
+        sb(P, [(-1.7, 0.7), (-1.5, 2.1), (-0.7, 2.25), (0.9, 2.2), (1.25, 1.6), (1.6, 0.7)], 0.5, HULLR2, bevel=0.14)
+        bx(P, (1.04, 0.1, 2.8), (0, 2.28, -0.4), DK, bevel=0.03)
+        bx(P, (0.8, 0.06, 0.06), (0, 2.18, 1.0), DK, bevel=0.0)
+        for sx in (-1, 1):
+            cy(P, 0.04, 0.05, 1.4, (sx * 0.2, 3.0, 0.1), ST, seg=8)
+        cy(P, 0.06, 0.07, 1.0, (0.3, 2.85, -1.0), DK, seg=8)
+        sp(P, 0.09, (0.3, 3.38, -1.0), ST)
+        cy(P, 0.03, 0.04, 1.2, (-0.3, 2.9, -0.9), ST, seg=6)
+        radar((0.0, 3.5, 0.6), 0.9)
+        # roter Stern auf dem Turm (beide Seiten)
+        for sx in (-1, 1):
+            o = B.star(0.04, (0, 0, 0), BANDR, 0.34, 0.13)
+            o.location = (sx * 0.505, -0.0, 1.55)
+            o.rotation_euler = (math.pi / 2, 0, math.pi / 2)
+            P.append(o)
+        # Bug: Hydrophonkuppel, Torpedoklappen, Bugruder; Heck: Kreuzruder und Schraube
+        sp(P, 0.35, (0, Y0 - 0.2, 6.1), DK, (1.0, 0.6, 0.8))
+        for sd in (-1, 1):
+            bx(P, (0.04, 0.1, 0.45), (sd * 0.5, Y0 + 0.2, 5.5), HULLR2, rot=(0, 0, sd * 0.2))
+            bx(P, (0.7, 0.04, 0.35), (sd * 0.8, Y0 + 0.2, 3.7), HULLR2)
+        for k in range(4):
+            sx = (-0.3, 0.3)[k % 2]
+            bx(P, (0.34, 0.34, 0.04), (sx, Y0 + (0.25 if k < 2 else -0.25), 6.34), DK)
+        for a in (0.0, 1.571):
+            bx(P, (1.7, 0.05, 0.7) if a == 0 else (0.05, 1.7, 0.7), (0, Y0, -5.7), HULLR2, bevel=0.01)
+        cy(P, 0.14, 0.14, 0.5, (0, Y0, -6.7), DK, rot=(math.pi / 2, 0, 0), seg=10)
+        for k in range(5):
+            a = math.tau * k / 5.0
+            bx(P, (0.05, 0.62, 0.22), (math.cos(a) * 0.3, Y0 + math.sin(a) * 0.3, -7.0), ST, rot=(0, a, 0), bevel=0.0)
+        rivet_z = [(-5.0 + k * 0.62) for k in range(17)]
+        for z in rivet_z:
+            for sd in (-1, 1):
+                sp(P, 0.022, (sd * (R_ + 0.0) * 0.998, Y0 + 0.2, z), ST)
+        sp(T, 0.01, (0, 0.0, 0.0), DK) if False else None
+        S.empty("Muzzle", (0, -6.3, Y0 + 0.2))
+        extras.append(bpy.data.objects["Muzzle"])
+        finish_unit("submarine", cam=(-11, -13, 6), tgt=(0, 0, 0.6))
+    else:
+        tube(L_, R_, Y0, RUST3, BAND_DK)
+        # Schrottplatten, Fässer als Ballast, Plane, Tau
+        for i in range(8):
+            sd = 1 if i % 2 == 0 else -1
+            z = -2.6 + i * 0.7
+            patch(sd * R_ * 0.96, Y0 + 0.15, z, 0.55, 0.32, (RUST2, RUSTH, PLATE)[i % 3], sd)
+        for sd in (-1, 1):
+            for k in range(3):
+                cy(P, 0.2, 0.2, 0.7, (sd * (R_ + 0.12), Y0 - 0.05, -1.6 + k * 1.6), (RUSTH, RUST3, RUST2)[k], rot=(math.pi / 2, 0, 0), seg=12)
+            bx(P, (0.1, 0.06, 0.3), (sd * (R_ - 0.05), Y0 + 0.05, -1.5), RUST2)
+        # kleiner Turm: Eimer-Aufbau mit Luke, Schnorchelrohr, Periskop aus Rohr, Lumpenfahne
+        rbx(P, (0.7, 0.8, 1.2), (0, Y0 + R_ * 0.9 + 0.35, 0.3), PLATE, r=0.07)
+        cy(P, 0.3, 0.3, 0.08, (0, Y0 + R_ * 0.9 + 0.78, 0.3), RUSTH, seg=14)
+        cy(P, 0.07, 0.08, 1.3, (0.2, Y0 + R_ * 0.9 + 1.3, -0.1), RUST2, seg=8)
+        cy(P, 0.035, 0.04, 1.0, (-0.18, Y0 + R_ * 0.9 + 1.2, 0.6), DK, seg=6)
+        sp(P, 0.05, (-0.18, Y0 + R_ * 0.9 + 1.72, 0.6), GLO)
+        cy(P, 0.012, 0.015, 1.1, (0.0, Y0 + R_ * 0.9 + 1.4, 0.0), DK, seg=5)
+        bx(P, (0.02, 0.3, 0.14), (0.0, Y0 + R_ * 0.9 + 1.9, -0.18), B.M("Rag", (0.06, 0.06, 0.06), 0.0, 0.95, 0.2, 0.5), bevel=0.0)
+        sp(P, 0.5, (0, Y0 + R_ * 0.9 + 0.15, -1.6), CLOTH, (1.1, 0.4, 1.6))
+        # Bug/Heck: Rohrhalterung für Torpedo, Ruder, Außenborder-Schraube
+        for sd in (-1, 1):
+            bx(P, (0.55, 0.04, 0.3), (sd * 0.5, Y0, -3.1), RUSTH)
+        bx(P, (0.05, 0.9, 0.5), (0, Y0 + 0.3, -3.3), RUSTH)
+        cy(P, 0.1, 0.1, 0.4, (0, Y0, -3.9), DK, rot=(math.pi / 2, 0, 0), seg=10)
+        for k in range(4):
+            a = math.tau * k / 4.0 + 0.4
+            bx(P, (0.04, 0.4, 0.14), (math.cos(a) * 0.2, Y0 + math.sin(a) * 0.2, -4.15), ST, rot=(0, a, 0), bevel=0.0)
+        S.empty("Muzzle", (0, -3.45, Y0 + 0.1))
+        extras.append(bpy.data.objects["Muzzle"])
+        finish_unit("minisub", cam=(-7, -8, 4), tgt=(0, 0, 0.4))

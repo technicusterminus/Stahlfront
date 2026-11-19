@@ -690,7 +690,7 @@ func update_fog() -> void:
 			var vis = spectator or is_visible_cell(u.position)
 			if vis and u.stealthed and not spectator:
 				vis = false
-				for o in units_near(u.position, 7.0):
+				for o in units_near(u.position, 10.0 if u.def["submerged"] else 7.0):
 					if o.owner_id == human:
 						vis = true
 						break

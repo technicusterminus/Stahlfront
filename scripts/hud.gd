@@ -863,7 +863,7 @@ func _hp_col(f: float) -> Color:
 
 func _wname(t: String) -> String:
 	return {"bullet": "MG", "flak": "Flak", "gatling": "Gatling", "shell": "Kanone", "rocket": "Raketen", "flame": "Flammenwerfer",
-		"toxin": "Gift", "laser": "Laser", "artillery": "Artillerie", "bomb": "Bomben", "demolition": "Sprengladung"}.get(t, t)
+		"toxin": "Gift", "laser": "Laser", "artillery": "Artillerie", "bomb": "Bomben", "demolition": "Sprengladung", "torpedo": "Torpedos"}.get(t, t)
 
 func _good_vs(w: Dictionary) -> String:
 	var m: Dictionary = Defs.DMG_MOD[w["type"]]

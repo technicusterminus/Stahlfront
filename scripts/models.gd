@@ -380,7 +380,7 @@ static func build_unit(model: String, col: Color, faction: String) -> Dictionary
 static func _build_unit(model: String, col: Color, faction: String) -> Dictionary:
 	var custom = load_custom("units", [faction + "_" + model, model], col)
 	if not custom.is_empty():
-		if model in ["corvette", "cruiser", "gunboat", "battleship", "skiff", "frigate", "speedboat", "jetski"]:
+		if model in ["corvette", "cruiser", "gunboat", "battleship", "skiff", "frigate", "speedboat", "jetski", "submarine", "minisub"]:
 			load("res://scripts/ships.gd").dress_custom(custom, model, faction)
 		return custom
 	var root = Node3D.new()
@@ -423,7 +423,7 @@ static func _build_unit(model: String, col: Color, faction: String) -> Dictionar
 			_bomber(root, pc, faction, out)
 		"glider", "sprayer":
 			_biplane(root, pc, model == "sprayer", out)
-		"corvette", "cruiser", "gunboat", "battleship", "skiff", "frigate", "speedboat", "jetski":
+		"corvette", "cruiser", "gunboat", "battleship", "skiff", "frigate", "speedboat", "jetski", "submarine", "minisub":
 			load("res://scripts/ships.gd").build(root, model, faction, pc, out)
 		_:
 			box(root, Vector3(2, 1, 3), Vector3(0, 0.5, 0), pc)

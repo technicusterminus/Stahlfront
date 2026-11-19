@@ -14,6 +14,7 @@ const DMG_MOD := {
 	"artillery": {"inf": 0.9, "light": 0.85, "heavy": 0.75, "air": 0.0, "bldg": 1.4},
 	"demolition": {"inf": 1.2, "light": 1.3, "heavy": 1.0, "air": 0.0, "bldg": 1.8},
 	"bomb": {"inf": 1.0, "light": 1.15, "heavy": 1.0, "air": 0.0, "bldg": 1.6},
+	"torpedo": {"inf": 0.3, "light": 1.5, "heavy": 1.8, "air": 0.0, "bldg": 1.3},
 }
 
 const ROLE_NAMES := {
@@ -47,7 +48,7 @@ func U(id: String, d: Dictionary) -> void:
 	d.merge({"sight": 18.0, "armor": "light", "speed": 6.0, "flying": false, "role": "combat",
 		"scale": 1.0, "weapon": null, "prereq": [], "desc": "", "horde": false, "cargo": 0,
 		"shield": 0.0, "stealth": false, "pair": false, "salvage": false, "built_at": "",
-		"fixed_wing": false, "turn": 1.3, "naval": false}, false)
+		"fixed_wing": false, "turn": 1.3, "naval": false, "submerged": false}, false)
 	units[id] = d
 
 func B(id: String, d: Dictionary) -> void:
@@ -174,9 +175,11 @@ func _red() -> void:
 		"weapon": W("shell", 42.0, 21.0, 1.6, {"splash": 1.2}), "desc": "Gepanzertes Kanonenboot. Billig, robust, gut gegen Küstenfahrzeuge."})
 	U("red_speedboat", {"name": "Raketen-Schnellboot", "cost": 600, "time": 7.0, "hp": 230.0, "speed": 14.5, "armor": "light", "model": "speedboat", "naval": true, "built_at": "dock", "sight": 24.0,
 		"weapon": W("rocket", 38.0, 22.0, 1.7, {"splash": 1.4, "burst": 2}), "desc": "Flaches Schnellboot mit Torpedorohren und Raketenpaar. Sehr schnell, aber zerbrechlich: jagt Schiffe und Küstenfahrzeuge."})
+	U("red_submarine", {"name": "Oktober-U-Boot", "cost": 1400, "time": 14.0, "hp": 520.0, "speed": 7.5, "armor": "heavy", "model": "submarine", "naval": true, "submerged": true, "built_at": "dock", "sight": 22.0, "scale": 1.0, "prereq": ["tech"],
+		"weapon": W("torpedo", 120.0, 34.0, 4.0, {"splash": 3.0, "burst": 1}), "desc": "Getauchtes Torpedoboot. Unsichtbar, solange kein Gegner näher als 10 m ist; beim Schuss taucht es kurz auf. Zerlegt Schiffe und Werften."})
 	U("red_battleship", {"name": "Oktober-Schlachtkreuzer", "cost": 2200, "time": 22.0, "hp": 1900.0, "speed": 5.0, "armor": "heavy", "model": "battleship", "naval": true, "built_at": "dock", "sight": 28.0, "scale": 1.3,
 		"weapon": W("artillery", 95.0, 56.0, 4.5, {"splash": 5.5, "burst": 2, "min_range": 14.0}), "prereq": ["tech"], "desc": "Schwimmende Festung mit Doppelgeschützen. Zerlegt Gebäude aus großer Distanz."})
-	B("red_dock", {"name": "Schiffswerft", "cost": 1300, "time": 18.0, "hp": 1700.0, "size": 4, "power": -2, "produces": ["red_gunboat", "red_speedboat", "red_battleship"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Kriegsschiffe."})
+	B("red_dock", {"name": "Schiffswerft", "cost": 1300, "time": 18.0, "hp": 1700.0, "size": 4, "power": -2, "produces": ["red_gunboat", "red_speedboat", "red_submarine", "red_battleship"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Kriegsschiffe."})
 	B("red_hq", {"name": "Hauptquartier", "cost": 2500, "time": 40.0, "hp": 3600.0, "size": 5, "power": 5, "produces": ["red_dozer"], "sight": 24.0, "desc": "Herz der Basis. Baut Bautraktoren."})
 	B("red_power", {"name": "Kohlekraftwerk", "cost": 800, "time": 12.0, "hp": 1000.0, "power": 10, "desc": "Liefert 10 Strom."})
 	B("red_supply", {"name": "Versorgungsdepot", "cost": 1500, "time": 15.0, "hp": 1600.0, "power": -1, "produces": ["red_harv"], "desc": "Lager für Nachschub. Liefert einen Lkw mit."})
@@ -216,9 +219,11 @@ func _shadow() -> void:
 		"weapon": W("bullet", 12.0, 16.0, 0.3, {"air": true}), "desc": "Schneller Kutter mit Bord-MG. Billig, wendig und bei Überfällen kaum zu fassen."})
 	U("shadow_jetski", {"name": "Jetski-Räuber", "cost": 250, "time": 4.0, "hp": 110.0, "speed": 16.5, "armor": "light", "model": "jetski", "naval": true, "built_at": "dock", "sight": 22.0,
 		"weapon": W("bullet", 8.0, 14.0, 0.25, {"air": true}), "desc": "Geschrotteter Wasserroller mit MG. Winzig, billig und rasend schnell: Schwärme zerlegen Nachschub und Bautrupps am Ufer."})
+	U("shadow_minisub", {"name": "Schmuggler-Tauchboot", "cost": 650, "time": 8.0, "hp": 190.0, "speed": 8.5, "armor": "light", "model": "minisub", "naval": true, "submerged": true, "built_at": "dock", "sight": 20.0,
+		"weapon": W("torpedo", 70.0, 26.0, 3.0, {"splash": 2.0}), "desc": "Zusammengeschweißtes Halbtauchboot mit Haftminen-Torpedo. Billig, getarnt, tödlich für unaufmerksame Schiffe."})
 	U("shadow_frigate", {"name": "Piraten-Fregatte", "cost": 1500, "time": 15.0, "hp": 900.0, "speed": 6.5, "armor": "heavy", "model": "frigate", "naval": true, "built_at": "dock", "sight": 26.0, "scale": 1.1,
 		"weapon": W("rocket", 46.0, 30.0, 2.6, {"splash": 2.5, "burst": 4}), "prereq": ["tech"], "desc": "Zusammengeschweißte Raketenfregatte. Feuert Salven auf alles, was sich am Ufer bewegt."})
-	B("shadow_dock", {"name": "Schmugglerhafen", "cost": 1200, "time": 16.0, "hp": 1300.0, "size": 4, "produces": ["shadow_skiff", "shadow_jetski", "shadow_frigate"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Schiffe aus Schrott und Beutegut."})
+	B("shadow_dock", {"name": "Schmugglerhafen", "cost": 1200, "time": 16.0, "hp": 1300.0, "size": 4, "produces": ["shadow_skiff", "shadow_jetski", "shadow_minisub", "shadow_frigate"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Schiffe aus Schrott und Beutegut."})
 	B("shadow_hq", {"name": "Versteck", "cost": 2000, "time": 35.0, "hp": 3000.0, "size": 5, "produces": ["shadow_dozer"], "sight": 24.0, "desc": "Herz der Basis. Bildet Arbeiter aus."})
 	B("shadow_supply", {"name": "Umschlagplatz", "cost": 1500, "time": 15.0, "hp": 1300.0, "produces": ["shadow_harv"], "desc": "Lager für Nachschub. Liefert einen Pickup mit."})
 	B("shadow_barracks", {"name": "Ausbildungslager", "cost": 500, "time": 10.0, "hp": 1000.0, "produces": ["shadow_inf", "shadow_at"], "desc": "Bildet Kämpfer aus."})
@@ -243,8 +248,10 @@ func _faction_traits() -> void:
 			u["pair"] = true
 		if u["faction"] == "shadow" and not vehicle and u["role"] == "combat":
 			u["stealth"] = true
-		if u["faction"] == "shadow" and vehicle and u["role"] == "combat":
+		if u["faction"] == "shadow" and vehicle and u["role"] == "combat" and not u["naval"]:
 			u["salvage"] = true
+		if u["submerged"]:
+			u["stealth"] = true
 
 ## Rohstoffe neben Credits: Holz, Eisen, Öl, Gold; Stahl entsteht im Nachschubgebäude aus Eisen und Öl.
 const RES_KINDS := ["wood", "iron", "oil", "gold", "steel"]
