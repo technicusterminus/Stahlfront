@@ -1,0 +1,40 @@
+{
+  "model": "black-forest-labs/flux.2-pro",
+  "images": [
+    {
+      "id": "direction-architecture",
+      "aspect_ratio": "16:9",
+      "prompt": "Original real-time strategy game Stahlfront, production concept art direction sheet for industrial architecture. Three equally spaced columns on a plain charcoal studio ground, each column has a distinct fictional faction and a compact group of structures seen from the same orthographic three-quarter game camera. Left: Westbund, cool graphite and galvanised white panels, restrained blue plates, a low vehicle factory with recessed loading bays, a clean airfield hangar and an angular headquarters. Middle: Rote Allianz, heavy olive-grey concrete and faded oxblood sheet metal, heat-vent power house and high communications headquarters, hard angles and practical brick annexes. Right: Schattenfront, worn timber and tarpaulin workshop, stacked freight depot and patched small dock with separate pallet routes. Believable construction joints, drainage, access for crew, cable routing, readable moving workstations, recognizable roofs, finely weathered materials. Original industrial design for a modern strategy game. No explosions, no flags, no brands, no lettering, no captions or logos. All structures uncropped."
+    },
+    {
+      "id": "direction-vehicles",
+      "aspect_ratio": "16:9",
+      "prompt": "Original vehicle production reference for the fictional real-time strategy game Stahlfront, six separate vehicle silhouettes neatly in two rows of three, all viewed from a consistent high three-quarter studio camera. Top left low Westbund graphite tracked scout with satin blue shoulder plates and exposed finely articulated track links, top center heavy Rote Allianz olive logistics truck with simple heavy volumes, top right Schattenfront patched sand 4x4 pickup with mismatched plain panels. Lower left Westbund compact graphite rotorcraft with restrained blue ID panels, lower center red-alliance small harbor patrol vessel with a weathered olive and brick-red superstructure, lower right improvised sand-coloured harbor freight craft with mixed metal and canvas. All six displayed separately with visible empty margins, no people, no text, no insignia, plain subdued studio background. Grounded photoreal materials with recessed sensors, believable load-bearing details, aging around access panels and running gear. Original game concept art."
+    },
+    {
+      "id": "direction-infantry",
+      "aspect_ratio": "16:9",
+      "prompt": "Professional photoreal character concept sheet for the original strategy game Stahlfront. Three adult industrial field engineers of different body types standing side by side, head to toe, hands empty, dressed in realistic practical clothing. Left cool slate protective plates and dusky blue shoulder tags, dark protective visor. Center olive work uniform with a rounded green safety helmet, broad shoulders and dull red shoulder tags. Right layered sand linen workwear, tinted dust goggles, canvas scarf and tool pouches. Costume craftsmanship, fabric stitching, believable engineered boot soles. Modern grounded game design, plain grey studio, the same three-quarter view for all three, no writing, insignia, weapons or props."
+    },
+    {
+      "id": "metal",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal seamless, tileable, flat top-down PBR texture source for dark neutral painted industrial metal, frame completely filled with a uniform unbroken surface, finely pebbled baked-on semi-matte enamel, sparse tiny wear flecks and fine shallow hairline rub marks. Medium neutral gray with subtle contrast. Orthographic scan, absolutely flat diffuse light, no shading gradients, reflections, directional highlights, shadow, seams, edges, holes, bolts, panels, lettering, objects, composition, vignette or border. Consistent scale across the image, physical material for a grounded videogame asset."
+    },
+    {
+      "id": "concrete",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal seamless tileable texture source from a flat orthographic scan of fine grain weathered industrial cast concrete. Entire square continuously filled with a neutral warm-gray cement surface, tiny pinholes, lightly visible rounded aggregate, mineral specks and restrained tonal variation. No lines, blocks, slabs, seams or chips larger than a tiny pebble. Completely even flat ambient light, no shadows, no reflections, no depth-of-field, no letters, no frame or border. Uniform high detail and constant scale from edge to edge."
+    },
+    {
+      "id": "fabric",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal seamless tileable game material raw scan of tightly woven charcoal gray nylon-cotton ripstop field uniform fabric, neutral and unpatterned, small warp and weft thread structure, scattered subtle alternating fiber tone, restrained fine ripstop grid. Perfectly flat overhead orthographic view with even neutral illumination. Entire frame filled by flat fabric with no creases, folds, seams, holes, logos, writing, cast shadows, directional highlights, vignette or border. Consistent fabric scale across the square."
+    },
+    {
+      "id": "timber",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal seamless tileable flat texture scan for weathered old brown-gray rough sawn timber on an improvised industrial freight building. Entire square filled with one unbroken neutral wood surface and fine, naturally irregular longitudinal grain, muted gray fibers, sparse pin knots and fine abrasion. No separate planks, no plank boundaries, no splits or large knots, no nails, no geometry or perspective. Perfectly even diffuse lighting, no shadow, vignette, letters, edges or border. High frequency material detail appropriate for a grounded game environment."
+    }
+  ]
+}

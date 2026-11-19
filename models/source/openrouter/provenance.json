@@ -1,0 +1,37 @@
+[
+  {
+    "Id": "concrete",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  },
+  {
+    "Id": "direction-architecture",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.045
+  },
+  {
+    "Id": "direction-infantry",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.045
+  },
+  {
+    "Id": "direction-vehicles",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.045
+  },
+  {
+    "Id": "fabric",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  },
+  {
+    "Id": "metal",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  },
+  {
+    "Id": "timber",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  }
+]

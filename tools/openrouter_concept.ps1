@@ -1,7 +1,13 @@
 [CmdletBinding()]
 param(
     [switch]$Generate,
-    [string]$OutputPath = (Join-Path (Split-Path -Parent $PSScriptRoot) 'shots/west-infantry-concept.png')
+    [string]$OutputPath = (Join-Path (Split-Path -Parent $PSScriptRoot) 'shots/west-infantry-concept.png'),
+    [string]$Prompt,
+    [ValidateSet('black-forest-labs/flux.2-klein-4b', 'black-forest-labs/flux.2-pro')]
+    [string]$Model = 'black-forest-labs/flux.2-klein-4b',
+    [ValidateSet('1:1', '3:4', '4:3', '16:9')]
+    [string]$AspectRatio = '3:4',
+    [switch]$IncludeUsage
 )
 
 $apiKey = [Environment]::GetEnvironmentVariable('OPENROUTER_API_KEY', 'Process')
@@ -29,10 +35,13 @@ if ([IO.Path]::GetExtension($path) -ne '.png' -or (Test-Path -LiteralPath $path)
 $parent = [IO.Path]::GetDirectoryName($path)
 [IO.Directory]::CreateDirectory($parent) | Out-Null
 
+if ([string]::IsNullOrWhiteSpace($Prompt)) {
+    $Prompt = 'One original Westbund infantry character for the RTS Stahlfront. Front orthographic full-body reference, centered and uncropped, symmetrical neutral A-pose, fingers relaxed, empty hands and all limbs fully visible. Near-future industrial infantry uniform, slate-gray armor, distinctive cool-blue shoulder plates, low helmet with a dark visor, sturdy boots, compact equipment close to the body. Natural adult proportions and a silhouette readable from a high game camera. Neutral studio background and even light. No weapon, props, letters, logos, or pedestal.'
+}
 $request = @{
-    model = 'black-forest-labs/flux.2-klein-4b'
-    prompt = 'One original Westbund infantry character for the RTS Stahlfront. Front orthographic full-body reference, centered and uncropped, symmetrical neutral A-pose, fingers relaxed, empty hands and all limbs fully visible. Near-future industrial infantry uniform, slate-gray armor, distinctive cool-blue shoulder plates, low helmet with a dark visor, sturdy boots, compact equipment close to the body. Natural adult proportions and a silhouette readable from a high game camera. Neutral studio background and even light. No weapon, props, letters, logos, or pedestal.'
-    aspect_ratio = '3:4'
+    model = $Model
+    prompt = $Prompt
+    aspect_ratio = $AspectRatio
     output_format = 'png'
     n = 1
 } | ConvertTo-Json -Compress
@@ -48,4 +57,8 @@ try {
 } finally {
     $file.Dispose()
 }
-Write-Output $path
+if ($IncludeUsage) {
+    [pscustomobject]@{ Path = $path; Model = $Model; CostUsd = $response.usage.cost }
+} else {
+    Write-Output $path
+}

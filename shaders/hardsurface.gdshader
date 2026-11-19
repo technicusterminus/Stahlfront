@@ -5,6 +5,9 @@ shader_type spatial;
 uniform sampler2D camo : source_color, repeat_enable, filter_nearest_mipmap;
 uniform sampler2D grime : repeat_enable, filter_linear_mipmap;
 uniform sampler2D detail_n : hint_normal, repeat_enable, filter_linear_mipmap;
+uniform sampler2D art_surface : hint_default_white, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform float art_scale = 1.0;
+uniform float art_amount = 0.0;
 uniform bool use_camo = true;
 uniform float camo_weight : hint_range(0.0, 1.0) = 1.0;
 uniform vec3 base_col : source_color = vec3(0.5);
@@ -21,6 +24,7 @@ uniform float metallic_v = 0.4;
 uniform float rough_v = 0.5;
 uniform float normal_depth = 0.8;
 uniform float detail_scale = 1.6;
+uniform float coating_wear : hint_range(0.0, 1.0) = 0.0;
 
 varying vec3 opos;
 varying vec3 onrm;
@@ -78,18 +82,44 @@ void fragment() {
 	// Schmutz: unten mehr, fleckig
 	float low = clamp((1.0 - opos.y) / 1.2, 0.0, 1.0);
 	float dmask = clamp(low * dirt * (0.6 + g) + (g3 - 0.6) * dirt * 0.8, 0.0, 0.9);
+	float exposed = 0.0;
+	float finish_variation = 0.0;
+	if (coating_wear > 0.0) {
+		float footprint = length(fwidth(opos));
+		float visible_detail = 1.0 - smoothstep(0.021, 0.094, footprint);
+		if (visible_detail > 0.0) {
+			// Kleine Abplatzer folgen groben Verschleißzonen. Laufspuren sind vertikal gestreckt.
+			float flakes = tri_g(opos, n, 37.0).r;
+			float runnels = tri_g(opos * vec3(28.0, 2.8, 28.0), n, 1.0).r;
+			float wear_zone = smoothstep(0.43, 0.69, g2 + near_line * 0.15);
+			exposed = smoothstep(0.59, 0.75, flakes) * wear_zone * visible_detail * coating_wear;
+			finish_variation = (runnels - 0.48) * visible_detail * coating_wear;
+			dmask = clamp(dmask + max(finish_variation, 0.0) * low * 0.21, 0.0, 0.9);
+		}
+	}
 
 	col *= 1.0 + (g2 - 0.5) * grain * 2.0;
 	col = mix(col, rust_col * (0.7 + 0.6 * g2), rmask);
 	col = mix(col, vec3(0.15, 0.12, 0.085) * (0.8 + 0.4 * g), dmask);
 	col *= 1.0 - line * 0.6;
 	col = mix(col, col * 1.35 + 0.04, rv);
+	col = mix(col, vec3(0.28, 0.30, 0.30), exposed * 0.59);
+	vec3 art_signal = vec3(0.0);
+	if (art_amount > 0.0) {
+		vec3 p = opos * art_scale;
+		vec3 w = triw(n);
+		vec3 sample_rgh = texture(art_surface, p.zy).rgb * w.x +
+			texture(art_surface, p.xz).rgb * w.y + texture(art_surface, p.xy).rgb * w.z;
+		float visibility = 1.0 - smoothstep(0.055, 0.26, length(fwidth(p)));
+		art_signal = (sample_rgh - 0.5) * visibility * art_amount;
+		col *= 1.0 + art_signal.r * 1.65;
+	}
 
 	ALBEDO = col;
-	METALLIC = metallic_v * (1.0 - rmask) * (1.0 - dmask * 0.7);
-	ROUGHNESS = clamp(rough_v + (g2 - 0.5) * 0.25 + rmask * 0.35 + dmask * 0.3 + line * 0.15 - rv * 0.2, 0.05, 1.0);
+	METALLIC = mix(metallic_v, 0.68, exposed) * (1.0 - rmask) * (1.0 - dmask * 0.7);
+	ROUGHNESS = clamp(rough_v + (g2 - 0.5) * 0.25 + rmask * 0.35 + dmask * 0.3 + line * 0.15 - rv * 0.2 + finish_variation * 0.35 - exposed * 0.18 + art_signal.g * 0.64, 0.05, 1.0);
 	NORMAL_MAP = tri_n(opos, n, detail_scale).rgb;
-	NORMAL_MAP_DEPTH = normal_depth * (1.0 + rmask * 1.5);
+	NORMAL_MAP_DEPTH = (normal_depth + art_signal.b * 0.22) * (1.0 + rmask * 1.5);
 	AO = 1.0 - line * 0.7;
 	AO_LIGHT_AFFECT = 0.4;
 }

@@ -1,6 +1,8 @@
 extends RefCounted
 ## Prozedurale Modelle aus Grundkoerpern. Vorwaerts = +Z.
 
+const ART_SURFACES = preload("res://scripts/art_surfaces.gd")
+
 static var _meshes = {}
 static var _mats = {}
 
@@ -160,14 +162,15 @@ static func hard(kind: String, col := Color.WHITE) -> Material:
 			m.set_shader_parameter("rough_v", maxf(st["rough"], 0.50))
 			m.set_shader_parameter("normal_depth", st["nd"] * 0.64)
 			m.set_shader_parameter("dirt", st["dirt"] * 0.65)
-		"ceramic":
+		"ceramic", "turret_ceramic", "industrial":
 			m.set_shader_parameter("panel_lines", false)
 			m.set_shader_parameter("metallic_v", 0.16)
 			m.set_shader_parameter("rough_v", 0.59)
 			m.set_shader_parameter("grain", 0.13)
 			m.set_shader_parameter("rust", 0.025)
-			m.set_shader_parameter("dirt", 0.24)
+			m.set_shader_parameter("dirt", 0.098 if kind == "turret_ceramic" else 0.27)
 			m.set_shader_parameter("normal_depth", 0.24)
+			m.set_shader_parameter("coating_wear", 0.84 if kind == "ceramic" else 0.55)
 		"dark":
 			base = Color(0.07, 0.07, 0.075)
 		"steel":
@@ -178,6 +181,9 @@ static func hard(kind: String, col := Color.WHITE) -> Material:
 			base = {"west": Color(0.3, 0.32, 0.34), "red": Color(0.2, 0.23, 0.13), "shadow": Color(0.42, 0.34, 0.22)}[_fac]
 		"camo", "uniform":
 			base = {"west": Color(0.35, 0.39, 0.43), "red": Color(0.31, 0.34, 0.25), "shadow": Color(0.47, 0.4, 0.31)}[_fac]
+			if kind == "uniform" and ART_SURFACES.active():
+				base = ART_SURFACES.FABRIC_COLORS[_fac]
+				m.set_shader_parameter("camo_weight", 0.46)
 		"wall", "concrete":
 			base = col
 			m.set_shader_parameter("metallic_v", 0.05 if kind == "concrete" or _fac != "west" else 0.3)
@@ -186,6 +192,14 @@ static func hard(kind: String, col := Color.WHITE) -> Material:
 			m.set_shader_parameter("rivet", 0.0)
 			m.set_shader_parameter("dirt", st["dirt"] * 0.8)
 	m.set_shader_parameter("base_col", base)
+	var surface_kind := "metal"
+	if kind == "uniform":
+		surface_kind = "fabric"
+	elif kind == "concrete" or (kind == "wall" and _fac == "red"):
+		surface_kind = "concrete"
+	elif kind == "wall" and _fac == "shadow":
+		surface_kind = "timber"
+	ART_SURFACES.apply_shader(m, surface_kind)
 	_mats[key] = m
 	return m
 
@@ -386,37 +400,59 @@ static func _teamcolor(n: Node, col: Color) -> void:
 	if n is MeshInstance3D and n.mesh != null:
 		var mi = n as MeshInstance3D
 		for i in mi.mesh.get_surface_count():
-			var m = mi.mesh.surface_get_material(i)
-			if m is BaseMaterial3D and "team" in String(m.resource_name).to_lower():
-				if m.resource_name == "TeamMarking":
-					mi.set_surface_override_material(i, mat(col.lerp(Color(0.29, 0.31, 0.32), 0.17), 0.03, 0.54))
-				elif not _bld and not _soldier and m.albedo_texture != null and _fac != "":
-					mi.set_surface_override_material(i, _painted_finish(m, col))
-				elif _bld and m.albedo_texture != null and _fac != "":
-					mi.set_surface_override_material(i, _painted_finish(m, col))
-				elif _fac != "":
-					mi.set_surface_override_material(i, hard("uniform" if _soldier else ("roof" if _bld else "camo")))
-				else:
-					var dm: BaseMaterial3D = m.duplicate()
-					dm.albedo_color = col.lerp(Color(0.45, 0.45, 0.42), 0.25)
-					mi.set_surface_override_material(i, dm)
-			elif m is BaseMaterial3D and not _bld and not _soldier and _fac != "":
-				var surface := String(m.resource_name)
-				if surface.begins_with("FalkeArmor"):
-					mi.set_surface_override_material(i, hard("ceramic", m.albedo_color))
-				# Schiffe und Nachschubfahrzeuge können bereits feste, bemalte Rümpfe haben.
-				elif surface.begins_with("Hull") or surface.begins_with("TruckRust") or surface.begins_with("RustBlue") or surface.begins_with("TruckRedPaint"):
-					mi.set_surface_override_material(i, _painted_finish(m, Color.WHITE, false))
-			elif m is BaseMaterial3D and _bld:
-				var architecture := _architecture_finish(m)
-				if architecture != null:
-					mi.set_surface_override_material(i, architecture)
+			var imported := mi.mesh.surface_get_material(i) as BaseMaterial3D
+			if imported != null:
+				var finish := _imported_finish(imported, mi.name, col)
+				if finish != null:
+					mi.set_surface_override_material(i, finish)
 	for c in n.get_children():
 		_teamcolor(c, col)
 
+static func _imported_finish(material: BaseMaterial3D, mesh_name: StringName, col: Color) -> Material:
+	var surface := String(material.resource_name)
+	if "team" in surface.to_lower():
+		if surface == "TeamMarking":
+			return mat(col.lerp(Color(0.29, 0.31, 0.32), 0.17), 0.03, 0.54)
+		if _fac != "":
+			if not _soldier and material.albedo_texture != null:
+				return _painted_finish(material, col)
+			return hard("uniform" if _soldier else ("roof" if _bld else "camo"))
+		var simple: BaseMaterial3D = material.duplicate()
+		simple.albedo_color = col.lerp(Color(0.45, 0.45, 0.42), 0.25)
+		return simple
+	if _soldier:
+		if surface in ["Overall", "Gear", "Pack", "Cloth", "Scarf", "HiViz", "Lace", "Boots"]:
+			return _detail_finish(material, "fabric")
+		if surface == "Armor" or surface == "HardHat":
+			return _detail_finish(material, "metal")
+		return null
+	if _bld:
+		return _architecture_finish(material)
+	if _fac == "":
+		return null
+	if surface.begins_with("FalkeArmor"):
+		var treatment := "ceramic" if mesh_name == "FalkeHull" else "turret_ceramic"
+		return hard(treatment, material.albedo_color)
+	if surface.begins_with("Hull") or surface.begins_with("TruckRust") or surface.begins_with("RustBlue") or surface.begins_with("TruckRedPaint"):
+		return _painted_finish(material, Color.WHITE, false)
+	if surface.begins_with("Steel") or surface.begins_with("FalkeSteel") or surface.begins_with("Olive") or surface.begins_with("DarkMetal"):
+		return _detail_finish(material, "metal")
+	if surface.begins_with("Wood") or surface.begins_with("Board"):
+		return _detail_finish(material, "timber")
+	if surface.begins_with("Canvas") or surface.begins_with("ShipCloth"):
+		return _detail_finish(material, "fabric")
+	return null
+
+static func _detail_finish(source: BaseMaterial3D, kind: String) -> BaseMaterial3D:
+	var key := "detail/%d/%s" % [source.get_instance_id(), kind]
+	if not _painted_materials.has(key):
+		var material: BaseMaterial3D = source.duplicate()
+		ART_SURFACES.apply_standard(material, kind)
+		_painted_materials[key] = material
+	return _painted_materials[key]
+
 static func _painted_finish(source: BaseMaterial3D, col: Color, livery := true) -> BaseMaterial3D:
-	# Preserve baked albedo, normals and roughness. Paint carries a restrained
-	# team tint while the existing flags and markings carry the bright color.
+	# Gebackene Karten bleiben erhalten. Die Detailtextur liegt auf einer eigenen Projektion.
 	var key := "%d/%s/%s/%s/%s" % [source.get_instance_id(), _fac, col.to_html(), _bld, livery]
 	if not _painted_materials.has(key):
 		var painted: BaseMaterial3D = source.duplicate()
@@ -429,6 +465,7 @@ static func _painted_finish(source: BaseMaterial3D, col: Color, livery := true) 
 			painted.albedo_color = source.albedo_color * fallback.lerp(col, 0.13)
 		painted.metallic = minf(source.metallic, 0.22)
 		painted.roughness = maxf(source.roughness, 0.52)
+		ART_SURFACES.apply_standard(painted, "metal")
 		_painted_materials[key] = painted
 	return _painted_materials[key]
 
@@ -437,20 +474,28 @@ static func _architecture_finish(source: BaseMaterial3D) -> BaseMaterial3D:
 	var tint := Color.WHITE
 	var roughness := 0.56
 	var metal_limit := 0.16
+	var kind := "metal"
 	if surface.begins_with("Panel"):
 		tint = Color(0.82, 0.88, 0.91)
 	elif surface.begins_with("Concrete") or surface.begins_with("Brick") or surface.begins_with("Rock"):
 		tint = Color(0.89, 0.87, 0.83)
 		roughness = 0.82
 		metal_limit = 0.0
+		kind = "concrete"
 	elif surface.begins_with("Wood") or surface.begins_with("Canvas") or surface.begins_with("Sandbag"):
 		tint = Color(0.87, 0.80, 0.71)
 		roughness = 0.88
 		metal_limit = 0.0
+		kind = "timber" if surface.begins_with("Wood") else "fabric"
 	elif surface.begins_with("Tin") or surface.begins_with("Rust"):
 		tint = Color(0.89, 0.84, 0.78)
 		roughness = 0.64
 		metal_limit = 0.34
+	elif surface.begins_with("Ground") or surface.begins_with("Asphalt"):
+		return _detail_finish(source, "concrete")
+	elif ART_SURFACES.active() and (surface.begins_with("Cont") or surface.begins_with("Barrel")):
+		tint = Color(0.69, 0.72, 0.68)
+		roughness = 0.71
 	else:
 		return null
 	var key := "facade/%d" % source.get_instance_id()
@@ -459,6 +504,7 @@ static func _architecture_finish(source: BaseMaterial3D) -> BaseMaterial3D:
 		finish.albedo_color = source.albedo_color * tint
 		finish.roughness = maxf(source.roughness, roughness)
 		finish.metallic = minf(source.metallic, metal_limit)
+		ART_SURFACES.apply_standard(finish, kind)
 		_painted_materials[key] = finish
 	return _painted_materials[key]
 
