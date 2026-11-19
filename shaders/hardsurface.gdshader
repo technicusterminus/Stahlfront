@@ -5,6 +5,9 @@ shader_type spatial;
 uniform sampler2D camo : source_color, repeat_enable, filter_nearest_mipmap;
 uniform sampler2D grime : repeat_enable, filter_linear_mipmap;
 uniform sampler2D detail_n : hint_normal, repeat_enable, filter_linear_mipmap;
+uniform sampler2D art_surface : hint_default_white, repeat_enable, filter_linear_mipmap_anisotropic;
+uniform float art_scale = 1.0;
+uniform float art_amount = 0.0;
 uniform bool use_camo = true;
 uniform float camo_weight : hint_range(0.0, 1.0) = 1.0;
 uniform vec3 base_col : source_color = vec3(0.5);
@@ -101,12 +104,22 @@ void fragment() {
 	col *= 1.0 - line * 0.6;
 	col = mix(col, col * 1.35 + 0.04, rv);
 	col = mix(col, vec3(0.28, 0.30, 0.30), exposed * 0.59);
+	vec3 art_signal = vec3(0.0);
+	if (art_amount > 0.0) {
+		vec3 p = opos * art_scale;
+		vec3 w = triw(n);
+		vec3 sample_rgh = texture(art_surface, p.zy).rgb * w.x +
+			texture(art_surface, p.xz).rgb * w.y + texture(art_surface, p.xy).rgb * w.z;
+		float visibility = 1.0 - smoothstep(0.055, 0.26, length(fwidth(p)));
+		art_signal = (sample_rgh - 0.5) * visibility * art_amount;
+		col *= 1.0 + art_signal.r * 1.65;
+	}
 
 	ALBEDO = col;
 	METALLIC = mix(metallic_v, 0.68, exposed) * (1.0 - rmask) * (1.0 - dmask * 0.7);
-	ROUGHNESS = clamp(rough_v + (g2 - 0.5) * 0.25 + rmask * 0.35 + dmask * 0.3 + line * 0.15 - rv * 0.2 + finish_variation * 0.35 - exposed * 0.18, 0.05, 1.0);
+	ROUGHNESS = clamp(rough_v + (g2 - 0.5) * 0.25 + rmask * 0.35 + dmask * 0.3 + line * 0.15 - rv * 0.2 + finish_variation * 0.35 - exposed * 0.18 + art_signal.g * 0.64, 0.05, 1.0);
 	NORMAL_MAP = tri_n(opos, n, detail_scale).rgb;
-	NORMAL_MAP_DEPTH = normal_depth * (1.0 + rmask * 1.5);
+	NORMAL_MAP_DEPTH = (normal_depth + art_signal.b * 0.22) * (1.0 + rmask * 1.5);
 	AO = 1.0 - line * 0.7;
 	AO_LIGHT_AFFECT = 0.4;
 }

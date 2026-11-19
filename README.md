@@ -13,6 +13,12 @@
 - Bei Fahrzeugen, Luftfahrzeugen und Schiffen bleiben gebackene Texturen auf dem Originallack erhalten. Lackierte Oberflächen sind zurückhaltender eingefärbt, Kurvenbewegungen flüssiger und Heckwellen vom Tempo abhängig.
 - Gebäude erhalten differenzierte Oberflächen und Zugangsbereiche. In Fabriken und Werften schließt der Greifer an der Kiste, hebt sie, setzt sie an der zweiten Station ab und fährt leer zurück. Rollen, Winde und einzelne Kettenglieder bewegen sich mit. An Nachschubzentren fährt ein Lastschlitten, und am Flugfeld arbeiten Windsack und Lauflichter. Lüfter laufen bei Strommangel aus. Betriebsanzeigen und Fabrikschranken reagieren auf Produktion und Auslieferung.
 
+### OpenRouter-Oberflächen
+
+Die OpenRouter-Entwurfsblätter legen Materialwahl und Formensprache für Gebäude, Fahrzeuge und Fußtruppen fest. Vier Materialvorlagen liefern Metall, Beton, Gewebe und Holz. Das Blender-Skript `tools/blender/make_surface_detail.py` gleicht Beleuchtungsverläufe aus und erzeugt kachelbare Detail-, Rauheits- und Reliefkarten. Godot mischt sie über die vorhandenen Materialien. Stahlfront verwendet beim Spielen lokale Texturen und läuft offline.
+
+Die Prompts und das Modell stehen in `tools/openrouter_art_pass.json`. Die vier Materialvorlagen und ihre API-Abrechnung liegen unter `models/source/openrouter/`. Die Laufzeitkarten lassen sich mit `blender -b -P tools/blender/make_surface_detail.py -- models/source/openrouter models/surfaces` erneut erzeugen. Für einen direkten Vergleich lässt sich der Durchgang mit `--plain-surfaces` ausblenden.
+
 ---
 
 ## Inhalt
