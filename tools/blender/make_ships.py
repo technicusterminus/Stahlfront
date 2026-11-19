@@ -804,3 +804,107 @@ elif which in ("submarine", "minisub"):
         S.empty("Muzzle", (0, -3.45, Y0 + 0.1))
         extras.append(bpy.data.objects["Muzzle"])
         finish_unit("minisub", cam=(-7, -8, 4), tgt=(0, 0, 0.4))
+
+elif which == "carrier":
+    # Westbund: Flugzeugträger — Flugdeck mit Schrägdeck, Katapulten, Aufzügen, Brückeninsel, Hangar, geparkte Jäger
+    hull(20.0, 5.2, 1.5, 1.2, WHT, DECKW, 0.62, TP)
+    for sx in (-1.0, 1.0):
+        bx(P, (0.04, 0.06, 14.0), (sx * 2.6, 0.7, 0.0), LC, bevel=0.0)
+    fit(ports=True, rail=False, port_mat=LC)
+    DECKG = B.M("FlightDeck", (0.17, 0.18, 0.2), 0.3, 0.8, 0.4, 0.6)
+    MARK = B.M("DeckMark", (0.9, 0.9, 0.84), 0.0, 0.7, 0.3, 0.5)
+    YELLOW = B.M("DeckYellow", (0.95, 0.75, 0.1), 0.0, 0.6, 0.3, 0.4)
+    # Hangarzone unter dem Flugdeck
+    rbx(P, (5.6, 0.7, 15.0), (0, 1.7, -0.5), WHT2, r=0.1)
+    for k in range(7):
+        for sd in (-1, 1):
+            bx(P, (0.06, 0.4, 1.4), (sd * 2.82, 1.7, -6.5 + k * 2.1), DK, bevel=0.0)
+            bx(P, (0.07, 0.05, 1.4), (sd * 2.82, 1.5, -6.5 + k * 2.1), LC, bevel=0.0)
+    # Flugdeck: Grundriss mit Schrägdeck-Ausleger links, spitz zulaufender Bug
+    prof = [(-3.5, -9.7), (3.5, -9.7), (3.8, -2.0), (3.5, 5.0), (2.2, 9.0), (0.0, 9.9), (-2.2, 9.0), (-3.5, 5.0), (-3.9, -1.5), (-5.0, -4.5), (-4.4, -8.6)]
+    o = S.prism_xz("FlightDeck", prof, 0.32, (0, 0, 2.15), DECKG, 0.04, rot=(math.pi / 2, 0, 0))
+    P.append(o)
+    # Stützen unter dem Ausleger
+    for z in (-3.5, -6.5):
+        bx(P, (0.18, 0.5, 0.18), (-4.3, 1.8, z), ST)
+        bx(P, (0.9, 0.12, 0.12), (-4.0, 1.55, z), ST, rot=(0, 0, 0.5))
+    y0 = 2.33
+    # Markierungen: Mittellinie, Schrägdeck-Landestreifen mit Fangseilen, Katapultbahnen, Bugnummer, Randlinien
+    for k in range(14):
+        bx(P, (0.14, 0.012, 0.9), (0, y0, -9.0 + k * 1.35), MARK, bevel=0.0)
+    for sd in (-1, 1):
+        bx(P, (0.08, 0.012, 18.5), (sd * 3.35, y0, 0.0), MARK, bevel=0.0)
+    ang = 0.19
+    for sd in (-0.7, 0.7):
+        bx(P, (0.1, 0.012, 11.0), (-2.2 + sd * 0.8, y0, -3.2), MARK, rot=(0, -ang, 0), bevel=0.0)
+    for k in range(5):
+        bx(P, (1.6, 0.014, 0.05), (-2.2 - 0.05 * k, y0 + 0.004, -8.0 + k * 1.2), DK, rot=(0, -ang, 0), bevel=0.0)
+    for sd in (-0.8, 0.8):
+        bx(P, (0.12, 0.014, 9.0), (sd, y0, 4.2), DK, bevel=0.0)
+        bx(P, (0.3, 0.03, 0.3), (sd, y0 + 0.01, -0.2), ST)
+        for k in range(8):
+            bx(P, (0.35, 0.012, 0.08), (sd, y0 + 0.006, 0.3 + k * 1.0), YELLOW, bevel=0.0)
+    for dz in (-0.55, 0.55):
+        bx(P, (0.35, 0.012, 0.9), (dz * 1.2 + 0.0, y0, 9.0), MARK, rot=(0, 0.0, 0), bevel=0.0) if False else None
+    bx(P, (0.7, 0.012, 1.6), (-0.1, y0, 7.2), MARK, bevel=0.0)
+    bx(P, (0.5, 0.012, 1.0), (0.0, y0, 7.2), DECKG, bevel=0.0)
+    # Strahlabweiser hinter den Katapulten
+    for sd in (-0.8, 0.8):
+        bx(P, (1.0, 0.45, 0.06), (sd, y0 + 0.2, -1.4), ST, rot=(-0.9, 0, 0), bevel=0.01)
+    # Flugdeckaufzüge mit gelber Kante
+    for z, x in ((-1.0, -2.6), (4.6, 2.5)):
+        bx(P, (1.9, 0.018, 3.1), (x, y0, z), B.M("ElevatorPlate", (0.3, 0.32, 0.34), 0.4, 0.7, 0.4, 0.6), bevel=0.0)
+        for sdx in (-1, 1):
+            bx(P, (0.05, 0.02, 3.1), (x + sdx * 0.95, y0, z), YELLOW, bevel=0.0)
+        for sdz in (-1, 1):
+            bx(P, (1.9, 0.02, 0.05), (x, y0, z + sdz * 1.55), YELLOW, bevel=0.0)
+    # Geparkte Jäger auf dem Heckdeck
+    def jet(x, z, col=WHT2):
+        rbx(P, (0.42, 0.3, 1.9), (x, y0 + 0.25, z), col, r=0.1)
+        cy(P, 0.0, 0.2, 0.7, (x, y0 + 0.25, z + 1.25), col, rot=(math.pi / 2, 0, 0), seg=12)
+        sp(P, 0.2, (x, y0 + 0.42, z + 0.4), GLS, (0.9, 0.9, 2.0))
+        bx(P, (1.7, 0.05, 0.8), (x, y0 + 0.22, z - 0.15), col, rot=(0, 0, 0.0))
+        for sdx in (-1, 1):
+            bx(P, (0.04, 0.45, 0.4), (x + sdx * 0.22, y0 + 0.5, z - 0.85), col, rot=(0, 0, sdx * 0.25))
+            bx(P, (0.55, 0.04, 0.3), (x + sdx * 0.4, y0 + 0.22, z - 0.9), col)
+        cy(P, 0.16, 0.13, 0.25, (x, y0 + 0.25, z - 1.05), DK, rot=(math.pi / 2, 0, 0), seg=10)
+        bx(P, (0.44, 0.02, 0.3), (x, y0 + 0.41, z + 0.0), TP, bevel=0.0)
+    for x, z in ((1.9, -6.6), (-0.4, -7.4), (-1.5, -5.4), (1.6, -3.6)):
+        jet(x, z)
+    # Hubschrauber vorn
+    rbx(P, (0.5, 0.45, 1.5), (1.9, y0 + 0.3, 1.0), WHT, r=0.15)
+    cy(P, 0.04, 0.05, 0.3, (1.9, y0 + 0.7, 1.0), DK, seg=6)
+    bx(P, (2.2, 0.02, 0.1), (1.9, y0 + 0.88, 1.0), DK, bevel=0.0)
+    bx(P, (0.1, 0.1, 0.9), (1.9, y0 + 0.35, 0.0 - 0.6), WHT, bevel=0.02)
+    # Brückeninsel (Steuerbord): geneigtes Profil, Brücke mit Panoramafenstern, Radarflächen, Radom, Mast
+    sb(P, [(-2.4, y0), (-2.1, 3.9), (-0.9, 4.5), (1.0, 4.3), (1.8, 3.4), (2.3, y0)], 0.75, WHT, x=2.95, bevel=0.14)
+    sb(P, [(-1.5, 4.5), (-1.2, 5.4), (-0.2, 5.5), (0.7, 4.8)], 0.6, WHT2, x=3.0, bevel=0.1)
+    bx(P, (1.1, 0.34, 0.07), (2.4, 5.0, 0.55), GLS, rot=(-0.55, 0, 0), bevel=0.0)
+    bx(P, (0.07, 0.34, 1.3), (2.36, 5.0, -0.7), GLS, bevel=0.0)
+    for sdz in (-0.55, 0.65):
+        rbx(P, (0.07, 0.95, 0.95), (2.23, 3.7, -0.9 + sdz * 0.2), DK, rot=(0, 0, 0.12), r=0.03)
+    cy(P, 0.1, 0.14, 1.6, (3.0, 6.4, -0.7), ST, seg=10)
+    sp(P, 0.42, (3.0, 7.4, -0.7), WHT, (1, 0.85, 1))
+    radar((3.1, 5.55, -1.3), 1.4)
+    whip((3.3, 5.5, 0.1), 2.0)
+    whip((2.7, 5.5, -1.7), 1.6)
+    for sdx in (-1, 1):
+        sp(P, 0.07, (3.0 + sdx * 0.35, 5.1, 0.9), LC)
+    # Randsponsone mit Nahbereichsabwehr (Turret rechts hinten), Lichtbänder, Rettungsboote, Kran
+    for x, z in ((3.55, 7.0), (-3.5, 6.0), (3.7, -8.4)):
+        cy(P, 0.3, 0.4, 0.4, (x, 2.0, z), WHT2, seg=14)
+        ciws((x, 2.1, z), WHT)
+    for k in range(10):
+        for sd in (-1, 1):
+            sp(P, 0.05, (sd * 3.5, y0 + 0.04, -8.0 + k * 1.9), LC)
+    davit_boat(-3.2, 2.0, 1.7, -1.0, ORANGE)
+    cy(P, 0.07, 0.09, 1.4, (3.65, 3.3, -3.0), ST, seg=8)
+    bx(P, (0.08, 0.08, 1.4), (3.4, 3.9, -2.4), ST, rot=(0.5, 0, 0), bevel=0.0)
+    vent((1.3, y0, -9.0))
+    # Geschütz: Nahbereichsabwehrgeschütz (CIWS) als drehendes Teil am Bug
+    cy(T, 0.34, 0.4, 0.35, (-3.0, y0 + 0.2, 6.0), WHT2, seg=16)
+    sp(T, 0.36, (-3.0, y0 + 0.55, 6.0), WHT, (1, 1.1, 1))
+    bx(BR, (0.1, 0.1, 0.9), (-3.0, y0 + 0.55, 6.5), DK)
+    sp(T, 0.06, (-2.85, y0 + 0.72, 6.0), LR)
+    turret_parts((-3.0, y0, 6.0), (-3.0, y0 + 0.55, 6.0), (-3.0, y0 + 0.55, 7.0))
+    finish_unit("carrier", cam=(-19, -22, 14), tgt=(0, 0, 1.5))

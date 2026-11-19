@@ -81,6 +81,8 @@ var _last_fire_t = -99.0
 var salvage = 0           # Schattenfront: Schrottbergung (0..3)
 var aura = false          # Rote Allianz: Propaganda in Reichweite
 var _aura_t = 0.0
+var _hangar_t = 0.0
+var _wings: Array = []   # vom Träger gestartete Drohnen
 var _stealth_shown = false
 
 func setup(d: Dictionary, pid: int) -> void:
@@ -199,6 +201,8 @@ func trait_text() -> String:
 	var parts: Array = []
 	if max_shield > 0.0:
 		parts.append("Schild %d/%d" % [int(shield), int(max_shield)])
+	if def["carrier"]:
+		parts.append("Hangar %d/4" % _wings.size())
 	if def["stealth"]:
 		parts.append("getarnt" if stealthed else "Tarnung bei Stillstand")
 	if def["salvage"]:
@@ -343,6 +347,15 @@ func _regen(delta: float) -> void:
 		else:
 			_still_t += delta
 		_set_stealth(_still_t > 2.0)
+	# Westbund-Träger: Hangar baut selbstständig Kampfdrohnen (bis zu vier, je 250 Credits)
+	if def["carrier"] and Game.time > _hangar_t:
+		_hangar_t = Game.time + 10.0
+		_wings = _wings.filter(func(w): return is_instance_valid(w) and w.alive)
+		var pl: Dictionary = Game.players[owner_id]
+		if _wings.size() < 4 and pl["credits"] >= 250.0:
+			pl["credits"] -= 250.0
+			var wg = Game.spawn_unit("west_wing", owner_id, position + Vector3(randf_range(-3.0, 3.0), 0.0, randf_range(-3.0, 3.0)))
+			_wings.append(wg)
 	# Rote Allianz: Propaganda-Aura
 	if Game.time > _aura_t:
 		_aura_t = Game.time + 1.0

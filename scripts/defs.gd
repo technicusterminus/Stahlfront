@@ -48,7 +48,7 @@ func U(id: String, d: Dictionary) -> void:
 	d.merge({"sight": 18.0, "armor": "light", "speed": 6.0, "flying": false, "role": "combat",
 		"scale": 1.0, "weapon": null, "prereq": [], "desc": "", "horde": false, "cargo": 0,
 		"shield": 0.0, "stealth": false, "pair": false, "salvage": false, "built_at": "",
-		"fixed_wing": false, "turn": 1.3, "naval": false, "submerged": false}, false)
+		"fixed_wing": false, "turn": 1.3, "naval": false, "submerged": false, "carrier": false}, false)
 	units[id] = d
 
 func B(id: String, d: Dictionary) -> void:
@@ -131,11 +131,15 @@ func _west() -> void:
 		"fixed_wing": true, "turn": 1.5, "weapon": W("rocket", 32.0, 24.0, 1.8, {"air": true, "burst": 2}), "desc": "Schneller Jagdflieger mit Lenkraketen gegen Luft- und Bodenziele. Kann nicht schweben und fliegt Angriffsschleifen."})
 	U("west_bomber", {"name": "Aegis-Tarnkappenbomber", "cost": 2400, "time": 20.0, "hp": 520.0, "speed": 12.0, "armor": "air", "flying": true, "model": "bomber", "built_at": "airfield", "sight": 22.0, "scale": 1.0,
 		"fixed_wing": true, "turn": 0.8, "prereq": ["tech"], "weapon": W("bomb", 140.0, 7.0, 4.5, {"splash": 5.0, "burst": 4}), "desc": "Fliegender Flügel mit Bombenschacht. Verheerend gegen Bodenziele und Gebäude, bekämpft keine Luftziele."})
+	U("west_carrier", {"name": "Atlas-Flugzeugträger", "cost": 3600, "time": 30.0, "hp": 2600.0, "speed": 4.2, "armor": "heavy", "model": "carrier", "naval": true, "carrier": true, "built_at": "dock", "sight": 30.0, "scale": 1.0, "prereq": ["tech"],
+		"weapon": W("gatling", 7.0, 15.0, 0.16, {"air": true}), "desc": "Schwimmender Flugplatz. Baut selbstständig bis zu vier Falken-Kampfdrohnen (je 250 Credits), die Luft- und Bodenziele bekämpfen. Eigene Nahbereichsabwehr, aber kaum Angriffskraft gegen Schiffe."})
+	U("west_wing", {"name": "Falken-Kampfdrohne", "cost": 250, "time": 1.0, "hp": 150.0, "speed": 15.0, "armor": "air", "flying": true, "model": "drone", "built_at": "", "sight": 24.0, "scale": 1.0,
+		"weapon": W("rocket", 17.0, 16.0, 1.1, {"air": true, "burst": 2}), "desc": "Vom Flugzeugträger gestartete Kampfdrohne."})
 	U("west_corvette", {"name": "Sentinel-Korvette", "cost": 900, "time": 10.0, "hp": 520.0, "speed": 9.5, "armor": "light", "model": "corvette", "naval": true, "built_at": "dock", "sight": 26.0,
 		"weapon": W("rocket", 30.0, 24.0, 1.3, {"air": true, "burst": 2}), "desc": "Schnelles Raketenschiff mit Schildgenerator. Jagt Boote und Flugzeuge, kann auch Küstenziele beschießen."})
 	U("west_cruiser", {"name": "Aegis-Kreuzer", "cost": 1800, "time": 18.0, "hp": 1100.0, "speed": 6.0, "armor": "heavy", "model": "cruiser", "naval": true, "built_at": "dock", "sight": 28.0, "scale": 1.15,
 		"weapon": W("artillery", 62.0, 52.0, 4.5, {"splash": 4.0, "burst": 2, "min_range": 12.0}), "prereq": ["tech"], "desc": "Lenkwaffenkreuzer mit Senkrechtstartern. Beschießt Basen weit vom Wasser aus."})
-	B("west_dock", {"name": "Marinewerft", "cost": 1300, "time": 18.0, "hp": 1500.0, "size": 4, "power": -2, "produces": ["west_corvette", "west_cruiser"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Kriegsschiffe."})
+	B("west_dock", {"name": "Marinewerft", "cost": 1300, "time": 18.0, "hp": 1500.0, "size": 4, "power": -2, "produces": ["west_corvette", "west_cruiser", "west_carrier"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Kriegsschiffe."})
 	B("west_hq", {"name": "Kommandozentrale", "cost": 2500, "time": 40.0, "hp": 3200.0, "size": 5, "power": 5, "produces": ["west_dozer"], "sight": 24.0, "desc": "Herz der Basis. Baut Baudrohnen."})
 	B("west_power", {"name": "Fusionsreaktor", "cost": 800, "time": 12.0, "hp": 900.0, "power": 10, "desc": "Liefert 10 Strom."})
 	B("west_supply", {"name": "Nachschubzentrum", "cost": 1500, "time": 15.0, "hp": 1500.0, "power": -1, "produces": ["west_harv"], "desc": "Lager für Nachschub. Liefert einen Lkw mit."})
