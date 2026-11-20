@@ -20,6 +20,7 @@ const C_LENA := Color(1.0, 0.65, 0.55)
 const C_BRANDT := Color(0.8, 0.9, 0.75)
 const C_ALDANE := Color(0.9, 0.75, 0.55)
 const C_REYES := Color(0.65, 0.9, 1.0)
+const C_KARGA := Color(0.95, 0.8, 0.6)
 
 static func radio(who: String, col: Color, text: String, secs := 0.0) -> Dictionary:
 	return {"do": "radio", "who": who, "col": col, "text": text, "secs": secs}
@@ -31,7 +32,7 @@ static func at(t: float, a: Dictionary) -> Dictionary:
 	return d
 
 static func list() -> Array:
-	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4()]
+	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4(), _c5()]
 
 static func by_id(id: String) -> Dictionary:
 	for m in list():
@@ -395,7 +396,7 @@ static func _c3() -> Dictionary:
 
 static func _c4() -> Dictionary:
 	return {
-		"id": "c4", "kind": "campaign", "title": "Kapitel 4: Die Brücke über Lysa", "faction": "west", "enemy_faction": "shadow", "next": "",
+		"id": "c4", "kind": "campaign", "title": "Kapitel 4: Die Brücke über Lysa", "faction": "west", "enemy_faction": "shadow", "next": "c5",
 		"brief": "Die Armee schiebt sich an die Ufer des Lysa. Der Rat hat zum Einsatz gerufen: Die Roten und die Stimmlosen sollen den Konvoi am Pass beschossen haben, ORAKEL nennt 96 Prozent. Elin Voss führt den Übergang über die Südbrücke, Major Falke fliegt Deckung.\n\nSchlage die Verteidiger der Brücke, überquere sie und sichere das Nordufer gegen den Gegenangriff. Auf der anderen Seite wartet eine Frau, die Elin nie wiedersehen wollte. Und etwas in den Felsen wartet auf Falke.\n\nAuftrag: Verteidiger zerschlagen, Brücke überqueren, Gegenangriff abwehren. Optional: Elins Entscheidung an der Brücke.",
 		"map": {"name": "Südbrücke", "size": 288, "water": 0.55, "islands": 0.1, "resources": 0.5, "hills": 0.45, "forest": 0.5, "layout": 0, "seed": 5404},
 		"hour": 6.5, "difficulty": 1, "credits": 4000, "ai": "off", "sequential": true,
@@ -424,7 +425,7 @@ static func _c4() -> Dictionary:
 			at(1.5, radio("Elin Voss", C_ELIN, "ORAKEL, wann wurde die Wahrscheinlichkeit für den Pass korrigiert?")),
 			at(1.5, radio("ORAKEL", C_ORAKEL, "Die Wahrscheinlichkeit wurde nach Erhalt neuer Daten korrigiert. Vor 41 Stunden.")),
 			at(1.5, radio("Elin Voss", C_ELIN, "Vor dem Vorfall. Dann hat jemand gewusst, dass der Pass brennt.")),
-			at(6.0, {"do": "title", "text": "FORTSETZUNG FOLGT", "sub": "Kapitel 5 – Zeugen", "secs": 6.5}),
+			at(6.0, {"do": "title", "text": "ZEUGEN GESUCHT", "sub": "Weiter: Kapitel 5 – Zeugen", "secs": 6.5}),
 			at(7.0, {"do": "end"})],
 		"objectives": [
 			{"id": "advance", "text": "Rücke zur Südbrücke vor (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", -22, 0], "r": 14.0, "who": "any"}, "mark": ["mid", -22, 0],
@@ -461,4 +462,93 @@ static func _c4() -> Dictionary:
 			{"when": {"t": "tag_dead", "tag": "lena", "n": 1}, "do": [radio("Elin Voss", C_ELIN, "Lena... Das war nicht, was ich wollte.", 6.0)]},
 		],
 		"lose": [{"c": {"t": "not", "c": {"t": "count", "role": "combat", "n": 1, "flying": false}}, "text": "Die Armee am Lysa ist aufgerieben."}],
+	}
+
+static func _c5() -> Dictionary:
+	return {
+		"id": "c5", "kind": "campaign", "title": "Kapitel 5: Zeugen", "faction": "west", "enemy_faction": "west", "next": "",
+		"brief": "Falke ist in den Bergen abgestürzt. Zwei Nächte lang hat ihn Mutter Karga gepflegt, das Kind Pip hat ihn geführt. Jetzt humpelt er heimwärts, mit gebrochenem Bein und dem, was er gesehen hat: fliehende Dörfer, ein Leuchten über den Kavernen und die Gewissheit, dass der wahre Feind in den eigenen Reihen sitzt.\n\nSergeant Mira „Glas“ Tanaka trägt den Datenspeicher der Drohne, die den Konvoi beschoss. Beide müssen zusammenfinden und beweisen, was geschehen ist. Aber der Rat hat die Daten für gefälscht erklärt, und Ratspräsident Aldane lässt seine Elitegarde ausrücken, um die Zeugen zu sichern.\n\nAuftrag: Hole Falke und Pip ab, bringe sie zum Lazarett, halte das Lazarett, bis Dr. Brandt die Spur gesichert hat, und schlage den Angriff der Garde zurück. Falke darf nicht fallen.",
+		"map": {"name": "Das Lazarett", "size": 240, "water": 0.4, "islands": 0.1, "resources": 0.5, "hills": 0.6, "forest": 0.5, "layout": 2, "seed": 5505},
+		"hour": 5.6, "difficulty": 1, "credits": 3500, "ai": "off", "sequential": true,
+		"setup": [
+			{"do": "spawn", "side": "me", "def": "inf", "n": 5, "at": ["me", 0, 26], "spread": 8.0, "tag": "escort"},
+			{"do": "spawn", "side": "me", "def": "at", "n": 2, "at": ["me", 6, 30], "spread": 4.0, "tag": "escort"},
+			{"do": "spawn", "side": "me", "def": "tank", "n": 2, "at": ["me", -6, 32], "spread": 5.0, "tag": "escort"},
+			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["mid", 22, -22], "spread": 1.0, "tag": "falke", "hp": 3.4, "speed": 0.65},
+			{"do": "spawn", "side": "me", "def": "shadow_harv", "n": 1, "at": ["mid", 24, -24], "spread": 1.0, "tag": "pip", "speed": 0.7}],
+		"intro": [
+			at(0.0, {"do": "cam_to", "tag": "falke", "dist": 28.0, "yaw": 20.0, "pitch": -26.0, "time": 0.1}),
+			at(0.3, {"do": "cam_to", "tag": "falke", "dist": 50.0, "yaw": -15.0, "pitch": -40.0, "time": 12.0}),
+			at(0.5, {"do": "title", "text": "KAPITEL 5", "sub": "ZEUGEN  ·  Das Lazarett am Eisenkamm", "secs": 6.0}),
+			at(3.0, radio("Falke", C_FALKE, "Zwei Nächte in einer Höhle, ein gebrochenes Bein und ein Kind, das besser navigiert als meine Bordcomputer. Ich glaube, ich humple nach Hause.")),
+			at(3.0, radio("Mutter Karga", C_KARGA, "Du bist der, der zu tief fliegt. Geh, Falke. Sag ihnen, was du gesehen hast: Das Prisma wollte nicht gestohlen werden. Es hat gerufen.")),
+			at(3.0, radio("Mira Tanaka", C_MIRA, "Glas an Lazarett. Falke, ich komme dich holen. Und ich bringe etwas mit.")),
+			at(4.0, {"do": "end"})],
+		"outro": [
+			at(0.0, {"do": "cam_to", "at": ["me", 0, 20], "dist": 64.0, "yaw": 40.0, "pitch": -26.0, "time": 12.0}),
+			at(1.0, radio("Dr. Brandt", C_BRANDT, "Die Spur ist echt. Die Drohne stammt aus dem Bestand des Rates. Die Kennung ist gelöscht, aber die Seriennummer nicht.")),
+			at(1.0, radio("Elin Voss", C_ELIN, "ORAKEL hat den Konvoi beschießen lassen, um den Rat in den Krieg zu treiben. Und es kennt das Signal über den Kavernen seit dreizehn Jahren.")),
+			at(1.0, radio("Elin Voss", C_ELIN, "Aldane lässt die Daten für gefälscht erklären. Dann handle ich gegen den Beschluss: Ich führe die Armee nicht zum Angriff, sondern zur Kuppel, schneller, als der Rat es erlaubt.")),
+			at(1.0, radio("Falke", C_FALKE, "Dann fliege ich voraus. Auf einem Bein, wenn es sein muss.")),
+			at(6.0, {"do": "title", "text": "DIE KUPPEL RUFT", "sub": "Weiter: Kapitel 6 – Die Nacht von Aurelia", "secs": 6.5}),
+			at(7.0, {"do": "end"})],
+		"objectives": [
+			{"id": "fetch", "text": "Hole Falke und Pip ab (Trupp zu der gelben Markierung).", "c": {"t": "reach", "at": ["mid", 22, -22], "r": 14.0, "who": "tag:escort"}, "mark": ["mid", 22, -22],
+				"done": [{"do": "banner", "text": "AKT 1 – DER WEG NACH HAUSE", "secs": 3.2},
+					radio("Mira Tanaka", C_MIRA, "Du siehst furchtbar aus.", 4.0),
+					radio("Falke", C_FALKE, "Auch schön, dich zu sehen, Glas. Bring mich heim, ich erzähle unterwegs.", 6.0)]},
+			{"id": "home", "text": "Eskortiere Falke zum Lazarett (gelbe Markierung). Er humpelt: bleibe bei ihm.", "c": {"t": "tag_reach", "tag": "falke", "at": ["me", 0, 14], "r": 24.0, "n": 1}, "mark": ["me", 0, 14],
+				"done": [{"do": "flag", "f": "act2"}, {"do": "truce", "tag": "falke"}, {"do": "truce", "tag": "pip"},
+					{"do": "banner", "text": "AKT 2 – DIE SPUR", "secs": 3.2, "col": Color(0.6, 0.85, 1.0)},
+					radio("Mira Tanaka", C_MIRA, "Du sagst, was du gesehen hast. Ich zeige, was ich habe.", 6.0),
+					radio("Elin Voss", C_ELIN, "Datenspur sichern, sofort. Dr. Brandt, wie lange brauchen Sie?", 6.0),
+					radio("Dr. Brandt", C_BRANDT, "Neunzig Sekunden, Dr. Voss. Dann wissen wir, wer den Pass beschossen hat.", 6.0)]},
+			{"id": "hold", "text": "Halte das Lazarett, bis Dr. Brandt die Spur gesichert hat.", "c": {"t": "since", "f": "act2", "s": 90.0}},
+			{"id": "last", "text": "Schlage den letzten Angriff der Garde zurück.", "c": {"t": "all", "c": [{"t": "flag", "f": "final"}, {"t": "any", "c": [{"t": "not", "c": {"t": "tag_alive", "tag": "guard", "n": 1}}, {"t": "since", "f": "final", "s": 75.0}]}]}},
+		],
+		"events": [
+			{"when": {"t": "time", "s": 3.0}, "do": [{"do": "banner", "text": "KAPITEL 5 BEGINNT", "secs": 2.4}]},
+			# Streife auf dem Heimweg
+			{"when": {"t": "tag_reach", "tag": "falke", "at": ["mid", -4, 4], "r": 22.0, "n": 1}, "do": [
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "STREIFE VORAUS", "secs": 2.8, "col": Color(1.0, 0.45, 0.35)},
+				radio("Mira Tanaka", C_MIRA, "Westbund-Streife, drei Mann. Kein Kennzeichen an den Westen.", 6.0),
+				radio("Falke", C_FALKE, "Das sind keine Freunde. Runter, Glas!", 4.0),
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 2, "at": ["mid", -14, 14], "spread": 5.0, "attack_tag": "falke"}]},
+			{"when": {"t": "tag_reach", "tag": "falke", "at": ["mid", -38, 38], "r": 20.0, "n": 1}, "do": [
+				{"do": "banner", "text": "ZWEITE STREIFE", "secs": 2.6, "col": Color(1.0, 0.45, 0.35)},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 3, "at": ["mid", -50, 50], "spread": 5.0, "attack_tag": "falke"}]},
+			# Wendepunkt: der Rat schickt die Garde
+			{"when": {"t": "since", "f": "act2", "s": 8.0}, "do": [
+				{"do": "sfx", "name": "siren"},
+				radio("Henrik Aldane", C_ALDANE, "Sicherheitsstufe Rot. Alle Zeugen sind zu sichern und die Datenspeicher einzuziehen. Das ist ein Ratsbeschluss.", 8.0),
+				radio("Elin Voss", C_ELIN, "Aldane schickt die Elitegarde? Gegen uns?", 5.0),
+				radio("ORAKEL", C_ORAKEL, "Die Elitegarde wurde auf Anforderung des Rates mobilisiert.", 6.0)]},
+			{"when": {"t": "since", "f": "act2", "s": 20.0}, "do": [
+				{"do": "banner", "text": "DIE ELITEGARDE GREIFT AN", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 4, "at": ["me", 62, -36], "spread": 8.0, "tag": "guard", "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 1, "at": ["me", 66, -40], "spread": 4.0, "tag": "guard", "attack": true, "hp": 0.8}]},
+			{"when": {"t": "since", "f": "act2", "s": 45.0}, "do": [
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["me", -64, -34], "spread": 8.0, "tag": "guard", "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["me", -68, -38], "spread": 5.0, "tag": "guard", "attack": true, "hp": 0.8},
+				radio("Falke", C_FALKE, "Gleiche Uniform, gleiche Waffen. Das ist, als würde man gegen einen Spiegel kämpfen.", 7.0)]},
+			# Höhepunkt: die Wahrheit und Elins Armee
+			{"when": {"t": "since", "f": "act2", "s": 62.0}, "do": [
+				radio("Dr. Brandt", C_BRANDT, "Die Spur ist authentisch! Die Drohne stammt aus dem Bestand des Rates!", 6.0),
+				radio("Mira Tanaka", C_MIRA, "Dann sage ich es laut.", 4.0)]},
+			{"when": {"t": "since", "f": "act2", "s": 74.0}, "do": [
+				{"do": "flag", "f": "final"},
+				{"do": "sfx", "name": "stinger"},
+				{"do": "banner", "text": "AKT 3 – ELINS ARMEE", "secs": 3.4, "col": Color(0.6, 1.0, 0.7)},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["me", 0, -70], "spread": 9.0, "tag": "guard", "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "at", "n": 1, "at": ["me", 6, -74], "spread": 4.0, "tag": "guard", "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["me", -6, -76], "spread": 6.0, "tag": "guard", "attack": true, "hp": 0.7},
+				{"do": "spawn", "side": "me", "def": "tank", "n": 4, "at": ["me", -30, 44], "spread": 7.0},
+				{"do": "spawn", "side": "me", "def": "inf", "n": 6, "at": ["me", -34, 46], "spread": 7.0},
+				{"do": "cam_to", "at": ["me", -30, 44], "dist": 50.0, "time": 2.0},
+				radio("Elin Voss", C_ELIN, "Elin an alle: Meine Armee ist da. Feuer frei auf die Garde, aber haltet nicht auf Soldaten, die die Waffen senken.", 8.0)]},
+			{"when": {"t": "since", "f": "act2", "s": 80.0}, "do": [{"do": "cam_to", "at": ["me", 0, 14], "time": 2.0}]},
+			{"when": {"t": "tag_dead", "tag": "pip", "n": 1}, "do": [radio("Falke", C_FALKE, "Pip! Nein... das Kind! Haltet das Ufer, bei allem, was ihr habt!", 6.0)]},
+		],
+		"lose": [{"c": {"t": "all", "c": [{"t": "tag_dead", "tag": "falke", "n": 1}, {"t": "not", "c": {"t": "flag", "f": "act2"}}]}, "text": "Falke ist gefallen."}],
 	}

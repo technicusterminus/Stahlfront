@@ -177,6 +177,8 @@ func _cond(c: Dictionary) -> bool:
 			return Game.hud.powers_panel.visible
 		"flag":
 			return flags.has(c["f"])
+		"since":
+			return flags.has(c["f"]) and Game.time - float(flags[c["f"]]) >= float(c["s"])
 		"not":
 			return not _cond(c["c"])
 		"all":
@@ -212,7 +214,7 @@ func _do(a: Dictionary) -> void:
 		"radio":
 			_radio_queue.append(a)
 		"flag":
-			flags[a["f"]] = true
+			flags[a["f"]] = Game.time
 		"ai":
 			_set_ai(bool(a.get("on", true)))
 		"cam":
@@ -249,6 +251,9 @@ func _do(a: Dictionary) -> void:
 			Game.cam.shake(float(a.get("n", 1.2)), ep)
 		"end":
 			_cine_end_pending = true
+		"truce":
+			for u in _alive(a["tag"]):
+				u.set_meta("truce", true)
 		"kill":
 			var left: int = int(a.get("n", 1))
 			for u in _alive(a["tag"]):
@@ -364,6 +369,27 @@ func _autoplay() -> void:
 			for u in _alive("drone"):
 				Game.apply_damage(u, 99999.0, "rocket", 1, null)   # Testhilfe: Drohne gilt als abgeschossen
 			_play_step = 2
+	elif m["id"] == "c5":
+		var esc = _alive("escort")
+		if _play_step == 0 and t > 1.0:
+			for u in esc:
+				u.cmd_move(_pos(["mid", 22, -22]) + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
+			_play_step = 1
+		elif _play_step == 1 and done.has("fetch"):
+			for u in _alive("falke") + _alive("pip"):
+				u.cmd_move(_pos(["me", 0, 14]) + Vector3(randf_range(-3, 3), 0, randf_range(-3, 3)))
+			for u in esc:
+				u.cmd_move(_pos(["mid", -20, 20]) + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
+			_play_step = 2
+		elif _play_step == 2 and not done.has("home") and int(t * 2.0) % 4 == 0:
+			var fk = _alive("falke")
+			if not fk.is_empty():
+				for u in esc:
+					u.cmd_move(fk[0].position + Vector3(randf_range(-5, 5), 0, randf_range(-5, 5)), true)
+		elif _play_step == 2 and done.has("home"):
+			for u in _mine(func(u): return u.def["role"] == "combat" and not u.flying):
+				u.cmd_move(_pos(["me", 0, 6]) + Vector3(randf_range(-8, 8), 0, randf_range(-8, 8)), true)
+			_play_step = 3
 	elif m["id"] == "c4":
 		var gs = _mine(func(u): return u.def["role"] == "combat" and not u.flying)
 		if t > 200.0 and done.has("cross"):
