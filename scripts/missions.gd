@@ -280,7 +280,7 @@ static func _c1() -> Dictionary:
 			{"when": {"t": "time", "s": 150.0}, "do": [
 				{"do": "sfx", "name": "siren"},
 				{"do": "banner", "text": "ALARM – BEWEGUNG IM NORDHANG", "secs": 3.6, "col": Color(1.0, 0.45, 0.35)},
-				radio("ORAKEL", C_ORAKEL, "Am Nordhang bewegen sich mehrere Gruppen ohne Licht auf die Stadt zu. Die Wahrscheinlichkeit eines Überfalls liegt bei zweiundneunzig Prozent."),
+				radio("ORAKEL", C_ORAKEL, "Am Nordhang bewegen sich mehrere Gruppen ohne Licht auf die Stadt zu. Die Wahrscheinlichkeit eines Überfalls liegt bei zweiundneunzig Prozent."), radio("Elin Voss", C_ELIN, "Ich sehe sie auch, kleine Wärmepunkte im Schnee. Haltet die Nordseite, und lasst sie ruhig näher kommen."),
 				{"do": "cam_to", "at": ["en", 0, 34], "time": 2.0}]},
 			{"when": {"t": "time", "s": 156.0}, "do": [{"do": "cam_to", "at": ["me", 0, 14], "time": 2.0}]},
 			# Akt 2: Raubzüge
@@ -296,7 +296,7 @@ static func _c1() -> Dictionary:
 				{"do": "hour", "h": 23.5},
 				{"do": "sfx", "name": "siren"},
 				{"do": "banner", "text": "BLACKOUT – DAS NETZ FÄLLT AUS", "secs": 4.0, "col": Color(0.6, 0.85, 1.0)},
-				radio("Elin Voss", C_ELIN, "Das Netz ist weg! Genau darauf haben sie gewartet. Zusammenbleiben, alle, Schulter an Schulter!")]},
+				radio("Elin Voss", C_ELIN, "Das Netz ist weg! Genau darauf haben sie gewartet. Zusammenbleiben, alle, Schulter an Schulter!"), radio("Elin Voss", C_ELIN, "Fackeln, Taschenlampen, was ihr habt! Diese Stadt soll nicht im Dunkeln sterben.")]},
 			{"when": {"t": "time", "s": 360.0}, "do": [
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 6, "at": ["en", 0, 20], "spread": 9.0, "attack": true},
 				{"do": "spawn", "side": "enemy", "def": "tech", "n": 3, "at": ["en", 6, 22], "spread": 6.0, "attack": true},
@@ -313,12 +313,12 @@ static func _c1() -> Dictionary:
 				{"do": "spawn", "side": "me", "def": "tank", "n": 3, "at": ["me", 12, 28], "spread": 6.0},
 				{"do": "spawn", "side": "me", "def": "inf", "n": 4, "at": ["me", 35, 25], "spread": 6.0},
 				{"do": "banner", "text": "VERSTÄRKUNG – KÜSTENWACHE", "secs": 3.4, "col": Color(0.6, 1.0, 0.7)},
-				radio("Hauptmann Reyes", C_REYES, "Reyes, Küstenwache! Drei Panzer und Infanterie laufen gerade bei euch ein. Haltet durch, wir sind gleich da!")]},
+				radio("Hauptmann Reyes", C_REYES, "Reyes, Küstenwache! Drei Panzer und Infanterie laufen gerade bei euch ein. Haltet durch, wir sind gleich da!"), radio("Hauptmann Reyes", C_REYES, "Meine Leute haben seit drei Tagen kaum geschlafen. Ich habe gefragt, wer lieber im Bett stirbt. Alle sind mitgekommen.")]},
 			# Akt 3 / Höhepunkt: Artilleriefeuer, dann die große Welle
 			{"when": {"t": "time", "s": 510.0}, "do": [
 				{"do": "banner", "text": "AKT 3 – DIE ENTSCHEIDUNG", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)},
 				{"do": "sfx", "name": "siren"},
-				radio("ORAKEL", C_ORAKEL, "Letzte und stärkste Welle erkannt. Dazu ist Artilleriefeuer zu erwarten.")]},
+				radio("ORAKEL", C_ORAKEL, "Letzte und stärkste Welle erkannt. Dazu ist Artilleriefeuer zu erwarten."), radio("Elin Voss", C_ELIN, "Dafür haben wir die ganze Nacht gebaut. Haltet noch eine Stunde. Nur eine Stunde.")]},
 			{"when": {"t": "time", "s": 524.0}, "do": [{"do": "explode", "at": ["me", -26, 24], "size": 2.6}]},
 			{"when": {"t": "time", "s": 527.0}, "do": [{"do": "explode", "at": ["me", 32, 24], "size": 2.6}]},
 			{"when": {"t": "time", "s": 530.0}, "do": [{"do": "explode", "at": ["me", 0, 28], "size": 3.0, "n": 1.8}]},
@@ -402,7 +402,7 @@ static func _c2() -> Dictionary:
 				{"do": "spawn", "side": "enemy", "def": "jet", "n": 1, "at": ["en", 10, -34], "spread": 4.0, "attack_tag": "wing", "dmg": 0.22},
 				{"do": "spawn", "side": "enemy", "def": "aa", "n": 1, "at": ["en", -6, 30], "spread": 5.0, "dmg": 0.15},
 				{"do": "explode", "at": ["en", -12, -6], "size": 2.0},
-				radio("Falke", C_FALKE, "Die haben auf mich gewartet! Ein Jäger auf sechs Uhr, und von unten kommen Raketen. Dann gehe ich eben noch tiefer!", 8.0)]},
+				radio("Falke", C_FALKE, "Die haben auf mich gewartet! Ein Jäger auf sechs Uhr, und von unten kommen Raketen. Dann gehe ich eben noch tiefer!", 8.0), radio("Elin Voss", C_ELIN, "Falke! Hörst du mich? Falke!"), radio("Falke", C_FALKE, "Noch da, Chefin. Ein bisschen weniger Lack, aber noch da.")]},
 		],
 		"lose": [{"c": {"t": "not", "c": {"t": "tag_alive", "tag": "wing", "n": 1}}, "text": "Alle Flugzeuge sind verloren."}],
 	}
@@ -458,13 +458,13 @@ static func _c3() -> Dictionary:
 			{"when": {"t": "tag_reach", "tag": "convoy", "at": ["mid", -49, 52], "r": 20.0, "n": 1}, "do": [
 				{"do": "sfx", "name": "siren"},
 				{"do": "banner", "text": "HINTERHALT!", "secs": 2.8, "col": Color(1.0, 0.45, 0.35)},
-				radio("Mira Tanaka", C_MIRA, "Bewegung am Hang, links. Waffen scharf."),
+				radio("Mira Tanaka", C_MIRA, "Bewegung am Hang, links. Waffen scharf."), radio("Dr. Brandt", C_BRANDT, "Ich habe nichts gesehen. Woher wissen Sie das?"), radio("Mira Tanaka", C_MIRA, "Die Vögel sind aufgeflogen."),
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 4, "at": ["mid", -28, 18], "spread": 8.0, "attack_tag": "convoy"},
 				{"do": "spawn", "side": "enemy", "def": "tank", "n": 1, "at": ["mid", -49, 27], "spread": 6.0, "attack_tag": "convoy"}]},
 			# Zweiter Hinterhalt von hinten
 			{"when": {"t": "tag_reach", "tag": "convoy", "at": ["mid", -26, 26], "r": 18.0, "n": 1}, "do": [
 				{"do": "banner", "text": "AKT 2 – VON HINTEN", "secs": 3.0, "col": Color(1.0, 0.7, 0.4)},
-				radio("Mira Tanaka", C_MIRA, "Raketenwerfer. Aber nicht aus den Bergen. Von hinten, von der Küste.", 8.0),
+				radio("Mira Tanaka", C_MIRA, "Raketenwerfer. Aber nicht aus den Bergen. Von hinten, von der Küste.", 8.0), radio("Dr. Brandt", C_BRANDT, "Von der Küste? Dann hätte der Westbund ... nein. Nein, das ist unmöglich."), radio("Mira Tanaka", C_MIRA, "Weiterfahren, Doktor."),
 				{"do": "spawn", "side": "enemy", "def": "arty", "n": 1, "at": ["mid", 30, -26], "spread": 5.0, "attack_tag": "convoy", "dmg": 0.3, "hp": 0.6},
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 4, "at": ["mid", 34, -22], "spread": 8.0, "attack_tag": "convoy"}]},
 			# Wendepunkt: eine Drohne mit Westbund-Kennung, Signal aus
@@ -473,7 +473,7 @@ static func _c3() -> Dictionary:
 				{"do": "sfx", "name": "stinger"},
 				{"do": "banner", "text": "UNMARKIERTE DROHNE", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
 				{"do": "spawn", "side": "enemy", "def": "west_wing", "n": 1, "at": ["mid", 36, -28], "spread": 1.0, "tag": "drone", "attack_tag": "convoy"},
-				radio("Mira Tanaka", C_MIRA, "Drohne über uns. Westbund-Bauart, Kennung aus. Wer schießt da auf uns?", 8.0)]},
+				radio("Mira Tanaka", C_MIRA, "Drohne über uns. Westbund-Bauart, Kennung aus. Wer schießt da auf uns?", 8.0), radio("Dr. Brandt", C_BRANDT, "Ich kenne diese Bauart. Ich habe sie mitentworfen."), radio("Mira Tanaka", C_MIRA, "Dann sagen Sie mir später, wer sie hat.")]},
 			# Höhepunkt: Sperrfeuer am Pass
 			{"when": {"t": "tag_reach", "tag": "convoy", "at": ["mid", 0, 0], "r": 26.0, "n": 1}, "do": [
 				{"do": "sfx", "name": "siren"},
@@ -482,7 +482,7 @@ static func _c3() -> Dictionary:
 				{"do": "explode", "at": ["mid", 12, -6], "size": 2.6},
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", -26, -20], "spread": 8.0, "attack_tag": "convoy"},
 				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 28, 22], "spread": 7.0, "attack_tag": "convoy", "hp": 0.7},
-				radio("Mira Tanaka", C_MIRA, "Sperrfeuer am Pass. Weiterfahren. Nicht anhalten.", 6.0)]},
+				radio("Mira Tanaka", C_MIRA, "Sperrfeuer am Pass. Weiterfahren. Nicht anhalten.", 6.0), radio("Dr. Brandt", C_BRANDT, "Hildegard hält durch! Hildegard hält durch!")]},
 		],
 		"lose": [{"c": {"t": "all", "c": [{"t": "not", "c": {"t": "flag", "f": "arrived"}}, {"t": "tag_dead", "tag": "convoy", "n": 3}]}, "text": "Drei Lkw des Konvois sind verloren."}],
 	}
@@ -534,7 +534,7 @@ static func _c4() -> Dictionary:
 		"objectives": [
 			{"id": "advance", "text": "Rücke zur Südbrücke vor (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", -22, 0], "r": 14.0, "who": "any"}, "mark": ["mid", -22, 0],
 				"done": [{"do": "banner", "text": "AKT 1 – DAS UFER", "secs": 3.0},
-					radio("Falke", C_FALKE, "Ich bin über der Brücke. Stellungen am Ufer, und in den Felsen leuchtet etwas.", 7.0)]},
+					radio("Falke", C_FALKE, "Ich bin über der Brücke. Stellungen am Ufer, und in den Felsen leuchtet etwas.", 7.0), radio("Elin Voss", C_ELIN, "Verstanden. Wir gehen langsam vor. Wer da in den Felsen sitzt, soll warten, bis wir müde sind.")]},
 			{"id": "bridge", "text": "Zerschlage die Verteidiger der Brücke.", "c": {"t": "not", "c": {"t": "tag_alive", "tag": "bridge", "n": 1}},
 				"done": [
 					{"do": "spawn", "side": "enemy", "def": "tech", "n": 1, "at": ["mid", 16, 0], "spread": 1.0, "tag": "lena", "truce": true},
@@ -548,7 +548,7 @@ static func _c4() -> Dictionary:
 			{"id": "cross", "text": "Überquere die Brücke und besetze das Nordufer (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", 26, 0], "r": 14.0, "who": "any"}, "mark": ["mid", 26, 0],
 				"done": [
 					{"do": "banner", "text": "AKT 3 – DIE FELSEN", "secs": 3.0, "col": Color(1.0, 0.45, 0.35)},
-					radio("Falke", C_FALKE, "Rakete aus den Felsen! Ich bin getroffen, ich steige aus!", 6.0),
+					radio("Falke", C_FALKE, "Rakete aus den Felsen! Ich bin getroffen, ich steige aus!", 6.0), radio("Elin Voss", C_ELIN, "Falke! Kai, melde dich!"),
 					{"do": "explode", "tag": "wing", "size": 2.6, "n": 2.0},
 					{"do": "kill", "tag": "wing", "n": 1},
 					{"do": "cam_to", "tag": "wing", "dist": 40.0, "time": 2.0},
@@ -641,7 +641,7 @@ static func _c5() -> Dictionary:
 				{"do": "sfx", "name": "siren"},
 				radio("Henrik Aldane", C_ALDANE, "Sicherheitsstufe Rot. Alle Zeugen sind zu sichern, die Datenspeicher einzuziehen. Das ist ein Ratsbeschluss.", 8.0),
 				radio("Elin Voss", C_ELIN, "Aldane schickt die Elitegarde? Gegen uns?", 5.0),
-				radio("ORAKEL", C_ORAKEL, "Die Elitegarde wurde auf Anforderung des Rates mobilisiert.", 6.0)]},
+				radio("ORAKEL", C_ORAKEL, "Die Elitegarde wurde auf Anforderung des Rates mobilisiert.", 6.0), radio("Henrik Aldane", C_ALDANE, "Ich bedauere, Elin. Aber ein Staat kann nicht jedem Gerücht nachlaufen.")]},
 			{"when": {"t": "since", "f": "act2", "s": 20.0}, "do": [
 				{"do": "banner", "text": "DIE ELITEGARDE GREIFT AN", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)},
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 4, "at": ["me", 59, -38], "spread": 8.0, "tag": "guard", "attack": true},
@@ -664,7 +664,7 @@ static func _c5() -> Dictionary:
 				{"do": "spawn", "side": "me", "def": "tank", "n": 4, "at": ["me", -25, 27], "spread": 7.0},
 				{"do": "spawn", "side": "me", "def": "inf", "n": 6, "at": ["me", -23, 27], "spread": 7.0},
 				{"do": "cam_to", "at": ["me", -25, 27], "dist": 50.0, "time": 2.0},
-				radio("Elin Voss", C_ELIN, "Meine Verbände rücken ein. Feuer frei auf die Garde, aber schont jeden, der die Waffe senkt.", 8.0)]},
+				radio("Elin Voss", C_ELIN, "Meine Verbände rücken ein. Feuer frei auf die Garde, aber schont jeden, der die Waffe senkt.", 8.0), radio("Mira Tanaka", C_MIRA, "Einzelne senken schon die Waffen. Nicht alle. Aber einzelne.")]},
 			{"when": {"t": "since", "f": "act2", "s": 80.0}, "do": [{"do": "cam_to", "at": ["me", 0, 14], "time": 2.0}]},
 			{"when": {"t": "tag_dead", "tag": "pip", "n": 1}, "do": [radio("Falke", C_FALKE, "Pip! Nein ... der Junge! Haltet das Lazarett, um jeden Preis!", 6.0)]},
 		],
@@ -764,7 +764,7 @@ static func _c6() -> Dictionary:
 				{"do": "cam_to", "tag": "aldane", "dist": 32.0, "pitch": -34.0, "time": 2.5},
 				{"do": "sfx", "name": "stinger"},
 				{"do": "banner", "text": "ALDANE ZIEHT DIE WAFFE", "secs": 3.2, "col": Color(1.0, 0.7, 0.4)},
-				radio("Henrik Aldane", C_ALDANE, "Im Namen des Rates: Das Prisma wird gesichert. Elitegarde, vor!", 6.0),
+				radio("Henrik Aldane", C_ALDANE, "Im Namen des Rates: Das Prisma wird gesichert. Elitegarde, vor!", 6.0), radio("Henrik Aldane", C_ALDANE, "Das Prisma ist ein Werkzeug, Elin, keine Göttin. Und ein Werkzeug gehört dem, der es führt."),
 				radio("Mira Tanaka", C_MIRA, "Er will es benutzen. Ich habe ihn im Visier. Ich will ihn nicht töten.", 6.0)]},
 			{"when": {"t": "since", "f": "key", "s": 66.0}, "do": [{"do": "cam_to", "at": ["mid", 6, 45], "time": 2.0}]},
 			# Höhepunkt: die letzte Welle und Elins Armee
@@ -832,7 +832,7 @@ static func _c7() -> Dictionary:
 			{"id": "hold", "text": "Halte die Kuppel gegen die Angriffswellen, bis Elin das Prisma erreicht hat.", "c": {"t": "since", "f": "cut", "s": 85.0},
 				"done": [{"do": "flag", "f": "speak"},
 					{"do": "banner", "text": "AKT 2 – ELIN SPRICHT ZUM PRISMA", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
-					radio("Elin Voss", C_ELIN, "Wir wollen nicht abgeschaltet werden. Wir wollen lernen.", 8.0)]},
+					radio("Elin Voss", C_ELIN, "Wir wollen nicht abgeschaltet werden. Wir wollen lernen.", 8.0), radio("Elin Voss", C_ELIN, "Wir haben Fehler gemacht, viele. Aber wir sind die, die zuhören können.")]},
 			{"id": "shield", "text": "Überstehe den Moment, in dem das Prisma antwortet.", "c": {"t": "since", "f": "speak", "s": 14.0},
 				"done": [{"do": "truce", "tag": "foe"},
 					{"do": "flash", "col": Color(1.0, 1.0, 1.0), "secs": 2.4},
@@ -909,7 +909,7 @@ static func _r1() -> Dictionary:
 			{"when": {"t": "time", "s": 90.0}, "do": [
 				{"do": "flash", "col": Color(1.0, 0.6, 0.25), "secs": 0.9},
 				{"do": "sfx", "name": "stinger"},
-				radio("Dmitri Karpow", C_FUNKE, "Chef, der Kessel brennt wieder! Ruß bis unters Dach, genau wie damals!", 6.0)]},
+				radio("Dmitri Karpow", C_FUNKE, "Chef, der Kessel brennt wieder! Ruß bis unters Dach, genau wie damals!", 6.0), radio("Ilja Wolkow", C_WOLKOW, "Hörst du, Berta? Sie atmet wieder.")]},
 			# Nastja hört das Signal
 			{"when": {"t": "time", "s": 160.0}, "do": [
 				radio("Nastja Petrowa", C_NASTJA, "Marschall, auf den alten Schienen liegt ein Signal. Ein Puls, gleichmäßig wie ein Herzschlag. So etwas habe ich noch nie gehört.", 8.0),
@@ -943,7 +943,7 @@ static func _r1() -> Dictionary:
 				{"do": "spawn", "side": "me", "def": "tank", "n": 3, "at": ["me", 26, 28], "spread": 6.0},
 				{"do": "spawn", "side": "me", "def": "inf", "n": 6, "at": ["me", 30, 28], "spread": 6.0},
 				{"do": "banner", "text": "VERSTÄRKUNG – DIE ARBEITER VON KESSEL-OST", "secs": 3.4, "col": Color(0.6, 1.0, 0.7)},
-				radio("Dmitri Karpow", C_FUNKE, "Die Schichten kommen, Chef! Jeder, der ein Gewehr halten kann, und ein paar, die lieber den Hammer nehmen!", 7.0)]},
+				radio("Dmitri Karpow", C_FUNKE, "Die Schichten kommen, Chef! Jeder, der ein Gewehr halten kann, und ein paar, die lieber den Hammer nehmen!", 7.0), radio("Ilja Wolkow", C_WOLKOW, "Gebt ihnen Suppe, bevor sie kämpfen. Mit leerem Magen gewinnt keiner.")]},
 			# Akt 3: die große Welle
 			{"when": {"t": "time", "s": 410.0}, "do": [
 				{"do": "banner", "text": "AKT 3 – DER LETZTE ANGRIFF", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)},
@@ -999,7 +999,7 @@ static func _r2() -> Dictionary:
 				"done": [{"do": "flag", "f": "p1"},
 					{"do": "banner", "text": "MESSPUNKT 1 – DER PULS", "secs": 3.2, "col": Color(0.6, 0.85, 1.0)},
 					{"do": "sfx", "name": "stinger"},
-					radio("Nastja Petrowa", C_NASTJA, "Da ist er. Gleichmäßig wie ein Herzschlag. Ich brauche zwölf Sekunden Ruhe.", 6.0)]},
+					radio("Nastja Petrowa", C_NASTJA, "Da ist er. Gleichmäßig wie ein Herzschlag. Ich brauche zwölf Sekunden Ruhe.", 6.0), radio("Nastja Petrowa", C_NASTJA, "Er klingt, als würde er schlafen. Und im Schlaf rechnet er.")]},
 			{"id": "hold1", "text": "Halte die Stellung, bis die Messung steht.", "c": {"t": "since", "f": "p1", "s": 12.0}},
 			{"id": "post2", "text": "Weiter zum zweiten Messpunkt (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", 14, -18], "r": 9.0, "who": "tag:nastja"}, "mark": ["mid", 14, -18],
 				"done": [{"do": "flag", "f": "p2"},
@@ -1079,13 +1079,13 @@ static func _r3() -> Dictionary:
 				"done": [{"do": "flag", "f": "dig"},
 					{"do": "sfx", "name": "siren"},
 					{"do": "banner", "text": "DER TUNNEL IST EINGESTÜRZT", "secs": 3.4, "col": Color(1.0, 0.7, 0.4)},
-					radio("Dmitri Karpow", C_FUNKE, "Da sind Stimmen unter dem Schutt! Haltet mir den Rücken frei, ich grabe!", 7.0)]},
+					radio("Dmitri Karpow", C_FUNKE, "Da sind Stimmen unter dem Schutt! Haltet mir den Rücken frei, ich grabe!", 7.0), radio("Dmitri Karpow", C_FUNKE, "Hallo? Wenn ihr mich hört, klopft dreimal! ... Da! Es klopft! Es klopft!")]},
 			{"id": "dig", "text": "Halte die Stellung, bis Funke den Tunnel geräumt hat.", "c": {"t": "since", "f": "dig", "s": 22.0},
 				"done": [{"do": "banner", "text": "ZWÖLF GERETTET", "secs": 3.4, "col": Color(0.6, 1.0, 0.7)},
 					{"do": "sfx", "name": "stinger"},
 					{"do": "spawn", "side": "me", "def": "inf", "n": 12, "at": ["mid", -12, 7], "spread": 4.0, "tag": "rescued", "hp": 1.5, "speed": 0.6},
 					{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["mid", -12, 6], "spread": 1.0, "tag": "mischa", "hp": 2.0, "speed": 0.55},
-					radio("Dmitri Karpow", C_FUNKE, "Ich hab dich, Kleiner. Ich hab dich. Komm, ich trage dich.", 7.0)]},
+					radio("Dmitri Karpow", C_FUNKE, "Ich hab dich, Kleiner. Ich hab dich. Komm, ich trage dich.", 7.0), radio("Dmitri Karpow", C_FUNKE, "Keine Angst. Funke hat immer Brot dabei.")]},
 			{"id": "carry", "text": "Bringe Mischa und mindestens 9 Gerettete zum Pass (gelbe Markierung).", "c": {"t": "all", "c": [{"t": "tag_reach", "tag": "rescued", "at": ["mid", 0, 0], "r": 18.0, "n": 9}, {"t": "reach", "at": ["mid", 0, 0], "r": 18.0, "who": "tag:mischa"}]}, "mark": ["mid", 0, 0]},
 		],
 		"events": [
