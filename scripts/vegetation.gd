@@ -301,7 +301,7 @@ static func _tree_meshes(family: String) -> Array:
 	var stem := CylinderMesh.new()
 	stem.radial_segments = 8
 	stem.rings = 1
-	var clump := _tree_leaf_pad(family.hash())
+	var clump := _tree_leaf_pad(family) if family not in ["snag", "palm"] else null
 	var bases := {"spruce": 6.4, "pine": 5.7, "oak": 3.5, "willow": 3.7,
 		"birch": 5.5, "snag": 4.9, "mangrove": 2.45, "palm": 5.7}
 	var h: float = bases[family]
@@ -318,7 +318,7 @@ static func _tree_meshes(family: String) -> Array:
 			for j in 5:
 				var yaw := layer * 0.71 + j * TAU / 5.0
 				var p := Vector3(cos(yaw) * width * 0.57, y + sin(yaw * 2.0) * 0.20, sin(yaw) * width * 0.57)
-				_tree_pad(crown, clump, p, Vector3(width * 0.66, 0.53, width * 0.48), yaw)
+				_tree_pad(crown, clump, p, Vector3(width * 0.94, 0.61, width * 0.76), yaw)
 		_tree_pad(crown, clump, tip - Vector3(0, 0.28, 0), Vector3(0.46, 0.88, 0.45), 0.0)
 	elif family == "palm":
 		for j in 8:
@@ -341,11 +341,20 @@ static func _tree_meshes(family: String) -> Array:
 				_tree_branch(wood, stem, fork, end + v.cross(Vector3.UP) * 0.4 + Vector3.UP * 0.38, 0.046, 0.014)
 				continue
 			var pad_height := thickness * (0.85 + 0.18 * cos(j))
-			var pad_width := (0.68 + 0.15 * (j % 3)) * (0.85 if family == "birch" else 1.25)
+			var pad_width := (0.75 + 0.17 * (j % 3)) * (0.96 if family == "birch" else 1.59)
 			_tree_pad(crown, clump, end + Vector3.UP * 0.26, Vector3(pad_width, pad_height, pad_width * 0.91), yaw)
 			if family in ["willow", "oak", "mangrove"]:
-				var droop := -0.50 if family == "willow" else 0.06
+				var droop := -0.62 if family == "willow" else 0.06
 				_tree_pad(crown, clump, end + v * 0.45 + Vector3.UP * droop, Vector3(pad_width * 0.66, pad_height * 0.78, pad_width * 0.54), yaw + 0.6)
+			if family == "willow":
+				var cross := v.cross(Vector3.UP)
+				for stripe in [-0.75, 0.75]:
+					var hanging := end + v * 0.43 + cross * float(stripe) * 0.32
+					hanging.y -= 0.72 + 0.22 * absf(stripe)
+					_tree_pad(crown, clump, hanging, Vector3(0.31, 1.8 + 0.22 * sin(j), 0.40), yaw)
+		if family == "oak" or family == "mangrove":
+			var broad := 2.4 if family == "oak" else 2.1
+			_tree_pad(crown, clump, tip + Vector3(-0.1, 0.44, 0.28), Vector3(broad, 1.06, broad * 0.88), 0.37)
 	if family == "mangrove":
 		for j in 6:
 			var yaw := TAU * j / 6.0
@@ -364,27 +373,30 @@ static func _tree_branch(st: SurfaceTool, mesh: CylinderMesh, a: Vector3, b: Vec
 	var turn := Basis(Quaternion(Vector3.UP, span.normalized()))
 	st.append_from(mesh, 0, Transform3D(turn, (a + b) * 0.5))
 
-static func _tree_leaf_pad(seed_value: int) -> ArrayMesh:
-	var sphere := SphereMesh.new()
-	sphere.radial_segments = 8
-	sphere.rings = 4
-	sphere.radius = 0.5
-	sphere.height = 1.0
-	var arrays := sphere.get_mesh_arrays()
-	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
-	var noise := FastNoiseLite.new()
-	noise.seed = seed_value
-	noise.frequency = 3.8
-	for i in vertices.size():
-		var vertex := vertices[i]
-		vertices[i] *= 1.0 + 0.42 * noise.get_noise_3dv(vertex * 3.0)
-	var surface := SurfaceTool.new()
-	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for i in indices:
-		surface.add_vertex(vertices[i])
-	surface.generate_normals()
-	return surface.commit()
+## Lockere, räumlich verteilte Zweige mit einzeln modellierten Blättern oder Nadelbüscheln.
+static func _tree_leaf_pad(family: String) -> ArrayMesh:
+	var needles: bool = family in ["spruce", "pine"]
+	var length: float = {"spruce": 0.24, "pine": 0.27, "oak": 0.31, "willow": 0.30, "birch": 0.25, "mangrove": 0.28}[family]
+	var half_width: float = {"spruce": 0.042, "pine": 0.031, "oak": 0.099, "willow": 0.057, "birch": 0.083, "mangrove": 0.099}[family]
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = family.hash()
+	for shoot in (6 if needles else 8):
+		var angle := float(shoot) * 2.39996 + rng.randf_range(-0.24, 0.24)
+		var height := -0.70 + float(shoot % 4) * 0.46
+		var axis := Vector3(cos(angle), height, sin(angle)).normalized()
+		var side := axis.cross(Vector3.UP).normalized()
+		for pair in (6 if needles else 5):
+			var t := 0.09 + 0.077 * pair
+			var stem := axis * t + Vector3.UP * (0.055 * sin(float(shoot + pair)))
+			for s in [-1.0, 1.0]:
+				var width := half_width * rng.randf_range(0.72, 1.22)
+				var tilt := -0.25 if family == "willow" else rng.randf_range(-0.24, 0.29)
+				var dir := (axis * (0.66 if needles else 0.42) + side * float(s) * 0.76 + Vector3.UP * tilt).normalized()
+				var tint := Color.WHITE * rng.randf_range(0.68, 1.21)
+				_leaf_blade(st, stem + side * float(s) * 0.012, dir, length * rng.randf_range(0.72, 1.22), width, tint)
+	return st.commit()
 
 static func _tree_pad(st: SurfaceTool, clump: Mesh, center: Vector3, size: Vector3, yaw: float) -> void:
 	st.append_from(clump, 0, Transform3D(Basis(Vector3.UP, yaw).scaled(size), center))
@@ -392,20 +404,28 @@ static func _tree_pad(st: SurfaceTool, clump: Mesh, center: Vector3, size: Vecto
 static func _palm_frond(st: SurfaceTool, root: Vector3, yaw: float, length: float) -> void:
 	var out := Vector3(cos(yaw), 0.0, sin(yaw))
 	var left := out.cross(Vector3.UP)
-	for segment in 6:
-		var a := float(segment) / 6.0
-		var b := float(segment + 1) / 6.0
-		var p := root + out * length * a + Vector3.UP * (sin(a * PI) * 0.54 - a * a * 0.84)
-		var q := root + out * length * b + Vector3.UP * (sin(b * PI) * 0.54 - b * b * 0.84)
-		var w := sin(a * PI) * 0.33
-		var wn := sin(b * PI) * 0.33
-		var first := p + left * w - Vector3.UP * w * 0.45
-		var second := p - left * w - Vector3.UP * w * 0.45
-		var third := q + left * wn - Vector3.UP * wn * 0.45
-		var fourth := q - left * wn - Vector3.UP * wn * 0.45
-		for v in [p, third, first, p, q, third, p, second, fourth, p, fourth, q]:
-			st.set_normal(Vector3.UP)
-			st.add_vertex(v)
+	var prev := root
+	for segment in range(1, 13):
+		var t := float(segment) / 12.0
+		var point := root + out * length * t + Vector3.UP * (sin(t * PI) * 0.57 - t * t * 0.85)
+		_leaf_blade(st, prev, (point - prev).normalized(), (point - prev).length() + 0.03, 0.047 * (1.04 - t), Color(0.76, 0.83, 0.65))
+		var leaflet := 0.20 + 0.65 * sin(PI * t)
+		for s in [-1.0, 1.0]:
+			var dir := (out * 0.43 + left * float(s) * 0.83 - Vector3.UP * (0.52 * t)).normalized()
+			_leaf_blade(st, point - out * (0.05 if s < 0.0 else 0.0), dir, leaflet, 0.105 * (1.08 - t), Color.WHITE)
+		prev = point
+
+static func _leaf_blade(st: SurfaceTool, root: Vector3, dir: Vector3, length: float, width: float, tint: Color) -> void:
+	var edge := dir.cross(Vector3.UP).normalized()
+	var normal := edge.cross(dir)
+	var tip := root + dir * length - normal * (length * 0.09)
+	var center := root + dir * (length * 0.46) - normal * (width * 0.33)
+	var lhs := center + edge * width
+	var rhs := center - edge * width
+	for p in [root, lhs, tip, root, tip, rhs]:
+		st.set_normal(normal)
+		st.set_color(tint)
+		st.add_vertex(p)
 
 static func _emit_list(t, arr: Array, mesh: Mesh, m: Material, shadows: bool) -> void:
 	var dict := {}
