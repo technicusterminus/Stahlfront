@@ -290,6 +290,8 @@ func _do(a: Dictionary) -> void:
 			Audio.sfx(String(a["name"]), float(a.get("db", 0.0)))
 		"hour":
 			Game.daynight.configure(float(a["h"]), 0.0)
+		"weather":
+			Game.set_rain(float(a.get("rain", 0.0)))
 		"explode":
 			var ep: Vector3 = _target_pos(a)
 			FX.explosion(ep, float(a.get("size", 2.0)))

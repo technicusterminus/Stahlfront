@@ -10,31 +10,43 @@ var flocks: Array = []
 
 func setup(seed_val: int, avoid: Array) -> void:
 	rng.seed = seed_val + 77
-	var tries = 0
-	while herds.size() < 7 and tries < 400:
-		tries += 1
-		var p = Vector3(rng.randf_range(-Game.HALF * 0.8, Game.HALF * 0.8), 0, rng.randf_range(-Game.HALF * 0.8, Game.HALF * 0.8))
-		if not _ok(p) or _near_any(p, avoid, 45.0):
-			continue
-		var h = {"center": p, "target": p, "speed": 1.4, "flee_t": 0.0, "wait": rng.randf_range(2, 8), "check": 0.0, "deer": []}
-		for i in rng.randi_range(3, 6):
-			var d = _make_deer(rng.randf() < 0.3)
-			add_child(d["node"])
-			d["off"] = Vector3(rng.randf_range(-4, 4), 0, rng.randf_range(-4, 4))
-			d["pos"] = p + d["off"]
-			d["node"].position = d["pos"]
-			h["deer"].append(d)
-		herds.append(h)
-	for f in 4:
-		var c = Vector3(rng.randf_range(-Game.HALF * 0.67, Game.HALF * 0.67), 0, rng.randf_range(-Game.HALF * 0.67, Game.HALF * 0.67))
-		var fl = {"anchor": c, "angle": rng.randf() * TAU, "h": rng.randf_range(18, 26), "r": rng.randf_range(10, 20), "check": 0.0, "birds": []}
-		for i in 9:
-			var b = _make_bird()
-			add_child(b["node"])
-			b["off"] = Vector3(rng.randf_range(-4, 4), rng.randf_range(-1.5, 1.5), rng.randf_range(-4, 4))
-			b["phase"] = rng.randf() * TAU
-			fl["birds"].append(b)
-		flocks.append(fl)
+	var bio: Dictionary = load("res://scripts/biome.gd").of(Game.terrain)
+	var fauna: Dictionary = bio.get("fauna", {"deer": 7})
+	var birds: Dictionary = bio.get("birds", {"crow": 4})
+	for kind in fauna:
+		var made := 0
+		var tries := 0
+		while made < int(fauna[kind]) and tries < 400:
+			tries += 1
+			var p = Vector3(rng.randf_range(-Game.HALF * 0.8, Game.HALF * 0.8), 0, rng.randf_range(-Game.HALF * 0.8, Game.HALF * 0.8))
+			if not _ok(p) or _near_any(p, avoid, 45.0):
+				continue
+			if kind == "goat" and Game.terrain.height_at(p.x, p.z) < 2.5 and tries < 300:
+				continue
+			var h = {"center": p, "target": p, "speed": 1.4, "flee_t": 0.0, "wait": rng.randf_range(2, 8), "check": 0.0, "deer": [], "kind": kind}
+			var n_head: int = rng.randi_range(3, 6) if kind != "boar" else rng.randi_range(2, 5)
+			for i in n_head:
+				var d = _make_beast(kind, rng.randf() < 0.3)
+				add_child(d["node"])
+				d["off"] = Vector3(rng.randf_range(-4, 4), 0, rng.randf_range(-4, 4))
+				d["pos"] = p + d["off"]
+				d["node"].position = d["pos"]
+				h["deer"].append(d)
+			herds.append(h)
+			made += 1
+	for kind in birds:
+		for f in int(birds[kind]):
+			var c = Vector3(rng.randf_range(-Game.HALF * 0.67, Game.HALF * 0.67), 0, rng.randf_range(-Game.HALF * 0.67, Game.HALF * 0.67))
+			var eagle: bool = kind == "eagle"
+			var fl = {"anchor": c, "angle": rng.randf() * TAU, "h": rng.randf_range(18, 26) + (14.0 if eagle else 0.0), "r": rng.randf_range(10, 20) * (1.8 if eagle else 1.0), "check": 0.0, "birds": [], "kind": kind}
+			var n_birds: int = 2 if eagle else (6 if kind == "gull" or kind == "duck" else 9)
+			for i in n_birds:
+				var b = _make_bird(kind)
+				add_child(b["node"])
+				b["off"] = Vector3(rng.randf_range(-4, 4), rng.randf_range(-1.5, 1.5), rng.randf_range(-4, 4))
+				b["phase"] = rng.randf() * TAU
+				fl["birds"].append(b)
+			flocks.append(fl)
 
 func _near_any(p: Vector3, pts: Array, r: float) -> bool:
 	for q in pts:
@@ -47,10 +59,24 @@ func _ok(p: Vector3) -> bool:
 
 # ---------------------------------------------------------------- Modelle
 
-func _make_deer(stag: bool) -> Dictionary:
+func _make_beast(kind: String, big: bool) -> Dictionary:
+	if kind == "deer":
+		return _make_deer(big)
+	var d: Dictionary = _make_deer(false, kind)
+	return d
+
+func _make_deer(stag: bool, kind := "deer") -> Dictionary:
 	var n = Node3D.new()
 	var fur = Models.mat(Color(0.42, 0.27, 0.15), 0.0, 0.9)
 	var belly = Models.mat(Color(0.75, 0.62, 0.48), 0.0, 0.9)
+	if kind == "goat":
+		fur = Models.mat(Color(0.78, 0.76, 0.7), 0.0, 0.95)
+		belly = Models.mat(Color(0.9, 0.88, 0.82), 0.0, 0.95)
+		stag = false
+	elif kind == "boar":
+		fur = Models.mat(Color(0.2, 0.16, 0.13), 0.0, 0.95)
+		belly = Models.mat(Color(0.3, 0.24, 0.19), 0.0, 0.95)
+		stag = false
 	var dark = Models.mat(Color(0.12, 0.09, 0.07), 0.0, 0.9)
 	Models.box(n, Vector3(0.42, 0.45, 1.05), Vector3(0, 1.0, 0), fur)
 	Models.box(n, Vector3(0.36, 0.12, 0.85), Vector3(0, 0.8, 0), belly)
@@ -75,12 +101,23 @@ func _make_deer(stag: bool) -> Dictionary:
 			Models.box(hip, Vector3(0.08, 0.85, 0.09), Vector3(0, -0.42, 0), fur)
 			Models.box(hip, Vector3(0.09, 0.08, 0.11), Vector3(0, -0.84, 0.01), dark)
 			legs.append(hip)
-	n.scale = Vector3.ONE * (1.15 if stag else 1.0)
+	if kind == "goat":
+		for sx in [-1, 1]:
+			Models.box(neck, Vector3(0.04, 0.34, 0.04), Vector3(sx * 0.09, 0.78, 0.14), Models.mat(Color(0.3, 0.26, 0.2), 0.0, 0.9), Vector3(-0.9, 0, sx * 0.2))
+		Models.box(neck, Vector3(0.07, 0.22, 0.07), Vector3(0, 0.38, 0.4), belly, Vector3(0.2, 0, 0))
+		n.scale = Vector3.ONE * 0.72
+	elif kind == "boar":
+		for sx in [-1, 1]:
+			Models.box(neck, Vector3(0.03, 0.03, 0.14), Vector3(sx * 0.07, 0.5, 0.56), Models.mat(Color(0.9, 0.88, 0.8), 0.0, 0.9))
+		n.scale = Vector3(0.95, 0.72, 1.0)
+	else:
+		n.scale = Vector3.ONE * (1.15 if stag else 1.0)
 	return {"node": n, "legs": legs, "neck": neck, "pos": Vector3.ZERO, "heading": rng.randf() * TAU, "walk": rng.randf() * 10.0, "graze": rng.randf() * 10.0}
 
-func _make_bird() -> Dictionary:
+func _make_bird(kind := "crow") -> Dictionary:
 	var n = Node3D.new()
-	var m = Models.mat(Color(0.12, 0.11, 0.1), 0.0, 0.8)
+	var col := {"crow": Color(0.12, 0.11, 0.1), "gull": Color(0.92, 0.93, 0.94), "eagle": Color(0.3, 0.2, 0.12), "duck": Color(0.35, 0.28, 0.2)}
+	var m = Models.mat(col.get(kind, Color(0.12, 0.11, 0.1)), 0.0, 0.8)
 	Models.box(n, Vector3(0.14, 0.12, 0.45), Vector3.ZERO, m)
 	Models.box(n, Vector3(0.1, 0.1, 0.12), Vector3(0, 0.03, 0.25), m)
 	var wl = Node3D.new()
@@ -89,7 +126,7 @@ func _make_bird() -> Dictionary:
 	n.add_child(wr)
 	Models.box(wl, Vector3(0.55, 0.02, 0.22), Vector3(-0.3, 0, 0), m)
 	Models.box(wr, Vector3(0.55, 0.02, 0.22), Vector3(0.3, 0, 0), m)
-	n.scale = Vector3.ONE * 1.6
+	n.scale = Vector3.ONE * (3.4 if kind == "eagle" else (1.3 if kind == "duck" else 1.6))
 	return {"node": n, "wl": wl, "wr": wr}
 
 # ---------------------------------------------------------------- Verhalten

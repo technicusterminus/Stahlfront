@@ -8,6 +8,7 @@ const WATER_Y := -0.6
 
 var heights = PackedFloat32Array()
 var blocked = PackedByteArray()   # Game.GRID * Game.GRID, 1 = unpassierbar
+var road_cells = PackedByteArray()   # 1 = befestigte Strasse (kein Regen-Malus)
 var sea = PackedByteArray()       # 1 = schiffbares Wasser des zusammenhängenden Meeres
 var _starts: Array = []
 var mat: ShaderMaterial
@@ -219,6 +220,8 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	var G: int = Game.GRID
 	blocked.resize(G * G)
 	blocked.fill(0)
+	road_cells.resize(G * G)
+	road_cells.fill(0)
 	for cz in G:
 		for cx in G:
 			var mn = 999.0
@@ -549,6 +552,13 @@ func _build_mesh() -> void:
 	mat.set_shader_parameter("map_size", float(SIZE))
 	zone_tex = ImageTexture.create_from_image(_zone_image(128))
 	mat.set_shader_parameter("zone_tex", zone_tex)
+	var bio: Dictionary = load("res://scripts/biome.gd").of(self)
+	if bio.has("grass_a"):
+		var ca: Color = bio["grass_a"]
+		var cb: Color = bio["grass_b"]
+		mat.set_shader_parameter("bio_a", Vector3(ca.r, ca.g, ca.b))
+		mat.set_shader_parameter("bio_b", Vector3(cb.r, cb.g, cb.b))
+	mat.set_shader_parameter("snow_y", float(bio.get("snow_y", 999.0)))
 
 	var mi = MeshInstance3D.new()
 	mi.mesh = am
@@ -588,6 +598,7 @@ func _build_water() -> void:
 
 func _build_props() -> void:
 	load("res://scripts/vegetation.gd").build(self, seed_used)
+	load("res://scripts/doodads.gd").build(self, seed_used)
 
 ## Farbiges Abbild für die Minikarte.
 func minimap_image(res: int) -> Image:

@@ -99,5 +99,19 @@ func apply(h: float) -> void:
 		sun.rotation = Vector3(deg_to_rad(-elev), deg_to_rad(38.0 + (k - 0.5) * 80.0), 0.0)
 	else:
 		sun.rotation = Vector3(deg_to_rad(-38.0), deg_to_rad(38.0 + 180.0), 0.0)
-	Game.sight_mult = 1.0 - 0.28 * night_amount(h)
+	var rn: float = Game.rain
+	if rn > 0.01:
+		var grey := Color(0.36, 0.39, 0.43)
+		psm.sky_top_color = psm.sky_top_color.lerp(grey * 0.8, rn * 0.75)
+		psm.sky_horizon_color = psm.sky_horizon_color.lerp(grey, rn * 0.8)
+		psm.ground_horizon_color = psm.ground_horizon_color.lerp(grey, rn * 0.6)
+		sun.light_energy *= 1.0 - 0.55 * rn
+		env.ambient_light_energy *= 1.0 - 0.1 * rn
+		env.fog_light_color = env.fog_light_color.lerp(grey, rn * 0.7)
+		env.fog_density = 0.0016 + 0.0042 * rn
+		env.volumetric_fog_density = 0.006 + 0.01 * rn
+	else:
+		env.fog_density = 0.0016
+		env.volumetric_fog_density = 0.006
+	Game.sight_mult = (1.0 - 0.28 * night_amount(h)) * (1.0 - 0.18 * rn)
 	Game.hour = h

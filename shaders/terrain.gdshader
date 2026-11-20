@@ -1,5 +1,6 @@
 shader_type spatial;
 global uniform float world_size;
+global uniform float wetness;
 
 uniform sampler2D noise_tex : repeat_enable, filter_linear_mipmap;
 uniform sampler2D noise_n : hint_normal, repeat_enable, filter_linear_mipmap;
@@ -7,6 +8,9 @@ uniform sampler2D fog_tex : filter_linear, repeat_disable;
 uniform float map_size = 240.0;
 uniform sampler2D occ_tex : filter_linear, repeat_disable;
 uniform sampler2D zone_tex : filter_linear, repeat_disable;
+uniform float snow_y = 999.0;
+uniform vec3 bio_a = vec3(-1.0);
+uniform vec3 bio_b = vec3(-1.0);
 
 varying vec3 wpos;
 float fog_at(vec2 uv) {
@@ -30,7 +34,9 @@ void fragment() {
 	float n2 = texture(noise_tex, wpos.xz * 0.13 + vec2(0.37, 0.11)).r;
 	float n3 = texture(noise_tex, wpos.xz * 0.6).r;
 	vec4 zn = texture(zone_tex, wpos.xz / world_size + 0.5);
-	vec3 grass = mix(vec3(0.10, 0.17, 0.05), vec3(0.24, 0.30, 0.10), n2);
+	vec3 ga = bio_a.r < 0.0 ? vec3(0.10, 0.17, 0.05) : bio_a;
+	vec3 gb = bio_b.r < 0.0 ? vec3(0.24, 0.30, 0.10) : bio_b;
+	vec3 grass = mix(ga, gb, n2);
 	vec3 dirt = mix(vec3(0.22, 0.17, 0.11), vec3(0.40, 0.33, 0.22), n2);
 	// Vegetationszonen: trockene Steppe, Heide/Moor, Waldboden, Fels
 	grass = mix(grass, mix(vec3(0.38, 0.34, 0.15), vec3(0.54, 0.47, 0.23), n2), zn.r * 0.9);
@@ -45,6 +51,9 @@ void fragment() {
 	col = mix(col, rock, smoothstep(0.07, 0.2, slope + zn.a * 0.12));
 	col = mix(col, rock * 1.12, zn.a * 0.5);
 	col = mix(sand, col, smoothstep(-1.0, 0.1, wpos.y));
+	// Schneegrenze: ab snow_y Schnee, an Steilhaengen blankes Gestein
+	float snow = smoothstep(snow_y, snow_y + 1.6, wpos.y + (n2 - 0.5) * 1.8) * (1.0 - smoothstep(0.16, 0.34, slope));
+	col = mix(col, vec3(0.86, 0.89, 0.93) * (0.92 + 0.08 * n3), snow);
 	col *= 0.93 + 0.14 * n3;
 	float rough = 0.93;
 
@@ -73,6 +82,8 @@ void fragment() {
 	col = mix(col, cs, ms * (1.0 - mw) * (1.0 - mr));
 	rough = mix(rough, 0.78, max(mw, mr));
 
+	col *= 1.0 - 0.3 * wetness;
+	rough = mix(rough, 0.42, wetness);
 	float vis = fog_at(wpos.xz / world_size + 0.5);
 	ALBEDO = col * vis;
 	ROUGHNESS = rough;

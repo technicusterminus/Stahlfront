@@ -1,14 +1,100 @@
 {
   "model": "black-forest-labs/flux.2-pro",
   "images": [
-    {"id": "bio_concrete", "aspect_ratio": "1:1", "prompt": "Seamless tileable top-down texture swatch of weathered poured concrete wall: pale grey, subtle formwork seams, rain streaks, hairline cracks, patches of dark grime and a little green algae. Flat orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."},
-    {"id": "bio_brick", "aspect_ratio": "1:1", "prompt": "Seamless tileable texture swatch of old red-brown brick masonry: irregular hand-made bricks in running bond, pale lime mortar, soot stains and weathered chipped bricks. Flat frontal orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."},
-    {"id": "bio_plaster", "aspect_ratio": "1:1", "prompt": "Seamless tileable texture swatch of old weathered plaster facade: warm ochre and cream limewash, peeling patches that reveal brick underneath, hairline cracks and damp stains. Flat frontal orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."},
-    {"id": "bio_roof", "aspect_ratio": "1:1", "prompt": "Seamless tileable texture swatch of old clay roof tiles in overlapping rows: terracotta red-orange and brown, moss in the joints, a few cracked and missing tiles, lichen. Flat top-down orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."},
-    {"id": "bio_glass", "aspect_ratio": "1:1", "prompt": "Seamless tileable texture swatch of a modern glass curtain wall facade: regular grid of dark teal-blue glass panes with thin pale aluminium mullions, subtle sky reflections, light dust and a few smudges. Flat frontal orthographic view, even lighting, no perspective, no objects, no text, fills the whole frame, game albedo texture."},
-    {"id": "bio_asphalt", "aspect_ratio": "1:1", "prompt": "Seamless tileable top-down texture swatch of cracked old asphalt road: dark grey with fine aggregate, patched repairs, hairline cracks with tufts of moss and weeds in the cracks, faint faded paint remnants. Flat orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."},
-    {"id": "bio_rubble", "aspect_ratio": "1:1", "prompt": "Seamless tileable top-down texture swatch of collapsed building rubble: broken concrete chunks, brick fragments, dust, twisted rusty rebar and small glass shards, grey and brown dusty palette. Flat orthographic view, even diffuse lighting, no cast shadows, no perspective, no text, fills the whole frame, game albedo texture."},
-    {"id": "bio_thatch", "aspect_ratio": "1:1", "prompt": "Seamless tileable texture swatch of weathered straw thatch roofing: layered golden-grey straw bundles, darker moss streaks, rough fibrous surface. Flat top-down orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."},
-    {"id": "bio_corrugated", "aspect_ratio": "1:1", "prompt": "Seamless tileable texture swatch of old corrugated metal sheet cladding: vertical ribs, faded blue-grey and ochre paint flaking off, orange rust streaks and bolts, industrial hall wall. Flat frontal orthographic view, even diffuse lighting, no perspective, no objects, no text, fills the whole frame, game albedo texture."}
+    {
+      "id": "bio_concrete",
+      "aspect_ratio": "1:1",
+      "prompt": "Seamless tileable top-down texture swatch of weathered poured concrete wall: pale grey, subtle formwork seams, rain streaks, hairline cracks, patches of dark grime and a little green algae. Flat orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_brick",
+      "aspect_ratio": "1:1",
+      "prompt": "Seamless tileable texture swatch of old red-brown brick masonry: irregular hand-made bricks in running bond, pale lime mortar, soot stains and weathered chipped bricks. Flat frontal orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_plaster",
+      "aspect_ratio": "1:1",
+      "prompt": "Seamless tileable texture swatch of old weathered plaster facade: warm ochre and cream limewash, peeling patches that reveal brick underneath, hairline cracks and damp stains. Flat frontal orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_roof",
+      "aspect_ratio": "1:1",
+      "prompt": "Seamless tileable texture swatch of old clay roof tiles in overlapping rows: terracotta red-orange and brown, moss in the joints, a few cracked and missing tiles, lichen. Flat top-down orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_glass",
+      "aspect_ratio": "1:1",
+      "prompt": "Seamless tileable texture swatch of a modern glass curtain wall facade: regular grid of dark teal-blue glass panes with thin pale aluminium mullions, subtle sky reflections, light dust and a few smudges. Flat frontal orthographic view, even lighting, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_asphalt",
+      "aspect_ratio": "1:1",
+      "prompt": "Seamless tileable top-down texture swatch of cracked old asphalt road: dark grey with fine aggregate, patched repairs, hairline cracks with tufts of moss and weeds in the cracks, faint faded paint remnants. Flat orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_rubble",
+      "aspect_ratio": "1:1",
+      "prompt": "Seamless tileable top-down texture swatch of collapsed building rubble: broken concrete chunks, brick fragments, dust, twisted rusty rebar and small glass shards, grey and brown dusty palette. Flat orthographic view, even diffuse lighting, no cast shadows, no perspective, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_thatch",
+      "aspect_ratio": "1:1",
+      "prompt": "Seamless tileable texture swatch of weathered straw thatch roofing: layered golden-grey straw bundles, darker moss streaks, rough fibrous surface. Flat top-down orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_corrugated",
+      "aspect_ratio": "1:1",
+      "prompt": "Seamless tileable texture swatch of old corrugated metal sheet cladding: vertical ribs, faded blue-grey and ochre paint flaking off, orange rust streaks and bolts, industrial hall wall. Flat frontal orthographic view, even diffuse lighting, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_bark",
+      "aspect_ratio": "1:1",
+      "prompt": "Texture swatch of rough dark pine tree bark: deep vertical furrows, brown-grey ridges, patches of green moss and pale lichen, close-up orthographic view. Seamless tileable, flat even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_stone",
+      "aspect_ratio": "1:1",
+      "prompt": "Texture swatch of weathered grey granite boulder surface: fine grain, hairline cracks, orange and pale green lichen patches, subtle moss in crevices. Seamless tileable, flat even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_wood",
+      "aspect_ratio": "1:1",
+      "prompt": "Texture swatch of old weathered wooden planks: grey-brown boards with visible grain, knots, gaps between boards, rusty nail heads, faded paint remnants. Seamless tileable, flat even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_hay",
+      "aspect_ratio": "1:1",
+      "prompt": "Texture swatch of dry golden straw and hay: tangled stalks in all directions, pale yellow and tan with a few darker brown strands. Seamless tileable, flat even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_rust",
+      "aspect_ratio": "1:1",
+      "prompt": "Texture swatch of heavily rusted steel plate wreckage: orange-brown rust blooms, flaking olive-drab paint, bolts, scratches and dark soot streaks. Seamless tileable, flat even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."
+    },
+    {
+      "id": "bio_fac_glass",
+      "aspect_ratio": "1:1",
+      "prompt": "Facade of a modern glass skyscraper curtain wall: strict regular grid of tall dark teal-blue reflective glass panels with thin brushed-aluminium mullions and horizontal spandrel bands at every floor, faint cloud reflections, a few lit warm windows, light weathering. Perfectly flat frontal orthographic elevation, evenly lit, no perspective, no sky, no street, no people, no text, fills the whole frame, seamless tileable repeating pattern, game albedo texture."
+    },
+    {
+      "id": "bio_fac_office",
+      "aspect_ratio": "1:1",
+      "prompt": "Facade of a 1970s concrete office high-rise: pale grey precast concrete piers and horizontal ribbon windows with bronze-tinted glass, a repeating floor module, rain streaks and soot stains, slightly weathered. Perfectly flat frontal orthographic elevation, evenly lit, no perspective, no sky, no street, no people, no text, fills the whole frame, seamless tileable repeating pattern, game albedo texture."
+    },
+    {
+      "id": "bio_fac_deco",
+      "aspect_ratio": "1:1",
+      "prompt": "Facade of an old art-deco stone skyscraper: warm sandstone cladding with strongly vertical piers, narrow recessed dark windows with ornate metal spandrels between floors, soot and age stains, repeating bay module. Perfectly flat frontal orthographic elevation, evenly lit, no perspective, no sky, no street, no people, no text, fills the whole frame, seamless tileable repeating pattern, game albedo texture."
+    },
+    {
+      "id": "bio_fac_ruin",
+      "aspect_ratio": "1:1",
+      "prompt": "Facade of a derelict abandoned concrete skyscraper after years of neglect: grey concrete grid, many windows smashed and black, some with remaining dirty glass, vertical rust and rain streaks, moss, peeling panels, repeating floor module. Perfectly flat frontal orthographic elevation, evenly lit, no perspective, no sky, no street, no people, no text, fills the whole frame, seamless tileable repeating pattern, game albedo texture."
+    },
+    {
+      "id": "bio_rooftop",
+      "aspect_ratio": "1:1",
+      "prompt": "Top-down view of a flat skyscraper rooftop: grey gravel and bitumen membrane with scattered ventilation units, ducts, access hatches and pipes, pale concrete edging, evenly lit, orthographic, seamless tileable, no text, game albedo texture."
+    }
   ]
 }

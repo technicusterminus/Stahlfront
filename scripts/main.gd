@@ -1,7 +1,7 @@
 extends Node
 ## Einstieg: baut Welt, Licht, Gelände, Kamera, Oberfläche und startet Gefechte.
 ## Testschalter (nach "--"): --autostart --demo --faction=red --enemies=2 --difficulty=2
-##   --seed=N --speed=N --quit=SEK --shot=PFAD --shotdelay=SEK --camat=X,Z --revealall
+##   --seed=N --speed=N --quit=SEK --shot=PFAD --shotdelay=SEK --camat=X,Z --revealall --rain=0..1
 
 const AIScript = preload("res://scripts/ai.gd")
 const CameraScript = preload("res://scripts/camera_rts.gd")
@@ -242,6 +242,9 @@ func _environment() -> void:
 	dn.cycle_minutes = float(args.get("daycycle", "0"))
 	dn.setup(env, psm, sun)
 	Game.daynight = dn
+	var wx = load("res://scripts/weather.gd").new()
+	wx.name = "Weather"
+	add_child(wx)
 
 func start_match(cfg: Dictionary) -> void:
 	if cfg.has("map"):
@@ -252,6 +255,12 @@ func start_match(cfg: Dictionary) -> void:
 		Game.daynight.configure(float(cfg["hour"]), float(cfg.get("daycycle", 0.0)))
 	if args.has("hour") and args.has("mission"):
 		Game.daynight.configure(float(args["hour"]), 0.0)
+	Game.rain = 0.0
+	Game.rain_target = 0.0
+	var rain_cfg: float = float(args.get("rain", cfg.get("rain", 0.0) if cfg.has("mission") else 0.0))
+	if rain_cfg > 0.0:
+		Game.rain = rain_cfg
+		Game.rain_target = rain_cfg
 	Game.spectator = cfg["spectate"]
 	Game.difficulty = cfg["difficulty"]
 	Game.human = 0
@@ -306,6 +315,8 @@ func start_match(cfg: Dictionary) -> void:
 		add_child(runner)
 		runner.setup(load("res://scripts/missions.gd").by_id(String(cfg["mission"])), self)
 	Game.running = true
+	if Game.rain_target > 0.0:
+		Game.set_rain(Game.rain_target)
 	if args.has("revealall"):
 		Game.explore(Vector3(0, 0, 0), 400.0)
 	Game.update_fog()

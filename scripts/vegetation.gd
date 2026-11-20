@@ -36,6 +36,8 @@ static func build(t, seed_val: int) -> void:
 	var reeds := {}
 	var bushes := {}
 	var flats: Array = t.flat_list
+	var bio: Dictionary = load("res://scripts/biome.gd").of(t)
+	var gdens: float = float(bio.get("grass_dens", 1.0))
 
 	var lim: float = Game.HALF - 8.0
 	var x: float = -lim
@@ -59,7 +61,7 @@ static func build(t, seed_val: int) -> void:
 			var zr: Color = t.zone_at(px, pz)
 			var meadow = max(1.0 - (zr.r + zr.g + zr.b + zr.a), 0.0)
 			var dmul = meadow + zr.r * 0.75 + zr.g * 0.9 + zr.b * 0.95 + zr.a * 0.22
-			if rng.randf() > d * 1.15 * dmul:
+			if rng.randf() > d * 1.15 * dmul * gdens:
 				continue
 			var dr = clamp(dry.get_noise_2d(px, pz) * 1.6 + 0.2, 0.0, 1.0)
 			var gc = Color(0.55, 0.8, 0.4).lerp(Color(0.95, 0.85, 0.5), dr * 0.7)
@@ -67,6 +69,8 @@ static func build(t, seed_val: int) -> void:
 			# Farbe nach Zone: Steppe strohgelb, Heide rötlich-braun, Waldboden dunkel, Fels grau-grün
 			gc = gc.lerp(Color(0.9, 0.8, 0.42), zr.r * 0.8).lerp(Color(0.62, 0.46, 0.44), zr.g * 0.8)
 			gc = gc.lerp(Color(0.28, 0.48, 0.26), zr.b * 0.7).lerp(Color(0.56, 0.6, 0.46), zr.a * 0.7)
+			if bio.has("blade"):
+				gc = gc.lerp(bio["blade"], float(bio["blade_amt"]) * (0.75 + rng.randf() * 0.4))
 			var gs = rng.randf_range(0.7, 1.3)
 			var pick = rng.randf()
 			if pick < zr.g * 0.9 + zr.a * 0.85:
@@ -250,11 +254,15 @@ static func _trees(t, rng, kind) -> void:
 	var conif_m = _foliage(Color(0.45, 0.55, 0.42), Color(0.8, 0.95, 0.7), 0.1, 6.0, false, 0.2)
 	var leafy_m = _foliage(Color(0.5, 0.6, 0.4), Color(1.0, 1.05, 0.8), 0.14, 5.0, false, 0.35)
 
+	var bio: Dictionary = load("res://scripts/biome.gd").of(t)
+	var tmul: float = float(bio.get("trees", 1.0))
 	var trunks := []
 	var cons := []
 	var leafs := []
 	for c in t.tree_cells:
 		for k in 2:
+			if tmul < 1.0 and rng.randf() > tmul:
+				continue
 			var x: float = c.x * 2.0 - Game.HALF + rng.randf_range(0.2, 1.8)
 			var z: float = c.y * 2.0 - Game.HALF + rng.randf_range(0.2, 1.8)
 			var y: float = t.height_at(x, z)
@@ -262,11 +270,21 @@ static func _trees(t, rng, kind) -> void:
 			var b = Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s))
 			trunks.append([Transform3D(b, Vector3(x, y + 1.2 * s, z)), Color(1, 1, 1)])
 			var is_conifer = y > 4.0 or kind.get_noise_2d(x, z) > 0.0
+			if bio.has("conifer"):
+				var cf: float = float(bio["conifer"])
+				is_conifer = rng.randf() < cf if y < 4.0 or cf < 0.5 else true
+			var dead: bool = rng.randf() < float(bio.get("dead", 0.0))
 			if is_conifer:
 				var g = Color(0.14, 0.28, 0.13).lerp(Color(0.2, 0.3, 0.12), rng.randf())
+				if dead:
+					g = Color(0.2, 0.17, 0.13)
 				cons.append([Transform3D(b, Vector3(x, y, z)), g])
 			else:
 				var g2 = Color(0.25, 0.42, 0.15).lerp(Color(0.5, 0.48, 0.15), rng.randf() * 0.4)
+				if bio.has("leaf"):
+					g2 = g2.lerp(bio["leaf"], float(bio["leaf_amt"]))
+				if dead:
+					g2 = Color(0.22, 0.18, 0.13)
 				var bl = b.scaled(Vector3(1.0, rng.randf_range(0.85, 1.15), 1.0))
 				leafs.append([Transform3D(bl, Vector3(x, y + 2.1 * s, z)), g2])
 	_emit_list(t, trunks, trunk, fog_trunk, true)
@@ -307,7 +325,8 @@ static func _rocks(t, rng) -> void:
 	m.set_shader_parameter("noise_n", nn)
 	var meshes = [_rock_mesh(rng), _rock_mesh(rng), _rock_mesh(rng)]
 	var lists = [[], [], []]
-	for i in 1400:
+	var rbio: Dictionary = load("res://scripts/biome.gd").of(t)
+	for i in int(1400 * float(rbio.get("rocks", 1.0))):
 		var x = rng.randf_range(-110, 110)
 		var z = rng.randf_range(-110, 110)
 		var n: Vector3 = t.normal_at(x, z)

@@ -43,5 +43,55 @@
     "id": "bio_corrugated",
     "model": "black-forest-labs/flux.2-pro",
     "cost": 0.03
+  },
+  {
+    "id": "bio_bark",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_stone",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_wood",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_hay",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_rust",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_fac_glass",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_fac_office",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_fac_deco",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_fac_ruin",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_rooftop",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
   }
 ]

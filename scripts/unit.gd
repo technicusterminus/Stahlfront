@@ -408,6 +408,8 @@ func _follow(delta: float) -> bool:
 		d = Game.flat_dist(position, p)
 	var dir = Vector3(p.x - position.x, 0, p.z - position.z).normalized()
 	var spd: float = def["speed"]
+	if not flying and not naval:
+		spd *= Game.ground_speed_mult(position)
 	if last and d < 3.0:
 		spd *= max(d / 3.0, 0.35)
 	want = dir * spd

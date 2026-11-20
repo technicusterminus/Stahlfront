@@ -445,6 +445,7 @@ func start_mission(id: String) -> void:
 	_cfg["difficulty"] = int(m.get("difficulty", 1))
 	_cfg["map"] = Maps.clean(m["map"])
 	_cfg["hour"] = float(m.get("hour", 9.0))
+	_cfg["rain"] = float(m.get("rain", 0.0))
 	_cfg["daycycle"] = 0.0
 	_cfg["mission"] = id
 	if m.has("enemy_faction"):
@@ -751,6 +752,7 @@ func _process(delta: float) -> void:
 	if Game.daynight != null:
 		lbl_daytime.text = Game.daynight.clock_text(Game.hour)
 		var nightly = Game.daynight.night_amount(Game.hour)
+		RenderingServer.global_shader_parameter_set("night", float(nightly))
 		lbl_daytime.add_theme_color_override("font_color", Color(1.0, 0.9, 0.6).lerp(Color(0.6, 0.75, 1.0), nightly))
 	_refresh_t -= delta
 	var sig = _selection_sig()

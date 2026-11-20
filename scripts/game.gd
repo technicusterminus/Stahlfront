@@ -9,7 +9,37 @@ var mission = null
 var pending_mission := ""
 var pending_menu := false
 var mission_faction := "west"
-var sites := {}   # benannte Orte der Karte (Name -> Weltposition), siehe settlement.gd
+var sites := {}
+var rain := 0.0          # aktuelle Regenstaerke 0..1 (laeuft auf rain_target zu)
+var rain_target := 0.0
+
+## Faktor fuer die Bodengeschwindigkeit: bei Regen langsamer, ausser auf Strassen.
+func ground_speed_mult(pos: Vector3) -> float:
+	if rain < 0.03:
+		return 1.0
+	if on_road(pos):
+		return 1.0
+	return 1.0 - 0.4 * rain
+
+func on_road(pos: Vector3) -> bool:
+	if terrain == null or terrain.road_cells.size() != GRID * GRID:
+		return false
+	var c: Vector2i = world_to_cell(pos)
+	if c.x < 0 or c.y < 0 or c.x >= GRID or c.y >= GRID:
+		return false
+	return terrain.road_cells[c.y * GRID + c.x] == 1
+
+## Regen setzen (0 = trocken); Wegsuche bevorzugt dann Strassen.
+func set_rain(target: float) -> void:
+	rain_target = clampf(target, 0.0, 1.0)
+	if astar == null or terrain == null or terrain.road_cells.size() != GRID * GRID:
+		return
+	var w: float = 1.0 if rain_target < 0.25 else 0.55
+	for z in GRID:
+		for x in GRID:
+			if terrain.road_cells[z * GRID + x] == 1:
+				astar.set_point_weight_scale(Vector2i(x, z), w)
+   # benannte Orte der Karte (Name -> Weltposition), siehe settlement.gd
 
 const CELL := 2.0
 var GRID := 120        # Zellen je Seite (Weltgröße / CELL)
@@ -112,6 +142,8 @@ func _ready() -> void:
 	BuildingScript = load("res://scripts/building.gd")
 	DepotScript = load("res://scripts/depot.gd")
 	RenderingServer.global_shader_parameter_add("world_size", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 240.0)
+	RenderingServer.global_shader_parameter_add("night", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0)
+	RenderingServer.global_shader_parameter_add("wetness", RenderingServer.GLOBAL_VAR_TYPE_FLOAT, 0.0)
 	setup_world(240)
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 
