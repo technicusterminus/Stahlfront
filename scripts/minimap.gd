@@ -36,7 +36,11 @@ func _update_fog() -> void:
 		data[i * 4 + 2] = 8
 		data[i * 4 + 3] = a
 	fog_img.set_data(Game.GRID, Game.GRID, false, Image.FORMAT_RGBA8, data)
-	fog_tex.update(fog_img)
+	if fog_tex.get_width() != Game.GRID or fog_tex.get_height() != Game.GRID:
+		# Kartengröße hat sich seit dem Anlegen geändert: Textur passend neu erzeugen
+		fog_tex = ImageTexture.create_from_image(fog_img)
+	else:
+		fog_tex.update(fog_img)
 
 func w2m(p: Vector3) -> Vector2:
 	return Vector2((p.x + Game.HALF) / (Game.HALF * 2.0) * size.x, (p.z + Game.HALF) / (Game.HALF * 2.0) * size.y)

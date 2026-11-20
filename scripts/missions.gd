@@ -241,6 +241,7 @@ static func _c1() -> Dictionary:
 		"map": {"name": "Port Meridian", "size": 320, "water": 0.5, "islands": 0.2, "resources": 0.6, "hills": 0.4, "forest": 0.5, "layout": 3, "seed": 5101, "biome": "coast", "sites": PORT_SITES},
 		"hour": 20.0, "difficulty": 1, "credits": 4500, "ai": "off",
 		"intro": [
+			at(0.2, {"do": "still", "id": "s_c1_intro", "secs": 11.0}),
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 10], "dist": 130.0, "yaw": 25.0, "pitch": -34.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "at": ["me", 0, 14], "dist": 58.0, "yaw": -8.0, "pitch": -50.0, "time": 14.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 1", "sub": "PORT MERIDIAN  ·  Jahr 15 nach dem Blackout", "secs": 6.0}),
@@ -249,6 +250,7 @@ static func _c1() -> Dictionary:
 			at(3.0, radio("Elin Voss", C_ELIN, "Und stellt euch auf Besuch ein. Die Berge sind nicht so still, wie sie aussehen.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
+			at(0.2, {"do": "still", "id": "s_c1_outro", "secs": 9.0}),
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 10], "dist": 85.0, "yaw": 70.0, "pitch": -26.0, "time": 12.0}),
 			at(1.0, radio("Elin Voss", C_ELIN, "Port Meridian steht. Sie haben es nicht geschafft, uns im Dunkeln zu nehmen.")),
 			at(1.0, radio("ORAKEL", C_ORAKEL, "Die Wahrscheinlichkeit eines Kontakts mit dem Prisma steigt auf 88 Prozent.")),
@@ -340,6 +342,7 @@ static func _c2() -> Dictionary:
 			{"do": "spawn", "side": "enemy", "def": "aa", "n": 2, "at": ["en", -4, 28], "spread": 8.0, "dmg": 0.12},
 			{"do": "spawn", "side": "enemy", "def": "tank", "n": 3, "at": ["en", 10, 10], "spread": 8.0}],
 		"intro": [
+			at(0.2, {"do": "still", "id": "s_c2_intro", "secs": 11.0}),
 			at(0.0, {"do": "cam_to", "tag": "wing", "dist": 30.0, "yaw": -40.0, "pitch": -22.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "tag": "wing", "dist": 52.0, "yaw": 10.0, "pitch": -36.0, "time": 11.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 2", "sub": "DER FALKE FLIEGT  ·  Eisenkamm", "secs": 6.0}),
@@ -348,6 +351,7 @@ static func _c2() -> Dictionary:
 			at(3.0, radio("Elin Voss", C_ELIN, "Das habe ich befürchtet. Viel Glück.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
+			at(0.2, {"do": "still", "id": "s_c2_outro", "secs": 9.0}),
 			at(0.0, {"do": "cam_to", "tag": "wing", "dist": 48.0, "yaw": -20.0, "pitch": -30.0, "time": 8.0}),
 			at(1.0, radio("Elin Voss", C_ELIN, "Falke, gute Arbeit. Aber wer hat die Daten zurückgehalten?")),
 			at(1.0, radio("Falke", C_FALKE, "Ich habe sofort gefunkt, Chefin. Wenn nichts ankam, hat uns jemand im eigenen Netz abgewürgt.")),
@@ -398,6 +402,7 @@ static func _c3() -> Dictionary:
 			{"do": "spawn", "side": "me", "def": "inf", "n": 6, "at": ["me", 0, 26], "spread": 8.0},
 			{"do": "spawn", "side": "me", "def": "at", "n": 3, "at": ["me", 6, 28], "spread": 4.0}],
 		"intro": [
+			at(0.2, {"do": "still", "id": "s_c3_intro", "secs": 11.0}),
 			at(0.0, {"do": "cam_to", "tag": "convoy", "dist": 34.0, "yaw": 50.0, "pitch": -24.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "tag": "convoy", "dist": 60.0, "yaw": 5.0, "pitch": -44.0, "time": 12.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 3", "sub": "DER PASS  ·  Konvoi Eisenkamm", "secs": 6.0}),
@@ -405,6 +410,7 @@ static func _c3() -> Dictionary:
 			at(3.0, radio("Mira Tanaka", C_MIRA, "Glas an Konvoi. Ich sitze auf Wagen vier. Ich traue dem Funkschatten nicht.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
+			at(0.2, {"do": "still", "id": "s_c3_outro", "secs": 9.0}),
 			at(0.0, {"do": "cam_to", "at": ["mid", 0, 0], "dist": 70.0, "yaw": -30.0, "pitch": -28.0, "time": 10.0}),
 			at(1.0, radio("Mira Tanaka", C_MIRA, "Drohne. Westbund-Kennung, Signal aus.")),
 			at(1.0, radio("Dr. Brandt", C_BRANDT, "Das kann nicht sein. Das würde bedeuten, dass wir...")),
@@ -470,6 +476,7 @@ static func _c4() -> Dictionary:
 			{"do": "spawn", "side": "enemy", "def": "tech", "n": 3, "at": ["mid", -4, -4], "spread": 6.0, "tag": "bridge"},
 			{"do": "spawn", "side": "enemy", "def": "aa", "n": 2, "at": ["mid", 10, -6], "spread": 4.0, "tag": "bridge"}],
 		"intro": [
+			at(0.2, {"do": "still", "id": "s_c4_intro", "secs": 11.0}),
 			at(0.0, {"do": "cam_to", "at": ["mid", -10, 0], "dist": 120.0, "yaw": 30.0, "pitch": -32.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "at": ["me", 0, 26], "dist": 56.0, "yaw": 0.0, "pitch": -46.0, "time": 12.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 4", "sub": "DIE BRÜCKE ÜBER LYSA", "secs": 6.0}),
@@ -478,6 +485,7 @@ static func _c4() -> Dictionary:
 			at(3.0, radio("Falke", C_FALKE, "Falke hat den Himmel. Und ein ungutes Gefühl bei den Felsen, Chefin.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
+			at(0.2, {"do": "still", "id": "s_c4_outro", "secs": 9.0}),
 			at(0.0, {"do": "hour", "h": 22.0}),
 			at(0.0, {"do": "flash", "col": Color(0, 0, 0), "secs": 1.4}),
 			at(0.0, {"do": "cam_to", "at": ["mid", 22, 0], "dist": 60.0, "yaw": 100.0, "pitch": -22.0, "time": 14.0}),
@@ -537,6 +545,7 @@ static func _c5() -> Dictionary:
 			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["mid", 22, -22], "spread": 1.0, "tag": "falke", "hp": 3.4, "speed": 0.65},
 			{"do": "spawn", "side": "me", "def": "shadow_harv", "n": 1, "at": ["mid", 24, -24], "spread": 1.0, "tag": "pip", "speed": 0.7}],
 		"intro": [
+			at(0.2, {"do": "still", "id": "s_c5_intro", "secs": 11.0}),
 			at(0.0, {"do": "cam_to", "tag": "falke", "dist": 28.0, "yaw": 20.0, "pitch": -26.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "tag": "falke", "dist": 50.0, "yaw": -15.0, "pitch": -40.0, "time": 12.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 5", "sub": "ZEUGEN  ·  Das Lazarett am Eisenkamm", "secs": 6.0}),
@@ -545,6 +554,7 @@ static func _c5() -> Dictionary:
 			at(3.0, radio("Mira Tanaka", C_MIRA, "Glas an Lazarett. Falke, ich komme dich holen. Und ich bringe etwas mit.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
+			at(0.2, {"do": "still", "id": "s_c5_outro", "secs": 9.0}),
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 20], "dist": 64.0, "yaw": 40.0, "pitch": -26.0, "time": 12.0}),
 			at(1.0, radio("Dr. Brandt", C_BRANDT, "Die Spur ist echt. Die Drohne stammt aus dem Bestand des Rates. Die Kennung ist gelöscht, aber die Seriennummer nicht.")),
 			at(1.0, radio("Elin Voss", C_ELIN, "ORAKEL hat den Konvoi beschießen lassen, um den Rat in den Krieg zu treiben. Und es kennt das Signal über den Kavernen seit über einem Jahr.")),
@@ -631,6 +641,7 @@ static func _c6() -> Dictionary:
 			{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 6, "at": ["mid", -14, 48], "spread": 9.0, "tag": "city"},
 			{"do": "spawn", "side": "enemy", "def": "shadow_tech", "n": 3, "at": ["mid", -18, 50], "spread": 7.0, "tag": "city"}],
 		"intro": [
+			at(0.2, {"do": "still", "id": "s_c6_intro", "secs": 11.0}),
 			at(0.0, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 120.0, "yaw": 20.0, "pitch": -34.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 72.0, "yaw": -30.0, "pitch": -26.0, "time": 8.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 6", "sub": "DIE NACHT VON AURELIA", "secs": 6.0}),
@@ -640,6 +651,7 @@ static func _c6() -> Dictionary:
 			at(4.0, {"do": "cam_to", "at": ["me", 0, 28], "dist": 56.0, "yaw": 0.0, "pitch": -44.0, "time": 3.0}),
 			at(7.0, {"do": "end"})],
 		"outro": [
+			at(0.2, {"do": "still", "id": "s_c6_outro", "secs": 9.0}),
 			at(0.0, {"do": "flash", "col": Color(0.5, 0.9, 1.0), "secs": 1.4}),
 			at(0.0, {"do": "shake", "n": 2.0}),
 			at(0.0, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 34.0, "yaw": 15.0, "pitch": -26.0, "time": 12.0}),
@@ -728,6 +740,7 @@ static func _c7() -> Dictionary:
 			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["mid", 0, 50], "spread": 1.0, "tag": "mira", "hp": 6.0},
 			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["mid", 2, 50], "spread": 1.0, "tag": "brandt", "hp": 4.0}],
 		"intro": [
+			at(0.2, {"do": "still", "id": "s_c7_intro", "secs": 11.0}),
 			at(0.0, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 64.0, "yaw": 160.0, "pitch": -30.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 40.0, "yaw": 200.0, "pitch": -22.0, "time": 8.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 7", "sub": "DAS LICHT", "secs": 6.0}),
@@ -735,6 +748,7 @@ static func _c7() -> Dictionary:
 			at(3.0, radio("Elin Voss", C_ELIN, "Ich weiß. Ich habe es berechnet, so gut ich konnte. Es ist der einzige Weg.")),
 			at(6.0, {"do": "end"})],
 		"outro": [
+			at(0.2, {"do": "still", "id": "s_c7_outro", "secs": 9.0}),
 			at(0.0, {"do": "hour", "h": 6.0}),
 			at(0.0, {"do": "flash", "col": Color(1.0, 0.97, 0.9), "secs": 2.2}),
 			at(0.0, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 70.0, "yaw": 20.0, "pitch": -26.0, "time": 18.0}),
@@ -799,6 +813,7 @@ static func _r1() -> Dictionary:
 		"map": {"name": "Kessel-Ost", "size": 320, "water": 0.2, "islands": 0.0, "resources": 0.7, "hills": 0.3, "forest": 0.3, "layout": 1, "seed": 5201, "biome": "steppe", "sites": KESSEL_SITES},
 		"hour": 6.0, "difficulty": 1, "credits": 4500, "ai": "off",
 		"intro": [
+			at(0.2, {"do": "still", "id": "s_r1_intro", "secs": 11.0}),
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 10], "dist": 130.0, "yaw": 160.0, "pitch": -34.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "at": ["me", 0, 14], "dist": 56.0, "yaw": 190.0, "pitch": -48.0, "time": 14.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 1", "sub": "DIE HALLE IN KESSEL-OST  ·  Jahr 15 nach dem Blackout", "secs": 6.0}),
@@ -807,6 +822,7 @@ static func _r1() -> Dictionary:
 			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "Mit dem Kessel, Dmitri. Wie immer.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
+			at(0.2, {"do": "still", "id": "s_r1_outro", "secs": 9.0}),
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 10], "dist": 85.0, "yaw": 200.0, "pitch": -26.0, "time": 12.0}),
 			at(1.0, radio("Ilja Wolkow", C_WOLKOW, "Kessel-Ost steht. Wer uns im Dunkeln nehmen wollte, hat sich an Eisen die Zähne ausgebissen.")),
 			at(1.0, radio("Irina Zeljenko", C_ZELJENKO, "Der Rat der Genossen erwartet jetzt Ergebnisse, Marschall: Wann marschieren wir?")),
@@ -891,6 +907,7 @@ static func _r2() -> Dictionary:
 			{"do": "spawn", "side": "me", "def": "inf", "n": 5, "at": ["me", 2, 22], "spread": 4.0, "tag": "escort"},
 			{"do": "spawn", "side": "me", "def": "tank", "n": 2, "at": ["me", -4, 24], "spread": 4.0, "tag": "escort"}],
 		"intro": [
+			at(0.2, {"do": "still", "id": "s_r2_intro", "secs": 11.0}),
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 18], "dist": 90.0, "yaw": 30.0, "pitch": -32.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "at": ["me", 0, 18], "dist": 40.0, "yaw": -20.0, "pitch": -38.0, "time": 9.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 2", "sub": "DAS SIGNAL", "secs": 6.0}),
@@ -898,6 +915,7 @@ static func _r2() -> Dictionary:
 			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "Der Rat darf davon nichts erfahren, Nastja. Geh dem Signal nach, unauffällig.")),
 			at(6.0, {"do": "end"})],
 		"outro": [
+			at(0.2, {"do": "still", "id": "s_r2_outro", "secs": 9.0}),
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 18], "dist": 60.0, "yaw": 100.0, "pitch": -28.0, "time": 12.0}),
 			at(1.0, radio("Nastja Petrowa", C_NASTJA, "Hier sind meine Notizen, Marschall. Der Puls kommt aus der Tiefe. Und die zweite Frequenz kommt aus dem Westen.")),
 			at(1.0, radio("Ilja Wolkow", C_WOLKOW, "Behalte das für dich, bis wir mehr wissen.")),
@@ -962,6 +980,7 @@ static func _r3() -> Dictionary:
 			{"do": "spawn", "side": "me", "def": "inf", "n": 8, "at": ["me", 0, 26], "spread": 8.0, "tag": "army"},
 			{"do": "spawn", "side": "me", "def": "at", "n": 2, "at": ["me", 6, 28], "spread": 4.0, "tag": "army"}],
 		"intro": [
+			at(0.2, {"do": "still", "id": "s_r3_intro", "secs": 11.0}),
 			at(0.0, {"do": "cam_to", "tag": "convoy", "dist": 34.0, "yaw": 50.0, "pitch": -24.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "tag": "convoy", "dist": 60.0, "yaw": 5.0, "pitch": -44.0, "time": 12.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 3", "sub": "DER PASS  ·  Vierhundert Familien", "secs": 6.0}),
@@ -969,6 +988,7 @@ static func _r3() -> Dictionary:
 			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "Dann bring sie heil rüber, Dmitri. Das ist der ganze Auftrag.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
+			at(0.2, {"do": "still", "id": "s_r3_outro", "secs": 9.0}),
 			at(0.0, {"do": "cam_to", "at": ["mid", 0, 0], "dist": 70.0, "yaw": -30.0, "pitch": -28.0, "time": 10.0}),
 			at(1.0, radio("Dmitri Karpow", C_FUNKE, "Zwölf habe ich rausgeholt, Marschall. Der Junge sagt kein Wort. Ich habe ihm mein Brot gegeben, und er hat meine Hand nicht losgelassen.")),
 			at(1.0, radio("Ilja Wolkow", C_WOLKOW, "Zweihundertzwölf Namen habe ich gezählt. Ich will die, die das getan haben.")),

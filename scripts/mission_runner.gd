@@ -25,6 +25,18 @@ var _obj_labels := {}
 var _radio_panel: PanelContainer
 var _radio_who: Label
 var _radio_text: Label
+var _radio_frame: PanelContainer
+var _radio_pic: TextureRect
+var _still: TextureRect
+var _still_tw: Tween
+var _portrait_cache := {}
+# Sprecher -> Porträtdatei unter models/story/ (tools/art/story_art.py)
+const PORTRAITS := {
+	"Ausbilderin Vogt": "p_vogt", "Elin Voss": "p_elin", "Falke": "p_falke", "Mira Tanaka": "p_mira", "ORAKEL": "p_orakel",
+	"Unbekannte Stimme": "p_orakel", "Dr. Brandt": "p_brandt", "Henrik Aldane": "p_aldane", "Lena Voss": "p_lena",
+	"Mutter Karga": "p_karga", "Ilja Wolkow": "p_wolkow", "Nastja Petrowa": "p_nastja", "Dmitri Karpow": "p_funke",
+	"Irina Zeljenko": "p_irina", "Oberst Lasarew": "p_lasarew", "Hauptmann Reyes": "p_reyes",
+}
 var _radio_queue: Array = []
 var _radio_left := 0.0
 var _briefing: Control = null
@@ -278,6 +290,8 @@ func _do(a: Dictionary) -> void:
 				u.cmd_move(_pos(a["to"]) + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)))
 		"cam_to":
 			_cam_to(a)
+		"still":
+			_show_still(String(a["id"]), float(a.get("secs", 8.0)))
 		"title":
 			_title(String(a.get("text", "")), String(a.get("sub", "")), float(a.get("secs", 4.5)))
 		"banner":
@@ -714,12 +728,36 @@ func _build_ui() -> void:
 	_radio_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_radio_panel.visible = false
 	_layer.add_child(_radio_panel)
+	var rh = HBoxContainer.new()
+	rh.add_theme_constant_override("separation", 12)
+	_radio_panel.add_child(rh)
+	_radio_frame = PanelContainer.new()
+	_radio_frame.custom_minimum_size = Vector2(92, 92)
+	_radio_frame.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_radio_frame.visible = false
+	rh.add_child(_radio_frame)
+	_radio_pic = TextureRect.new()
+	_radio_pic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_radio_pic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_radio_pic.custom_minimum_size = Vector2(88, 88)
+	_radio_frame.add_child(_radio_pic)
 	var rv = VBoxContainer.new()
 	rv.add_theme_constant_override("separation", 2)
-	_radio_panel.add_child(rv)
+	rv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rh.add_child(rv)
+	# Standbild für Filmsequenzen: ganz unten in der Ebene, unter Balken, Titel und Funkfenster
+	_still = TextureRect.new()
+	_still.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_still.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_still.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_still.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_still.modulate.a = 0.0
+	_layer.add_child(_still)
+	_layer.move_child(_still, 0)
 	_radio_who = _lbl("", 14)
 	rv.add_child(_radio_who)
 	_radio_text = _lbl("", 16)
+	_radio_text.custom_minimum_size = Vector2(540, 0)
 	rv.add_child(_radio_text)
 	pc.visible = false
 	_obj_box.get_parent().visible = false
@@ -811,14 +849,56 @@ func _radio_tick(delta: float) -> void:
 		_radio_who.text = String(r["who"]).to_upper() + "  ·  Funk"
 		_radio_who.add_theme_color_override("font_color", r["col"])
 		_radio_text.text = String(r["text"])
+		var tex = _portrait(String(PORTRAITS.get(String(r["who"]), "")))
+		_radio_pic.texture = tex
+		_radio_frame.visible = tex != null
+		_radio_frame.add_theme_stylebox_override("panel", _style(Color(0.0, 0.0, 0.0, 0.7), r["col"]))
 		var secs: float = float(r["secs"])
 		_radio_left = secs if secs > 0.0 else clamp(3.0 + String(r["text"]).length() / 16.0, 4.0, 11.0)
 		var spoken: float = Audio.line(String(r["text"]))
 		if spoken > 0.0:
 			_radio_left = spoken + 0.9
 			print("MISSION %s: gesprochen %.1f s | %s" % [m["id"], spoken, String(r["text"]).substr(0, 50)])
+		_radio_panel.position.y = 112.0 if _cine else 78.0
 		_radio_panel.visible = true
+		_radio_panel.reset_size()
+		get_tree().create_timer(0.08).timeout.connect(_radio_panel.reset_size)
 		Audio.sfx("ui_click", 0.0, 1.3)
+
+func _portrait(id: String) -> Texture2D:
+	if id == "":
+		return null
+	if _portrait_cache.has(id):
+		return _portrait_cache[id]
+	var path := "res://models/story/%s.jpg" % id
+	var tex: Texture2D = load(path) if ResourceLoader.exists(path) else null
+	_portrait_cache[id] = tex
+	return tex
+
+## Standbild einblenden: Einblenden, langsame Kamerafahrt (Zoom und Schwenk), Ausblenden.
+func _show_still(id: String, secs: float) -> void:
+	var path := "res://models/story/%s.jpg" % id
+	if not ResourceLoader.exists(path):
+		return
+	if _still_tw != null and _still_tw.is_valid():
+		_still_tw.kill()
+	_still.texture = load(path)
+	_still.pivot_offset = _still.size * Vector2(0.5, 0.5)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = id.hash()
+	var drift := Vector2(rng.randf_range(-26.0, 26.0), rng.randf_range(-14.0, 14.0))
+	_still.scale = Vector2.ONE * 1.02
+	_still.position = Vector2.ZERO
+	_still.modulate.a = 0.0
+	_still_tw = create_tween().set_parallel(true)
+	_still_tw.tween_property(_still, "scale", Vector2.ONE * 1.10, secs).set_trans(Tween.TRANS_SINE)
+	_still_tw.tween_property(_still, "position", drift, secs).set_trans(Tween.TRANS_SINE)
+	var fade := create_tween()
+	fade.tween_property(_still, "modulate:a", 1.0, 1.1)
+	fade.tween_interval(max(0.5, secs - 2.4))
+	fade.tween_property(_still, "modulate:a", 0.0, 1.3)
+	_cine_tweens.append(_still_tw)
+	_cine_tweens.append(fade)
 
 func _show_briefing() -> void:
 	get_tree().paused = true
@@ -955,6 +1035,7 @@ func _end_cine() -> void:
 	Audio.stop_line()
 	_radio_panel.visible = false
 	_title_box.modulate.a = 0.0
+	_still.modulate.a = 0.0
 	Game.cam.edge_scroll = _cam_edge
 	Game.cam.set_process_unhandled_input(true)
 	Game.hud.set_game_ui(true)
