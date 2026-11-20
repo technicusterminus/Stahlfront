@@ -146,6 +146,26 @@ func fog_material(tint: Color, rough: float, glow := 0.0) -> ShaderMaterial:
 	_fog_mats[key] = m
 	return m
 
+## Material der Rohstoffvorkommen: Farbtextur aus models/resources, dreiseitig oder über die Mesh-UV projiziert, mit Nebel des Krieges.
+func resource_material(tex_id: String, tint: Color, rough: float, tex_scale: float, vein: float, metal: float, use_uv: bool) -> ShaderMaterial:
+	var key = "res_%s_%s_%s_%s_%s_%s_%s" % [tex_id, tint.to_html(), rough, tex_scale, vein, metal, use_uv]
+	if _fog_mats.has(key):
+		return _fog_mats[key]
+	var m = ShaderMaterial.new()
+	m.shader = load("res://shaders/resource.gdshader")
+	var path = "res://models/resources/%s_albedo.png" % tex_id
+	if ResourceLoader.exists(path):
+		m.set_shader_parameter("albedo_tex", load(path))
+	m.set_shader_parameter("tint", tint)
+	m.set_shader_parameter("rough", rough)
+	m.set_shader_parameter("tex_scale", tex_scale)
+	m.set_shader_parameter("vein_glow", vein)
+	m.set_shader_parameter("metal", metal)
+	m.set_shader_parameter("use_uv", use_uv)
+	m.set_shader_parameter("fog_tex", fog_tex)
+	_fog_mats[key] = m
+	return m
+
 # ---------------------------------------------------------------- Raster
 
 func init_grid() -> void:

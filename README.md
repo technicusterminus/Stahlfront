@@ -13,6 +13,10 @@
 - Bei Fahrzeugen, Luftfahrzeugen und Schiffen bleiben gebackene Texturen auf dem Originallack erhalten. Lackierte Oberflächen sind zurückhaltender eingefärbt, Kurvenbewegungen flüssiger und Heckwellen vom Tempo abhängig.
 - Gebäude erhalten differenzierte Oberflächen und Zugangsbereiche. In Fabriken und Werften schließt der Greifer an der Kiste, hebt sie, setzt sie an der zweiten Station ab und fährt leer zurück. Rollen, Winde und einzelne Kettenglieder bewegen sich mit. An Nachschubzentren fährt ein Lastschlitten, und am Flugfeld arbeiten Windsack und Lauflichter. Lüfter laufen bei Strommangel aus. Betriebsanzeigen und Fabrikschranken reagieren auf Produktion und Auslieferung.
 
+### Rohstoffvorkommen
+
+Die fünf Vorkommen (Nachschubdepot, Holzlager, Erzfels, Ölquelle, Goldader) sind neu gestaltet: Gesteinsformen aus verformten Kugeln mit Facetten, Stammstapel mit Rinden- und Schnitttextur, Erzfels mit Rostadern und Lore auf Schienen, Pumpe mit Pendelbalken, Fässern und Rohrleitung, Goldader aus hellem Quarzgestein mit leuchtenden Adern und Nuggetkiste, Holzkisten mit Spanngurten und Plane. Entwurfsblatt und Farbtexturen wurden mit einem Bildmodell erzeugt: `tools/art/resource_art.py` (Prompts in `tools/art/resource_prompts.json`) legt die Quellbilder unter `models/source/resources/` ab, samt Kosten in `provenance.json`; `tools/art/resource_textures.py` macht daraus kachelbare Spieltexturen unter `models/resources/`. Das Material `shaders/resource.gdshader` projiziert sie dreiseitig und beachtet den Nebel des Krieges. Test: `--depotshow` (alle fünf nebeneinander), `--depotreal=gold|wood|iron|oil|supply` (nächstes echtes Vorkommen), `--depotfocus=0..4`.
+
 ### Oberflächen-Entwürfe
 
 Die Entwurfsblätter legen Materialwahl und Formensprache für Gebäude, Fahrzeuge und Fußtruppen fest. Vier Materialvorlagen liefern Metall, Beton, Gewebe und Holz. Das Blender-Skript `tools/blender/make_surface_detail.py` gleicht Beleuchtungsverläufe aus und erzeugt kachelbare Detail-, Rauheits- und Reliefkarten. Godot mischt sie über die vorhandenen Materialien. Stahlfront verwendet beim Spielen lokale Texturen und läuft offline.

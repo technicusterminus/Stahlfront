@@ -1,0 +1,45 @@
+{
+  "model": "black-forest-labs/flux.2-pro",
+  "images": [
+    {
+      "id": "direction-resources",
+      "aspect_ratio": "16:9",
+      "prompt": "Original production concept sheet for the real-time strategy game Stahlfront: five resource deposits in one row on a plain charcoal studio ground, each shown from the same orthographic three-quarter game camera, uncropped with clear margins. From left: a stacked timber yard with neat pyramids of peeled spruce logs, pale cut faces and sawdust; an iron ore outcrop of dark basalt boulders with rust-orange mineral veins, a small ore cart and loose lumps; a crude oil well with a nodding pumpjack, a tar pool with a faint rainbow sheen, a pipe manifold and stacked steel barrels; a gold vein in pale quartzite with bright metallic gold seams and a few rough nuggets in a wooden crate; a supply depot of weathered wooden crates and canvas-strapped pallets on a concrete pad. Grounded photoreal materials, believable construction, finely weathered, modern game art. No lettering, no logos, no people, no flags, no explosions."
+    },
+    {
+      "id": "rock_iron",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal seamless tileable flat texture scan for dark gray basalt iron ore rock with fine rust-orange and ochre mineral veins and tiny metallic flecks. Entire square filled continuously with rough fractured rock surface, small facets and crevices, medium contrast, constant scale across the image. Perfectly even diffuse flat lighting, no cast shadows, no highlights, no perspective, no objects, no border, no vignette, no text. Physical material for a grounded videogame asset."
+    },
+    {
+      "id": "rock_gold",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal seamless tileable flat texture scan for pale warm quartzite rock with thin bright metallic gold veins and small gold flecks running through cream and light gray stone. Entire square filled continuously with rough chipped stone surface, constant scale, medium contrast. Perfectly even diffuse flat lighting, no cast shadows, no strong highlights, no perspective, no objects, no border, no vignette, no text. Physical material for a grounded videogame asset."
+    },
+    {
+      "id": "bark",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal seamless tileable flat texture scan of rough dark brown spruce tree bark with deep vertical furrows and thin lighter ridges, small moss flecks. Entire square filled continuously with bark, constant scale across the image. Perfectly even diffuse flat lighting, no cast shadows, no highlights, no perspective, no objects, no border, no vignette, no text. Physical material for a grounded videogame asset."
+    },
+    {
+      "id": "log_end",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal flat orthographic scan of a freshly cut spruce log end face filling the whole square: pale yellow-tan wood with fine concentric annual growth rings centered in the frame, a small dark pith at the center, a few thin radial drying cracks, slightly darker rim. Even diffuse flat lighting, no shadow, no perspective, no background, no text. Physical material for a grounded videogame asset."
+    },
+    {
+      "id": "oil_sludge",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal seamless tileable flat texture scan of dark crude oil sludge on soil: nearly black glossy tar with subtle brown translucent edges and very faint iridescent rainbow sheen patches, small oily ripples and dirt flecks. Entire square filled continuously, constant scale, medium low contrast. Perfectly even diffuse flat lighting, no strong reflections, no perspective, no objects, no border, no vignette, no text. Physical material for a grounded videogame asset."
+    },
+    {
+      "id": "crate_wood",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal seamless tileable flat texture scan of weathered warm brown wooden shipping crate planks with fine grain, slightly faded and scuffed, small knots, subtle darker plank gaps every quarter of the image running horizontally, no nails, no labels. Entire square filled continuously, constant scale. Perfectly even diffuse flat lighting, no cast shadows, no highlights, no perspective, no objects, no border, no vignette, no text. Physical material for a grounded videogame asset."
+    },
+    {
+      "id": "rust_metal",
+      "aspect_ratio": "1:1",
+      "prompt": "Photoreal seamless tileable flat texture scan of old painted industrial steel barrel metal in dull oxblood red and dark gray with chipped paint, light rust bloom and fine scratches. Entire square filled continuously, constant scale, medium contrast. Perfectly even diffuse flat lighting, no cast shadows, no highlights, no perspective, no objects, no border, no vignette, no text. Physical material for a grounded videogame asset."
+    }
+  ]
+}

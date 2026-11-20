@@ -386,6 +386,35 @@ func start_match(cfg: Dictionary) -> void:
 			if pl.playing:
 				played += 1
 		print("AUDIOTEST laufende Spieler=%d" % played)
+	if args.has("depotreal"):
+		# Kamera auf das nächste echte Vorkommen dieser Art (wood, iron, oil, gold, supply)
+		var want: String = String(args["depotreal"])
+		var best = null
+		var bdist = 1e9
+		for dp in Game.depots:
+			if dp.kind == want and Game.flat_dist(dp.position, Game.players[0]["start"]) < bdist:
+				bdist = Game.flat_dist(dp.position, Game.players[0]["start"])
+				best = dp
+		if best != null:
+			Game.spawn_unit("west_inf", 0, best.position + Vector3(0, 0, 7.0))
+			Game.explore(best.position, 24.0)
+			cam.look_at_pos(best.position + Vector3(0, 0, 1.5))
+			cam.dist_target = float(args.get("camdist", "20"))
+	if args.has("depotshow"):
+		# Alle fünf Vorkommen nebeneinander vor der Kamera (Test der Rohstoffoptik)
+		var dbase: Vector3 = Game.players[0]["start"] + Vector3(10, 0, -30)
+		var kinds = ["wood", "iron", "oil", "gold", "supply"]
+		for di in kinds.size():
+			Game.spawn_depot(dbase + Vector3(di * 9.5, 0, 0), 40000.0, kinds[di])
+			Game.spawn_unit("west_inf", 0, dbase + Vector3(di * 9.5, 0, 6.5))   # Sichtweite gegen den Nebel des Krieges
+		Game.explore(dbase + Vector3(19, 0, 0), 40.0)
+		var focus: int = int(args.get("depotfocus", "-1"))
+		if focus >= 0:
+			cam.look_at_pos(dbase + Vector3(focus * 9.5, 0, 1.5))
+			cam.dist_target = float(args.get("camdist", "20"))
+		else:
+			cam.look_at_pos(dbase + Vector3(19, 0, 0))
+			cam.dist_target = float(args.get("camdist", "36"))
 	if args.has("workershow"):
 		# Nahaufnahme der Arbeiterfiguren: stehend und in Schrittstellung, je Fraktion
 		var D = load("res://scripts/arch_detail.gd")

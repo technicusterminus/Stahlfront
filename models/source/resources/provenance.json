@@ -1,0 +1,42 @@
+[
+  {
+    "Id": "rock_iron",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  },
+  {
+    "Id": "direction-resources",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.045
+  },
+  {
+    "Id": "rock_gold",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  },
+  {
+    "Id": "bark",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  },
+  {
+    "Id": "log_end",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  },
+  {
+    "Id": "oil_sludge",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  },
+  {
+    "Id": "crate_wood",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  },
+  {
+    "Id": "rust_metal",
+    "Model": "black-forest-labs/flux.2-pro",
+    "CostUsd": 0.03
+  }
+]
