@@ -4,6 +4,12 @@ extends Node
 signal message(text: String, col: Color)
 signal match_ended(won: bool)
 
+# Missionen: laufender Ausführer, nächste zu startende Mission (übersteht den Szenenwechsel), Fraktion für Tutorials
+var mission = null
+var pending_mission := ""
+var pending_menu := false
+var mission_faction := "west"
+
 const CELL := 2.0
 var GRID := 120        # Zellen je Seite (Weltgröße / CELL)
 var HALF := 120.0      # halbe Weltgröße in Metern
@@ -762,6 +768,12 @@ func check_victory() -> void:
 	for p in players:
 		if p["alive"]:
 			alive_ids.append(p["id"])
+	if mission != null:
+		# Im Missionsmodus entscheiden die Ziele über den Sieg; hier zählt nur die eigene Niederlage
+		if not players[human]["alive"]:
+			game_over = true
+			match_ended.emit(false)
+		return
 	if not spectator and not players[human]["alive"]:
 		game_over = true
 		match_ended.emit(false)

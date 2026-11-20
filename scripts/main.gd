@@ -54,6 +54,20 @@ func _ready() -> void:
 		Game.spectator = true
 		Game.update_fog()
 		hud.show_menu()
+		# Missionen: Testaufruf --mission=<id>, sonst die nächste Mission nach einem Szenenwechsel
+		if Game.pending_mission != "":
+			var pm: String = Game.pending_mission
+			Game.pending_mission = ""
+			hud.call_deferred("start_mission", pm)
+		elif args.has("mission"):
+			Game.mission_faction = String(args.get("faction", "west"))
+			hud.call_deferred("start_mission", String(args["mission"]))
+		elif Game.pending_menu:
+			Game.pending_menu = false
+			hud.call_deferred("_open_campaign_menu")
+		if args.has("campaignmenu"):
+			hud.call_deferred("_open_campaign_menu")
+			_delayed_png(3.0, "ui_campaign.png")
 		if args.has("mapdialog"):
 			hud.call_deferred("_open_map_dialog", Label.new())
 			_delayed_png(3.0, "ui_map.png")
@@ -247,6 +261,9 @@ func start_match(cfg: Dictionary) -> void:
 	for i in starts_used.size():
 		var s: Vector2 = starts_used[i]
 		var f: String = mine if i == 0 else facs[(facs.find(mine) + i) % 3]
+		var ef: Array = cfg.get("enemy_factions", [])
+		if i > 0 and i - 1 < ef.size():
+			f = String(ef[i - 1])
 		if Game.spectator and i > 0 and i == 1 and f == mine:
 			f = facs[(facs.find(mine) + 1) % 3]
 		var p = Game.add_player(f, i != 0 or Game.spectator, Vector3(s.x, 0, s.y))
@@ -279,9 +296,17 @@ func start_match(cfg: Dictionary) -> void:
 	Game.explore(st, 48.0)
 	var hbay: Vector2 = Game.terrain.bay_center(Vector2(st.x, st.z))
 	Game.explore(Vector3(hbay.x, 0, hbay.y), 18.0)
+	Game.mission = null
+	var runner = null
+	if cfg.has("mission"):
+		runner = load("res://scripts/mission_runner.gd").new()
+		add_child(runner)
+		runner.setup(load("res://scripts/missions.gd").by_id(String(cfg["mission"])), self)
 	Game.running = true
 	Game.update_fog()
 	Game.hud.on_match_started()
+	if runner != null:
+		runner.begin()
 	if args.has("showcase"):
 		# Testaufstellung: Einheiten beider Seiten nebeneinander vor der eigenen Basis
 		var uid: String = args["showcase"]

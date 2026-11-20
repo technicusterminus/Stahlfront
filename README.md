@@ -2,7 +2,7 @@
 
 **Echtzeitstrategie in Godot 4.7** – drei grundverschiedene Fraktionen, Basisbau mit Nachschub-Wirtschaft, Generalsfähigkeiten, Superwaffen, Nebel des Krieges, Luftwaffe und ein Computergegner. Alle Grafik, Effekte und der Großteil der Modelle entstehen im Code oder in Blender-Skripten; es werden keine fremden Assets verwendet.
 
-> Stand: spielbarer Prototyp (Skirmish gegen KI oder Zuschauermodus). Keine Kampagne, kein Mehrspieler, kein Ton. Siehe [Stand und bekannte Lücken](#stand-und-bekannte-lücken).
+> Stand: spielbarer Prototyp (Skirmish gegen KI oder Zuschauermodus). Vier Tutorials und der Beginn einer Kampagne, Ton (Stimmen und Geräusche), kein Mehrspieler. Siehe [Stand und bekannte Lücken](#stand-und-bekannte-lücken).
 
 ## Visuelle Testfassung
 
@@ -217,6 +217,15 @@ Beim Platzieren eines Gebäudes zeigt ein Phantom, ob der Platz gültig ist; Shi
 
 ---
 
+## Kampagne und Tutorial
+
+Im Hauptmenü öffnet **Kampagne und Tutorial …** die Missionsliste. Jede Mission beginnt mit einer Einsatzbesprechung, zeigt links oben die Ziele (abgehakt, sobald erfüllt) und meldet sich per Funk mit Sprechern. Fortschritt wird unter `user://campaign.json` gespeichert; Kampagnenkapitel schalten nacheinander frei, Tutorials sind immer offen.
+
+- **Tutorials** (mit der im Hauptmenü gewählten Fraktion, ohne Gegner-KI): 1 Erste Schritte (Auswählen, Bewegen, Nachschub, Strom, Kaserne, Truppe), 2 Wirtschaft und Fabrik, 3 Gefechtsbefehle (Rahmen, Gruppen, Angriffsmarsch), 4 Luft, See und Fähigkeiten.
+- **Kampagne „Das Licht über Lysa“ (Westbund)**, bisher drei Kapitel nach der Erzählung: 1 Port Meridian (Basis aufbauen, Raubzüge der Schattenfront abwehren, zehn Minuten halten), 2 Der Falke fliegt (Messpunkte mit Jägern und Drohne überfliegen, Flugabwehr umgehen), 3 Der Pass (Konvoi mit sechs Lkw eskortieren, zwei Hinterhalte überstehen).
+- **Missionen schreiben:** `scripts/missions.gd` beschreibt jede Mission als Daten (Karte, Start, Ziele, Ereignisse, Funksprüche, Niederlage); `scripts/mission_runner.gd` führt sie aus. Neue Bedingungen und Aktionen stehen in `_cond` und `_do`.
+- **Test:** `--mission=<id>` startet eine Mission direkt (`t1`–`t4`, `c1`–`c3`), `--missionauto` überspringt die Besprechung, `--missioncheck` wertet alle Bedingungen aus, `--missionplay` spielt Tutorial 1 und 3 automatisch durch, `--missionchain` startet danach die Folgemission, `--campaignmenu` zeigt die Liste.
+
 ## Ton
 
 - **Einheitenstimmen:** Beim Auswählen, Marschbefehl, Angriffsbefehl, Bauen und Nachschubholen spricht eine Einheit eine Funkzeile, je Fraktion mit eigener Stimme und eigenem Ton (Westbund kühl und präzise, Rote Allianz tief und streng mit Funkverzerrung, Schattenfront rau und lässig). Luft- und Seeeinheiten haben eigene Marschzeilen.
@@ -233,7 +242,7 @@ Drei Erzählungen derselben Ereignisse – in jeder gewinnt die erzählende Frak
 - [Der lange Marsch nach Aurelia – Rote Allianz](docs/story/02_rote_allianz.md) (Wolkow, Nastja, Funke)
 - [Wer am Feuer sitzt – Schattenfront](docs/story/03_schattenfront.md) (Asha, Jago, Karga)
 
-Missionen und spielbare Helden sind noch nicht umgesetzt.
+Der Beginn der Westbund-Kampagne ist spielbar (siehe Abschnitt Kampagne und Tutorial). Spielbare Helden gibt es noch nicht.
 
 ---
 
@@ -360,7 +369,7 @@ powershell -File tools/balance_test.ps1 -Godot <pfad\zu\godot_console.exe> -Seed
 
 - **Balance:** In KI-Messungen war die Schattenfront auffällig oft früh unterlegen; wird untersucht.
 - **Helden:** Die Story-Helden sind noch keine spielbaren Einheiten.
-- **Missionen und Kampagne:** noch keine.
+- **Kampagne:** drei Kapitel des Westbunds sind spielbar; die übrigen Kapitel, die Rote Allianz und die Schattenfront fehlen noch.
 - **Musik:** nicht vorhanden. Stimmen und Geräusche gibt es (siehe Abschnitt Ton).
 - **Mehrspieler:** nicht vorhanden.
 - **Plattformen:** nur unter Windows 11 getestet.

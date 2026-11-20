@@ -53,6 +53,8 @@ var _sell_armed = 0.0
 var _surrender_armed = false
 var _opening_complete := false
 const Maps = preload("res://scripts/maps.gd")
+const CampaignMenu = preload("res://scripts/campaign_menu.gd")
+const MissionData = preload("res://scripts/missions.gd")
 var _cfg = {"faction": "west", "enemies": 1, "difficulty": 1, "spectate": false, "hour": 9.0, "daycycle": 14.0}
 var _map_layer: Control = null
 
@@ -426,8 +428,30 @@ func show_menu() -> void:
 	start.add_theme_font_size_override("font_size", 18)
 	bh.add_child(start)
 	bh.add_child(_button("KI gegen KI zuschauen", func(): _start(true), Vector2(190, 48)))
+	bh.add_child(_button("Kampagne und Tutorial …", func(): CampaignMenu.open(self), Vector2(220, 48)))
 	bh.add_child(_button("Beenden", _quit, Vector2(110, 48)))
 	v.add_child(_label("F1 im Spiel zeigt die Steuerung.", 13, Color(0.55, 0.62, 0.7)))
+
+func _open_campaign_menu() -> void:
+	CampaignMenu.open(self)
+
+## Startet eine Mission aus der Kampagne bzw. dem Tutorial.
+func start_mission(id: String) -> void:
+	var m: Dictionary = MissionData.by_id(id)
+	if m.is_empty():
+		return
+	_cfg["faction"] = Game.mission_faction if m["faction"] == "player" else String(m["faction"])
+	_cfg["enemies"] = 1
+	_cfg["difficulty"] = int(m.get("difficulty", 1))
+	_cfg["map"] = Maps.clean(m["map"])
+	_cfg["hour"] = float(m.get("hour", 9.0))
+	_cfg["daycycle"] = 0.0
+	_cfg["mission"] = id
+	if m.has("enemy_faction"):
+		_cfg["enemy_factions"] = [m["enemy_faction"]]
+	else:
+		_cfg.erase("enemy_factions")
+	_start(false)
 
 func _start(spectate: bool) -> void:
 	_cfg["spectate"] = spectate
@@ -1211,6 +1235,9 @@ func _draw_overlay() -> void:
 # ---------------------------------------------------------------- Ende
 
 func _on_match_end(won: bool) -> void:
+	if Game.mission != null:
+		Game.mission.on_match_end(won)
+		return
 	_opening_complete = true
 	opening_hint.hide()
 	end_layer = _dim_layer()
