@@ -202,8 +202,8 @@ func _environment() -> void:
 	env.adjustment_contrast = 1.08
 	env.adjustment_saturation = 1.12
 	# Spiegelungen auf Wasser und glatten Flächen
-	env.ssr_enabled = args.has("ssr")
-	env.ssr_max_steps = 48
+	env.ssr_enabled = not args.has("nossr")
+	env.ssr_max_steps = 40
 	env.ssr_fade_in = 0.15
 	env.ssr_fade_out = 2.0
 	env.ssao_power = 1.6

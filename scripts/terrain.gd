@@ -573,21 +573,10 @@ func _build_water() -> void:
 	pm.subdivide_depth = 120
 	water_mat = ShaderMaterial.new()
 	water_mat.shader = load("res://shaders/water.gdshader")
-	var ntn = NoiseTexture2D.new()
-	ntn.seamless = true
-	ntn.as_normal_map = true
-	ntn.bump_strength = 3.0
-	var nn = FastNoiseLite.new()
-	nn.frequency = 0.03
-	ntn.noise = nn
-	water_mat.set_shader_parameter("n1", ntn)
-	var foam = NoiseTexture2D.new()
-	foam.seamless = true
-	var fnz = FastNoiseLite.new()
-	fnz.frequency = 0.08
-	fnz.fractal_octaves = 3
-	foam.noise = fnz
-	water_mat.set_shader_parameter("foam_noise", foam)
+	water_mat.set_shader_parameter("n_ripple", load("res://models/water/water_ripple_normal.png"))
+	water_mat.set_shader_parameter("n_swell", load("res://models/water/water_swell_normal.png"))
+	water_mat.set_shader_parameter("foam_tex", load("res://models/water/water_foam_albedo.png"))
+	water_mat.set_shader_parameter("caus_tex", load("res://models/water/water_caustics_albedo.png"))
 	water_mat.set_shader_parameter("fog_tex", Game.fog_tex)
 	var mi = MeshInstance3D.new()
 	mi.mesh = pm
