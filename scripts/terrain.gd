@@ -26,11 +26,8 @@ var _why = ""
 var _layout = 0       # Gewässerform: 0 Kreuz, 1 Windungen, 2 getrennte Seen, 3 Uferkanal
 var _mist_volumes: Array[FogVolume] = []
 
-static func _volcano_center(size: float) -> Vector2:
-	return Vector2(0.0, -size * 0.25)
-
 static func _volcano_height(p: Vector2, size: float, base: float, wobble: float) -> float:
-	var d := p.distance_to(_volcano_center(size)) + wobble * 3.0
+	var d := p.distance_to(Maps.volcano_center(size)) + wobble * 3.0
 	if d >= 38.0:
 		return base
 	var cone := lerpf(30.0, 2.5, smoothstep(11.0, 38.0, d))
@@ -87,7 +84,7 @@ func _build_atmosphere() -> void:
 		add_child(volume)
 		_mist_volumes.append(volume)
 	if spec.get("biome") == "volcanic":
-		var center := _volcano_center(SIZE)
+		var center := Maps.volcano_center(SIZE)
 		var fx := preload("res://scripts/fx.gd")
 		for offset in [Vector2(-2, 1), Vector2(2, -1), Vector2(0, -3)]:
 			var p: Vector2 = center + offset
@@ -258,7 +255,7 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 					var tt2 = smoothstep(ir + 3.0 + wob, ir * 0.55, d2)
 					heights[iz * N + ix] = lerp(heights[iz * N + ix], 1.5 + wob * 0.5, tt2)
 	if spec.get("biome") == "volcanic":
-		var center := _volcano_center(SIZE) + Vector2(half, half)
+		var center := Maps.volcano_center(SIZE) + Vector2(half, half)
 		for iz in range(int(center.y) - 39, int(center.y) + 40):
 			for ix in range(int(center.x) - 39, int(center.x) + 40):
 				var p := Vector2(ix - half, iz - half)
@@ -282,7 +279,7 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 					mx = max(mx, hv)
 					sum += hv
 			var avg = sum / 9.0
-			var crater: bool = spec.get("biome") == "volcanic" and Vector2(cx * 2.0 + 1.0 - half, cz * 2.0 + 1.0 - half).distance_to(_volcano_center(SIZE)) < 12.5
+			var crater: bool = spec.get("biome") == "volcanic" and Vector2(cx * 2.0 + 1.0 - half, cz * 2.0 + 1.0 - half).distance_to(Maps.volcano_center(SIZE)) < 12.5
 			if crater or avg < WATER_Y + 0.25 or mx - mn > 1.9 or cx < 5 or cz < 5 or cx >= G - 5 or cz >= G - 5:
 				blocked[cz * G + cx] = 1
 
@@ -338,6 +335,8 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 			if blocked[cz * G + cx] == 1:
 				continue
 			var wp = Vector2(cx * 2.0 - half + 1.0, cz * 2.0 - half + 1.0)
+			if spec.get("biome") == "volcanic" and wp.distance_to(Maps.volcano_center(SIZE)) < 31.0:
+				continue
 			var near_flat = false
 			for f in flats:
 				if wp.distance_to(Vector2(f.x, f.y)) < f.z + 4.0:
@@ -616,7 +615,7 @@ func _build_mesh() -> void:
 	elif spec.get("biome") == "volcanic":
 		mat.set_shader_parameter("surface_kind", 2)
 		mat.set_shader_parameter("landmark_tex", load("res://models/resources/bio_basalt_lava_albedo.png"))
-		mat.set_shader_parameter("crater_center", _volcano_center(SIZE))
+		mat.set_shader_parameter("crater_center", Maps.volcano_center(SIZE))
 
 	var mi = MeshInstance3D.new()
 	mi.mesh = am

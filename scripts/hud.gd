@@ -1279,6 +1279,8 @@ func _draw_opening_marks(cam: Camera3D) -> void:
 		var sp2 = cam.unproject_position(dpos)
 		var col2 = Color(0.55, 0.85, 1.0)
 		var vs2 = overlay.get_viewport_rect().size
+		if vs2.x <= 120.0 or vs2.y <= 290.0:
+			return
 		var safe = Rect2(60, 110, vs2.x - 120, vs2.y - 290)   # frei von oberer Leiste und unterer Befehlsleiste
 		if safe.has_point(sp2):
 			overlay.draw_arc(sp2, 22.0 + pulse * 4.0, 0.0, TAU, 40, col2, 2.5)

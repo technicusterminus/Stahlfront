@@ -102,6 +102,8 @@ static func _expedition(id: String, next: String, faction: String, enemy: String
 	var number := id.substr(1)
 	var contact := ["site:kontakt", 0, 18 if contact_kind == "industry" else 12]
 	var goal := ["site:ziel", 2, -19 if goal_kind == "industry" else -13]
+	if id == "r5":
+		goal = ["site:ziel", 1, -11]
 	var sites := [
 		{"name": "kontakt", "kind": contact_kind, "at": ["mid", -29, 24], "r": 8, "ruin": 0.4, "seed": 23},
 		{"name": "ziel", "kind": goal_kind, "at": ["mid", 28, -20], "r": 9, "ruin": 0.25, "seed": 37},

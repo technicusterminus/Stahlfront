@@ -1,0 +1,5 @@
+{
+  "model": "black-forest-labs/flux.2-pro",
+  "aspect_ratio": "3:2",
+  "prompt": "Game art reference sheet for realistic readable low-poly vegetation in a top-down RTS. Seven individual isolated tree silhouettes on neutral light grey, each fully separated and on the same level of ground, in two neat rows: mature spruce with narrow uneven drooping layers; old Scots pine with high open asymmetric red-brown branches and clustered needle pads; mature steppe oak with a short spreading trunk and broad uneven crown; wetland willow with hanging tapered leaf curtains; a light-trunk birch with sparse narrow canopy and visible branch forks; standing dead tree with wood forks and no leaves; mangrove with branching stilt roots and a low wide umbrella crown. Show the tree forms three-quarter view from slightly above. Slightly rough individual foliage pads with gaps, few clear boughs, natural asymmetry. No labels, lettering, logos, borders, landscapes, clutter, shadows overlapping a neighboring tree, pure symmetry, geometric ball blobs or cone stacks. Model construction guide with readable shapes, not textures or sprites."
+}

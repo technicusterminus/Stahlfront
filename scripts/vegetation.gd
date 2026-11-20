@@ -3,6 +3,7 @@ extends RefCounted
 ## Alles als MultiMesh in Kacheln (für Sichtbarkeits-Culling), Wind per Shader.
 
 const CHUNK := 30.0
+const Maps = preload("res://scripts/maps.gd")
 
 static func build(t, seed_val: int) -> void:
 	var rng = RandomNumberGenerator.new()
@@ -38,6 +39,8 @@ static func build(t, seed_val: int) -> void:
 	var flats: Array = t.flat_list
 	var bio: Dictionary = load("res://scripts/biome.gd").of(t)
 	var gdens: float = float(bio.get("grass_dens", 1.0))
+	var volcanic: bool = t.spec.get("biome", "") == "volcanic"
+	var crater := Maps.volcano_center(t.SIZE)
 
 	var lim: float = Game.HALF - 8.0
 	var x: float = -lim
@@ -47,6 +50,8 @@ static func build(t, seed_val: int) -> void:
 			var px = x + rng.randf_range(-0.45, 0.45)
 			var pz = z + rng.randf_range(-0.45, 0.45)
 			z += 0.64
+			if volcanic and Vector2(px, pz).distance_to(crater) < 29.0:
+				continue
 			var h: float = t.height_at(px, pz)
 			var n: Vector3 = t.normal_at(px, pz)
 			# Schilf am Ufer und im Flachwasser
@@ -231,88 +236,176 @@ static func _rock_mesh(rng) -> ArrayMesh:
 
 # ---------------------------------------------------------------- Bäume
 
+## Mischwald je nach Bodenzone, Höhenlage und Biom. Jedes Modell wird pro Kachel instanziert.
+const TREE_COLORS := {
+	"spruce": [Color(0.17, 0.30, 0.18), Color(0.22, 0.16, 0.11)],
+	"pine": [Color(0.29, 0.39, 0.18), Color(0.35, 0.22, 0.14)],
+	"oak": [Color(0.40, 0.48, 0.22), Color(0.27, 0.19, 0.13)],
+	"willow": [Color(0.37, 0.56, 0.26), Color(0.26, 0.21, 0.16)],
+	"birch": [Color(0.51, 0.61, 0.30), Color(0.52, 0.50, 0.44)],
+	"snag": [Color(0.0, 0.0, 0.0), Color(0.32, 0.28, 0.23)],
+	"mangrove": [Color(0.21, 0.52, 0.25), Color(0.27, 0.22, 0.17)],
+	"palm": [Color(0.30, 0.63, 0.28), Color(0.40, 0.32, 0.22)],
+}
+
 static func _trees(t, rng, kind) -> void:
-	var fog_trunk = Game.fog_material(Color(0.24, 0.17, 0.11), 0.95)
-	var trunk = CylinderMesh.new()
-	trunk.top_radius = 0.13
-	trunk.bottom_radius = 0.26
-	trunk.height = 2.4
-	trunk.radial_segments = 7
-	# Nadelbaum: drei gestapelte Kegel
-	var st = SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var cone = CylinderMesh.new()
-	cone.top_radius = 0.0
-	cone.radial_segments = 9
-	cone.rings = 1
-	for k in 3:
-		cone.bottom_radius = 1.75 - k * 0.45
-		cone.height = 2.6 - k * 0.4
-		st.append_from(cone, 0, Transform3D(Basis(), Vector3(0, 1.3 + k * 1.35 + cone.height * 0.5, 0)))
-	var conifer = st.commit()
-	var leafy = _blob_mesh(rng, 6, 1.2, 1.0)
-	var conif_m = _foliage(Color(0.45, 0.55, 0.42), Color(0.8, 0.95, 0.7), 0.1, 6.0, false, 0.2)
-	var leafy_m = _foliage(Color(0.5, 0.6, 0.4), Color(1.0, 1.05, 0.8), 0.14, 5.0, false, 0.35)
-
 	var bio: Dictionary = load("res://scripts/biome.gd").of(t)
-	var tmul: float = float(bio.get("trees", 1.0))
-	var trunks := []
-	var cons := []
-	var leafs := []
-	var root_groups := []
-	for c in t.tree_cells:
+	var density: float = bio.get("trees", 1.0)
+	var families := {}
+	for cell in t.tree_cells:
 		for k in 2:
-			if tmul < 1.0 and rng.randf() > tmul:
+			if rng.randf() > minf(density, 1.0):
 				continue
-			var x: float = c.x * 2.0 - Game.HALF + rng.randf_range(0.2, 1.8)
-			var z: float = c.y * 2.0 - Game.HALF + rng.randf_range(0.2, 1.8)
+			var x: float = cell.x * 2.0 - Game.HALF + rng.randf_range(0.2, 1.8)
+			var z: float = cell.y * 2.0 - Game.HALF + rng.randf_range(0.2, 1.8)
 			var y: float = t.height_at(x, z)
-			var s = rng.randf_range(0.75, 1.4)
-			var b = Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s))
-			trunks.append([Transform3D(b, Vector3(x, y + 1.2 * s, z)), Color(1, 1, 1)])
-			if bio.get("mangrove", false) and y < 2.8:
-				root_groups.append([Transform3D(b, Vector3(x, y, z)), Color.WHITE])
-			var is_conifer = y > 4.0 or kind.get_noise_2d(x, z) > 0.0
-			if bio.has("conifer"):
-				var cf: float = float(bio["conifer"])
-				is_conifer = rng.randf() < cf if y < 4.0 or cf < 0.5 else true
-			var dead: bool = rng.randf() < float(bio.get("dead", 0.0))
-			if is_conifer:
-				var g = Color(0.14, 0.28, 0.13).lerp(Color(0.2, 0.3, 0.12), rng.randf())
-				if dead:
-					g = Color(0.2, 0.17, 0.13)
-				cons.append([Transform3D(b, Vector3(x, y, z)), g])
-			else:
-				var g2 = Color(0.25, 0.42, 0.15).lerp(Color(0.5, 0.48, 0.15), rng.randf() * 0.4)
-				if bio.has("leaf"):
-					g2 = g2.lerp(bio["leaf"], float(bio["leaf_amt"]))
-				if dead:
-					g2 = Color(0.22, 0.18, 0.13)
-				var bl = b.scaled(Vector3(1.0, rng.randf_range(0.85, 1.15), 1.0))
-				leafs.append([Transform3D(bl, Vector3(x, y + 2.1 * s, z)), g2])
-	_emit_list(t, trunks, trunk, fog_trunk, true)
-	_emit_list(t, cons, conifer, conif_m, true)
-	_emit_list(t, leafs, leafy, leafy_m, true)
-	if not root_groups.is_empty():
-		_emit_list(t, root_groups, _mangrove_roots(), fog_trunk, true)
+			var zone: Color = t.zone_at(x, z)
+			var family := _tree_family(bio, zone, y, kind.get_noise_2d(x, z), rng.randf())
+			if not families.has(family):
+				families[family] = [[], []]
+			var width: float = rng.randf_range(0.74, 1.26)
+			var height: float = rng.randf_range(0.74, 1.34) * (0.86 if zone.a > 0.4 else 1.0)
+			var basis := Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(width, height, width))
+			var pose := Transform3D(basis, Vector3(x, y, z))
+			var leaf: Color = TREE_COLORS[family][0].lerp(bio.get("leaf", TREE_COLORS[family][0]), 0.28)
+			leaf *= rng.randf_range(0.83, 1.18)
+			families[family][0].append([pose, Color.WHITE])
+			families[family][1].append([pose, leaf])
+	var leaf_material := _foliage(Color(0.46, 0.57, 0.37), Color(0.92, 1.0, 0.82), 0.15, 5.5, false, 0.32)
+	for family in families:
+		var meshes := _tree_meshes(family)
+		_emit_list(t, families[family][0], meshes[0], Game.fog_material(TREE_COLORS[family][1], 0.95), true)
+		if meshes[1] != null:
+			_emit_list(t, families[family][1], meshes[1], leaf_material, true)
 
-static func _mangrove_roots() -> Mesh:
-	var roots := SurfaceTool.new()
-	roots.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var strut := CylinderMesh.new()
-	strut.radial_segments = 7
-	strut.rings = 1
-	strut.top_radius = 0.13
-	strut.bottom_radius = 0.055
-	var top := Vector3(0.0, 1.25, 0.0)
-	for i in 5:
-		var yaw := TAU * float(i) / 5.0
-		var foot := Vector3(cos(yaw) * 1.2, 0.0, sin(yaw) * 1.2)
-		var span := top - foot
-		strut.height = span.length()
-		var turn := Basis(Quaternion(Vector3.UP, span.normalized()))
-		roots.append_from(strut, 0, Transform3D(turn, (top + foot) * 0.5))
-	return roots.commit()
+static func _tree_family(bio: Dictionary, zone: Color, height: float, patch: float, choice: float) -> String:
+	if bio.get("mangrove", false):
+		if height < 2.9:
+			return "mangrove"
+		return "palm" if choice < 0.68 else "oak"
+	if choice < float(bio.get("dead", 0.0)):
+		return "snag"
+	if height < 1.4 or (zone.g > 0.37 and height < 3.8):
+		return "willow" if choice < 0.75 else "birch"
+	var conifers: float = bio.get("conifer", 0.52)
+	conifers = clampf(conifers + 0.27 * zone.b + 0.26 * zone.a + 0.27 * smoothstep(3.5, 9.0, height), 0.0, 1.0)
+	if choice < conifers:
+		return "pine" if zone.a + zone.r > 0.38 or patch < -0.23 else "spruce"
+	return "birch" if zone.b > 0.32 or patch < -0.16 else "oak"
+
+static func _tree_meshes(family: String) -> Array:
+	var wood := SurfaceTool.new()
+	wood.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var crown := SurfaceTool.new()
+	crown.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var stem := CylinderMesh.new()
+	stem.radial_segments = 8
+	stem.rings = 1
+	var clump := _tree_leaf_pad(family.hash())
+	var bases := {"spruce": 6.4, "pine": 5.7, "oak": 3.5, "willow": 3.7,
+		"birch": 5.5, "snag": 4.9, "mangrove": 2.45, "palm": 5.7}
+	var h: float = bases[family]
+	var bend := Vector3(0.24, h * 0.58, -0.15)
+	var tip := Vector3(-0.13, h, 0.18)
+	var thick := 0.42 if family == "oak" else (0.19 if family == "birch" else 0.28)
+	_tree_branch(wood, stem, Vector3(0, -0.2, 0), bend, thick, thick * 0.63)
+	_tree_branch(wood, stem, bend, tip, thick * 0.64, 0.038)
+
+	if family == "spruce":
+		for layer in 5:
+			var y := 1.55 + layer * 0.94
+			var width := 1.82 - layer * 0.28
+			for j in 5:
+				var yaw := layer * 0.71 + j * TAU / 5.0
+				var p := Vector3(cos(yaw) * width * 0.57, y + sin(yaw * 2.0) * 0.20, sin(yaw) * width * 0.57)
+				_tree_pad(crown, clump, p, Vector3(width * 0.66, 0.53, width * 0.48), yaw)
+		_tree_pad(crown, clump, tip - Vector3(0, 0.28, 0), Vector3(0.46, 0.88, 0.45), 0.0)
+	elif family == "palm":
+		for j in 8:
+			var yaw := 0.3 + j * TAU / 8.0
+			_palm_frond(crown, tip, yaw, 2.25 + float(j % 3) * 0.30)
+	else:
+		var branches: int = {"oak": 6, "willow": 7, "birch": 5, "pine": 6, "snag": 5, "mangrove": 7}[family]
+		var spread: float = {"oak": 1.8, "willow": 1.68, "birch": 0.95, "pine": 1.5, "snag": 1.2, "mangrove": 1.74}[family]
+		var thickness: float = {"oak": 0.97, "willow": 1.24, "birch": 0.75, "pine": 0.47, "snag": 0.0, "mangrove": 0.53}[family]
+		for j in branches:
+			var yaw := 0.45 + j * 2.39996
+			var reach := spread * (0.68 + 0.34 * sin(j * 1.91 + 1.8))
+			var v := Vector3(cos(yaw), 0.0, sin(yaw))
+			var joint := bend.lerp(tip, 0.08 + 0.12 * j)
+			var fork := joint + v * reach * 0.52 + Vector3(0.0, 0.30, 0.0)
+			var end := joint + v * reach + Vector3(0.0, 0.47 + 0.2 * sin(j), 0.0)
+			_tree_branch(wood, stem, joint, fork, thick * 0.45, thick * 0.24)
+			_tree_branch(wood, stem, fork, end, thick * 0.25, 0.026)
+			if family == "snag":
+				_tree_branch(wood, stem, fork, end + v.cross(Vector3.UP) * 0.4 + Vector3.UP * 0.38, 0.046, 0.014)
+				continue
+			var pad_height := thickness * (0.85 + 0.18 * cos(j))
+			var pad_width := (0.68 + 0.15 * (j % 3)) * (0.85 if family == "birch" else 1.25)
+			_tree_pad(crown, clump, end + Vector3.UP * 0.26, Vector3(pad_width, pad_height, pad_width * 0.91), yaw)
+			if family in ["willow", "oak", "mangrove"]:
+				var droop := -0.50 if family == "willow" else 0.06
+				_tree_pad(crown, clump, end + v * 0.45 + Vector3.UP * droop, Vector3(pad_width * 0.66, pad_height * 0.78, pad_width * 0.54), yaw + 0.6)
+	if family == "mangrove":
+		for j in 6:
+			var yaw := TAU * j / 6.0
+			var v := Vector3(cos(yaw), 0.0, sin(yaw))
+			var root := v * (1.10 + float(j % 3) * 0.19)
+			var knee := v * 0.65 + Vector3.UP * (0.39 + 0.06 * j)
+			_tree_branch(wood, stem, Vector3(0.0, 1.28, 0.0), knee, 0.13, 0.08)
+			_tree_branch(wood, stem, knee, root - Vector3.UP * 0.16, 0.082, 0.040)
+	return [wood.commit(), null if family == "snag" else crown.commit()]
+
+static func _tree_branch(st: SurfaceTool, mesh: CylinderMesh, a: Vector3, b: Vector3, base: float, tip: float) -> void:
+	var span := b - a
+	mesh.height = span.length()
+	mesh.top_radius = tip
+	mesh.bottom_radius = base
+	var turn := Basis(Quaternion(Vector3.UP, span.normalized()))
+	st.append_from(mesh, 0, Transform3D(turn, (a + b) * 0.5))
+
+static func _tree_leaf_pad(seed_value: int) -> ArrayMesh:
+	var sphere := SphereMesh.new()
+	sphere.radial_segments = 8
+	sphere.rings = 4
+	sphere.radius = 0.5
+	sphere.height = 1.0
+	var arrays := sphere.get_mesh_arrays()
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+	var noise := FastNoiseLite.new()
+	noise.seed = seed_value
+	noise.frequency = 3.8
+	for i in vertices.size():
+		var vertex := vertices[i]
+		vertices[i] *= 1.0 + 0.42 * noise.get_noise_3dv(vertex * 3.0)
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for i in indices:
+		surface.add_vertex(vertices[i])
+	surface.generate_normals()
+	return surface.commit()
+
+static func _tree_pad(st: SurfaceTool, clump: Mesh, center: Vector3, size: Vector3, yaw: float) -> void:
+	st.append_from(clump, 0, Transform3D(Basis(Vector3.UP, yaw).scaled(size), center))
+
+static func _palm_frond(st: SurfaceTool, root: Vector3, yaw: float, length: float) -> void:
+	var out := Vector3(cos(yaw), 0.0, sin(yaw))
+	var left := out.cross(Vector3.UP)
+	for segment in 6:
+		var a := float(segment) / 6.0
+		var b := float(segment + 1) / 6.0
+		var p := root + out * length * a + Vector3.UP * (sin(a * PI) * 0.54 - a * a * 0.84)
+		var q := root + out * length * b + Vector3.UP * (sin(b * PI) * 0.54 - b * b * 0.84)
+		var w := sin(a * PI) * 0.33
+		var wn := sin(b * PI) * 0.33
+		var first := p + left * w - Vector3.UP * w * 0.45
+		var second := p - left * w - Vector3.UP * w * 0.45
+		var third := q + left * wn - Vector3.UP * wn * 0.45
+		var fourth := q - left * wn - Vector3.UP * wn * 0.45
+		for v in [p, third, first, p, q, third, p, second, fourth, p, fourth, q]:
+			st.set_normal(Vector3.UP)
+			st.add_vertex(v)
 
 static func _emit_list(t, arr: Array, mesh: Mesh, m: Material, shadows: bool) -> void:
 	var dict := {}
@@ -349,9 +442,13 @@ static func _rocks(t, rng) -> void:
 	var meshes = [_rock_mesh(rng), _rock_mesh(rng), _rock_mesh(rng)]
 	var lists = [[], [], []]
 	var rbio: Dictionary = load("res://scripts/biome.gd").of(t)
+	var volcanic: bool = t.spec.get("biome", "") == "volcanic"
+	var crater := Maps.volcano_center(t.SIZE)
 	for i in int(1400 * float(rbio.get("rocks", 1.0))):
 		var x = rng.randf_range(-110, 110)
 		var z = rng.randf_range(-110, 110)
+		if volcanic and Vector2(x, z).distance_to(crater) < 27.0:
+			continue
 		var n: Vector3 = t.normal_at(x, z)
 		var h: float = t.height_at(x, z)
 		if h < t.WATER_Y + 0.2:

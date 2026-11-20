@@ -55,8 +55,8 @@ static func presets() -> Array:
 	_presets.append(clean({"name": "Mangrovenküste", "size": 288, "water": 0.58, "islands": 0.35,
 		"resources": 0.55, "hills": 0.20, "forest": 0.82, "layout": 3, "seed": 9211, "biome": "tropical",
 		"mist": [[0, 0, 66, 58, 0.022], [-38, 38, 30, 33, 0.017], [38, -38, 31, 33, 0.017]]}))
-	_presets.append(clean({"name": "Basaltinsel", "size": 304, "water": 0.55, "islands": 0.55,
-		"resources": 0.62, "hills": 0.44, "forest": 0.28, "layout": 2, "seed": 9237, "biome": "volcanic"}))
+	_presets.append(clean({"name": "Basaltinsel", "size": 288, "water": 0.36, "islands": 0.40,
+		"resources": 0.55, "hills": 0.22, "forest": 0.28, "layout": 0, "seed": 9237, "biome": "volcanic"}))
 	return _presets
 
 static func preset(i: int) -> Dictionary:
@@ -78,6 +78,9 @@ static func clean(sp: Dictionary) -> Dictionary:
 ## Lage der Bucht vor einer Startbasis: halber Weg zur Kartenmitte.
 static func bay_center(start: Vector2) -> Vector2:
 	return start * 0.5
+
+static func volcano_center(size: float) -> Vector2:
+	return Vector2(0.0, -size * 0.25)
 
 static func _seg_d(p: Vector2, a: Vector2, b: Vector2) -> float:
 	var ab = b - a
@@ -193,4 +196,23 @@ static func layout(sp: Dictionary) -> Dictionary:
 			q += (q.normalized() if q.length() > 1.0 else Vector2(1, 0)) * 3.0
 			guard += 1
 		d[0] = q
+	if sp.get("biome") == "volcanic":
+		var crater := volcano_center(size)
+		for d in depots:
+			var point: Vector2 = d[0]
+			if point.distance_to(crater) >= 45.0:
+				continue
+			var away := (point - crater).angle()
+			for turn in [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6]:
+				var candidate := crater + Vector2.from_angle(away + float(turn) * PI / 12.0) * 47.0
+				if maxf(absf(candidate.x), absf(candidate.y)) > H - 14.0 or sea_dist(candidate, ctx) < 15.0:
+					continue
+				var overlaps := false
+				for other in depots:
+					if other != d and candidate.distance_to(other[0]) < 14.0:
+						overlaps = true
+						break
+				if not overlaps:
+					d[0] = candidate
+					break
 	return {"starts": starts, "depots": depots}
