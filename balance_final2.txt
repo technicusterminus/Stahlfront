@@ -1,0 +1,11 @@
+
+
+Fraktion Laeufe Ueberlebt KillsSchnitt VerlusteSchnitt EinheitenEnde GebaeudeEnde
+-------- ------ --------- ------------ --------------- ------------- ------------
+west         18        11          113             121            14            5
+red          18        12          149             177            26            5
+shadow       18        11          190             159            27            3
+
+
+
+Skriptfehler gesamt: 0

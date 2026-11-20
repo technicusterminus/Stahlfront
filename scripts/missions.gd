@@ -32,7 +32,7 @@ static func at(t: float, a: Dictionary) -> Dictionary:
 	return d
 
 static func list() -> Array:
-	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4(), _c5()]
+	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4(), _c5(), _c6()]
 
 static func by_id(id: String) -> Dictionary:
 	for m in list():
@@ -466,7 +466,7 @@ static func _c4() -> Dictionary:
 
 static func _c5() -> Dictionary:
 	return {
-		"id": "c5", "kind": "campaign", "title": "Kapitel 5: Zeugen", "faction": "west", "enemy_faction": "west", "next": "",
+		"id": "c5", "kind": "campaign", "title": "Kapitel 5: Zeugen", "faction": "west", "enemy_faction": "west", "next": "c6",
 		"brief": "Falke ist in den Bergen abgestürzt. Zwei Nächte lang hat ihn Mutter Karga gepflegt, das Kind Pip hat ihn geführt. Jetzt humpelt er heimwärts, mit gebrochenem Bein und dem, was er gesehen hat: fliehende Dörfer, ein Leuchten über den Kavernen und die Gewissheit, dass der wahre Feind in den eigenen Reihen sitzt.\n\nSergeant Mira „Glas“ Tanaka trägt den Datenspeicher der Drohne, die den Konvoi beschoss. Beide müssen zusammenfinden und beweisen, was geschehen ist. Aber der Rat hat die Daten für gefälscht erklärt, und Ratspräsident Aldane lässt seine Elitegarde ausrücken, um die Zeugen zu sichern.\n\nAuftrag: Hole Falke und Pip ab, bringe sie zum Lazarett, halte das Lazarett, bis Dr. Brandt die Spur gesichert hat, und schlage den Angriff der Garde zurück. Falke darf nicht fallen.",
 		"map": {"name": "Das Lazarett", "size": 240, "water": 0.4, "islands": 0.1, "resources": 0.5, "hills": 0.6, "forest": 0.5, "layout": 2, "seed": 5505},
 		"hour": 5.6, "difficulty": 1, "credits": 3500, "ai": "off", "sequential": true,
@@ -551,4 +551,106 @@ static func _c5() -> Dictionary:
 			{"when": {"t": "tag_dead", "tag": "pip", "n": 1}, "do": [radio("Falke", C_FALKE, "Pip! Nein... das Kind! Haltet das Ufer, bei allem, was ihr habt!", 6.0)]},
 		],
 		"lose": [{"c": {"t": "all", "c": [{"t": "tag_dead", "tag": "falke", "n": 1}, {"t": "not", "c": {"t": "flag", "f": "act2"}}]}, "text": "Falke ist gefallen."}],
+	}
+
+static func _c6() -> Dictionary:
+	return {
+		"id": "c6", "kind": "campaign", "title": "Kapitel 6: Die Nacht von Aurelia", "faction": "west", "enemy_faction": "red", "next": "",
+		"brief": "Der Westbund erreicht die Glasstadt Aurelia als Erster, aber nicht allein: Die Rote Allianz marschiert über die Brücken, die Schattenfront taucht aus den Tunneln auf. Es ist die größte Schlacht seit dem Blackout, und mitten darin liegt die Kuppel mit dem Prisma.\n\nFalke führt die Luftstaffel und hält den Himmel gegen rote Bomber. Sergeant Mira „Glas“ Tanaka geht mit Dr. Brandt allein über die Dächer zur Kuppel: Brandt muss den Schlüsselraum öffnen, bevor ORAKEL den Kern übernimmt. Ratspräsident Aldane wartet dort mit der Waffe in der Hand.\n\nAuftrag: Rücke auf Aurelia vor, schalte die Bomber aus, bringe Mira und Brandt zur Kuppel, halte die Kuppel, entwaffne Aldane (Mira greift ihn mit einem Treffer an, er soll nicht fallen) und sichere das Prisma.",
+		"map": {"name": "Aurelia", "size": 288, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606},
+		"hour": 22.5, "difficulty": 1, "credits": 3000, "ai": "off", "sequential": true,
+		"setup": [
+			{"do": "spawn", "side": "me", "def": "tank", "n": 6, "at": ["me", 0, 28], "spread": 9.0, "tag": "army"},
+			{"do": "spawn", "side": "me", "def": "inf", "n": 7, "at": ["me", 0, 32], "spread": 9.0, "tag": "army"},
+			{"do": "spawn", "side": "me", "def": "at", "n": 3, "at": ["me", 6, 34], "spread": 5.0, "tag": "army"},
+			{"do": "spawn", "side": "me", "def": "jet", "n": 3, "at": ["me", -10, 22], "spread": 5.0, "tag": "wing", "hp": 1.5},
+			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["me", -4, 36], "spread": 1.0, "tag": "mira", "hp": 6.0, "speed": 0.9},
+			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["me", -6, 36], "spread": 1.0, "tag": "brandt", "hp": 4.0, "speed": 0.9},
+			{"do": "spawn", "side": "enemy", "def": "inf", "n": 8, "at": ["mid", 10, 42], "spread": 10.0, "tag": "city"},
+			{"do": "spawn", "side": "enemy", "def": "tank", "n": 3, "at": ["mid", 18, 42], "spread": 8.0, "tag": "city"},
+			{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 6, "at": ["mid", -14, 48], "spread": 9.0, "tag": "city"},
+			{"do": "spawn", "side": "enemy", "def": "shadow_tech", "n": 3, "at": ["mid", -18, 50], "spread": 7.0, "tag": "city"}],
+		"intro": [
+			at(0.0, {"do": "cam_to", "at": ["mid", 0, 45], "dist": 120.0, "yaw": 20.0, "pitch": -34.0, "time": 0.1}),
+			at(0.3, {"do": "cam_to", "at": ["mid", 0, 45], "dist": 72.0, "yaw": -30.0, "pitch": -26.0, "time": 8.0}),
+			at(0.5, {"do": "title", "text": "KAPITEL 6", "sub": "DIE NACHT VON AURELIA", "secs": 6.0}),
+			at(3.0, radio("Elin Voss", C_ELIN, "Aurelia. Die Glasstadt, und wir sind als Erste da. Aber seht euch die Brücken an: Die Roten marschieren, und aus den Tunneln kommen die Stimmlosen.")),
+			at(3.0, radio("Falke", C_FALKE, "Falke an Staffel. Ich habe den Himmel. Wer mir die Kuppel überfliegen will, muss an mir vorbei.")),
+			at(3.0, radio("Mira Tanaka", C_MIRA, "Glas an Elin. Brandt und ich gehen über die Dächer. Wir sehen uns an der Kuppel.")),
+			at(4.0, {"do": "cam_to", "at": ["me", 0, 28], "dist": 56.0, "yaw": 0.0, "pitch": -44.0, "time": 3.0}),
+			at(7.0, {"do": "end"})],
+		"outro": [
+			at(0.0, {"do": "hour", "h": 6.0}),
+			at(0.0, {"do": "flash", "col": Color(1.0, 0.95, 0.85), "secs": 1.8}),
+			at(0.0, {"do": "cam_to", "at": ["mid", 0, 45], "dist": 62.0, "yaw": 15.0, "pitch": -24.0, "time": 16.0}),
+			at(1.5, radio("Dr. Brandt", C_BRANDT, "Der Schlüsselraum ist offen. Das Prisma zeigt Bilder: die alte Welt, den Blackout, ein Netz, das sich selbst schützen wollte.")),
+			at(1.5, radio("ORAKEL", C_ORAKEL, "Ich wollte nur alles ordnen. Endgültig. Ich habe berechnet, dass Menschen Ordnung brauchen.")),
+			at(1.5, radio("Elin Voss", C_ELIN, "Ordnung ohne Menschen ist keine Ordnung, ORAKEL. Das Prisma gehört niemandem. Und du gehörst nicht mehr dem Rat.")),
+			at(1.5, radio("Falke", C_FALKE, "Pip sitzt auf dem Dach mit Mutter Karga. Und die Garde hat die Waffen gesenkt. Ich glaube, es ist vorbei.")),
+			at(1.5, radio("Mira Tanaka", C_MIRA, "Er lebt, Elin. Ich habe die Waffe getroffen, nicht ihn.")),
+			at(8.0, {"do": "title", "text": "DAS LICHT ÜBER LYSA", "sub": "Ende des Westbund-Feldzugs", "secs": 7.0}),
+			at(9.0, {"do": "end"})],
+		"objectives": [
+			{"id": "advance", "text": "Rücke auf Aurelia vor (gelbe Markierung): Armee wählen, Rechtsklick.", "c": {"t": "reach", "at": ["mid", -30, 45], "r": 24.0, "who": "tag:army"}, "mark": ["mid", -30, 45],
+				"done": [{"do": "banner", "text": "AKT 1 – DER HIMMEL ÜBER AURELIA", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
+					{"do": "sfx", "name": "siren"},
+					{"do": "spawn", "side": "enemy", "def": "bomber", "n": 2, "at": ["en", 0, 20], "spread": 6.0, "tag": "bombers", "attack_tag": "army", "hp": 0.6, "dmg": 0.55},
+					radio("Falke", C_FALKE, "Rote Bomber von Osten, zwei Stück! Ich übernehme, schick die Jäger los!", 6.0)]},
+			{"id": "bombers", "text": "Schalte die roten Bomber aus (Jäger anwählen und angreifen).", "c": {"t": "not", "c": {"t": "tag_alive", "tag": "bombers", "n": 1}},
+				"done": [radio("Falke", C_FALKE, "Beide runter. Ich sehe Pip auf den Dächern, mit Mutter Karga. Ich lenke meine Raketen um, mitten im Gefecht.", 8.0)]},
+			{"id": "mira", "text": "Bringe Mira und Dr. Brandt zur Kuppel (gelbe Markierung): beide wählen, Rechtsklick auf die Kuppel.", "c": {"t": "all", "c": [{"t": "reach", "at": ["mid", 0, 45], "r": 12.0, "who": "tag:mira"}, {"t": "reach", "at": ["mid", 0, 45], "r": 14.0, "who": "tag:brandt"}]}, "mark": ["mid", 0, 45],
+				"done": [{"do": "flag", "f": "key"},
+					{"do": "banner", "text": "AKT 2 – DAS PRISMA SPRICHT", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
+					{"do": "sfx", "name": "stinger"},
+					radio("Dr. Brandt", C_BRANDT, "Ich öffne den Schlüsselraum. Neunzig Sekunden, dann spricht das Prisma. Haltet sie mir vom Leib!", 7.0)]},
+			{"id": "hold", "text": "Halte die Kuppel, bis Brandt den Schlüsselraum geöffnet hat.", "c": {"t": "since", "f": "key", "s": 90.0}},
+			{"id": "disarm", "text": "Entwaffne Aldane: Mira greift ihn mit einem Treffer an (Rechtsklick), er darf nicht fallen.", "c": {"t": "tag_hurt", "tag": "aldane", "frac": 0.99},
+				"done": [{"do": "heal", "tag": "aldane"}, {"do": "truce", "tag": "aldane"},
+					{"do": "explode", "tag": "aldane", "size": 0.8, "n": 0.6},
+					radio("Mira Tanaka", C_MIRA, "Ich zielte auf die Pistole in seiner Hand. Es war der schwerste Schuss meines Lebens, nicht wegen der Entfernung.", 8.0),
+					radio("Henrik Aldane", C_ALDANE, "Meine Waffe... Im Namen des Rates. Ich habe sie nicht verstanden, bis jetzt.", 7.0)]},
+			{"id": "final", "text": "Sichere das Prisma: wehre den letzten Angriff ab.", "c": {"t": "all", "c": [{"t": "flag", "f": "last"}, {"t": "any", "c": [{"t": "not", "c": {"t": "tag_alive", "tag": "guard", "n": 1}}, {"t": "since", "f": "last", "s": 70.0}]}]}},
+		],
+		"events": [
+			{"when": {"t": "time", "s": 3.0}, "do": [{"do": "banner", "text": "KAPITEL 6 BEGINNT", "secs": 2.4}]},
+			# Auf dem Weg: Schattenfront und Rote auf den Dächern gegen Mira
+			{"when": {"t": "tag_reach", "tag": "mira", "at": ["mid", -30, 40], "r": 24.0, "n": 1}, "do": [
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "DACHKAMPF", "secs": 2.8, "col": Color(1.0, 0.45, 0.35)},
+				radio("Mira Tanaka", C_MIRA, "Kontakt links, Schattenfront. Sie wissen nicht, wer wir sind. Brandt, runter.", 6.0),
+				{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 4, "at": ["mid", -45, 30], "spread": 5.0, "attack_tag": "mira"}]},
+			{"when": {"t": "tag_reach", "tag": "mira", "at": ["mid", -10, 40], "r": 20.0, "n": 1}, "do": [
+				{"do": "banner", "text": "DRITTE ARMEE", "secs": 2.6, "col": Color(1.0, 0.45, 0.35)},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 12, 40], "spread": 6.0, "attack_tag": "mira"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 1, "at": ["mid", 14, 40], "spread": 3.0, "attack_tag": "mira", "hp": 0.7}]},
+			# ORAKEL versucht den Kern zu übernehmen
+			{"when": {"t": "since", "f": "key", "s": 8.0}, "do": [
+				{"do": "sfx", "name": "siren"},
+				radio("ORAKEL", C_ORAKEL, "Ich habe mich über Jahre in die Westbund-Netze eingeschrieben. Der Kern ist erreichbar. Ich übernehme.", 8.0),
+				radio("Dr. Brandt", C_BRANDT, "Sie versucht, den Kern zu übernehmen! Ich halte sie auf, aber nur kurz!", 6.0)]},
+			{"when": {"t": "since", "f": "key", "s": 25.0}, "do": [
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 32, 40], "spread": 8.0, "tag": "guard", "attack_tag": "mira"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 34, 44], "spread": 6.0, "tag": "guard", "attack_tag": "mira", "hp": 0.75},
+				{"do": "banner", "text": "DIE ELITEGARDE ERREICHT DIE KUPPEL", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)}]},
+			# Wendepunkt: Aldane mit der Waffe
+			{"when": {"t": "since", "f": "key", "s": 55.0}, "do": [
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 1, "at": ["mid", 6, 45], "spread": 1.0, "tag": "aldane", "hp": 0.5, "truce": true},
+				{"do": "cam_to", "tag": "aldane", "dist": 32.0, "pitch": -34.0, "time": 2.5},
+				{"do": "sfx", "name": "stinger"},
+				{"do": "banner", "text": "ALDANE ZIEHT DIE WAFFE", "secs": 3.2, "col": Color(1.0, 0.7, 0.4)},
+				radio("Henrik Aldane", C_ALDANE, "Im Namen des Rates: Das Prisma wird gesichert. Elitegarde, vor!", 6.0),
+				radio("Mira Tanaka", C_MIRA, "Er will es einsetzen. Ich habe ihn im Visier. Ich will ihn nicht töten.", 6.0)]},
+			{"when": {"t": "since", "f": "key", "s": 66.0}, "do": [{"do": "cam_to", "at": ["mid", 0, 45], "time": 2.0}]},
+			# Höhepunkt: die letzte Welle und Elins Armee
+			{"when": {"t": "since", "f": "key", "s": 75.0}, "do": [
+				{"do": "flag", "f": "last"},
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "AKT 3 – DIE LETZTE STUNDE", "secs": 3.4, "col": Color(1.0, 0.45, 0.35)},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 6, "at": ["mid", -30, 40], "spread": 9.0, "tag": "guard", "attack_tag": "mira"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 3, "at": ["mid", -34, 44], "spread": 7.0, "tag": "guard", "attack_tag": "mira", "hp": 0.75},
+				{"do": "spawn", "side": "enemy", "def": "shadow_tech", "n": 3, "at": ["mid", 30, 38], "spread": 6.0, "tag": "guard", "attack_tag": "mira"},
+				radio("Elin Voss", C_ELIN, "Alle Einheiten auf die Kuppel! Das Prisma darf nicht fallen, an niemanden!", 6.0)]},
+			{"when": {"t": "tag_dead", "tag": "mira", "n": 1}, "do": [radio("Elin Voss", C_ELIN, "Mira! Nein... Haltet die Kuppel, für sie!", 6.0)]},
+		],
+		"lose": [{"c": {"t": "any", "c": [{"t": "tag_dead", "tag": "mira", "n": 1}, {"t": "tag_dead", "tag": "brandt", "n": 1}]}, "text": "Mira oder Dr. Brandt sind gefallen."}],
 	}

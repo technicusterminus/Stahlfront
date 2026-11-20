@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cg0imdnkhe08s"
+
+[deps]
+
+files=["res://balance_navy.txt.Start.translation", "res://balance_navy.txt.Pos.translation", "res://balance_navy.txt.Fac.translation", "res://balance_navy.txt.Alive.translation", "res://balance_navy.txt.Units.translation", "res://balance_navy.txt.Bldgs.translation", "res://balance_navy.txt.Kills.translation", "res://balance_navy.txt.Losses.translation", "res://balance_navy.txt.Errors.translation"]
+
+source_file="res://balance_navy.txt.csv"
+dest_files=["res://balance_navy.txt.Start.translation", "res://balance_navy.txt.Pos.translation", "res://balance_navy.txt.Fac.translation", "res://balance_navy.txt.Alive.translation", "res://balance_navy.txt.Units.translation", "res://balance_navy.txt.Bldgs.translation", "res://balance_navy.txt.Kills.translation", "res://balance_navy.txt.Losses.translation", "res://balance_navy.txt.Errors.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

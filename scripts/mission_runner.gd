@@ -177,6 +177,11 @@ func _cond(c: Dictionary) -> bool:
 			return Game.hud.powers_panel.visible
 		"flag":
 			return flags.has(c["f"])
+		"tag_hurt":
+			for u in _alive(c["tag"]):
+				if u.hp < u.max_hp * float(c.get("frac", 0.99)):
+					return true
+			return false
 		"since":
 			return flags.has(c["f"]) and Game.time - float(flags[c["f"]]) >= float(c["s"])
 		"not":
@@ -251,6 +256,9 @@ func _do(a: Dictionary) -> void:
 			Game.cam.shake(float(a.get("n", 1.2)), ep)
 		"end":
 			_cine_end_pending = true
+		"heal":
+			for u in _alive(a["tag"]):
+				u.hp = u.max_hp
 		"truce":
 			for u in _alive(a["tag"]):
 				u.set_meta("truce", true)
@@ -331,6 +339,7 @@ func _spawn_building(a: Dictionary) -> void:
 
 ## Testspieler (--missionplay): spielt Tutorial 1 und 3 automatisch durch, um die Zielbedingungen zu prüfen.
 var _play_step := 0
+var _play_t := 0.0
 var _dbg_i := -1
 func _autoplay() -> void:
 	var t = Game.time - t0
@@ -369,6 +378,38 @@ func _autoplay() -> void:
 			for u in _alive("drone"):
 				Game.apply_damage(u, 99999.0, "rocket", 1, null)   # Testhilfe: Drohne gilt als abgeschossen
 			_play_step = 2
+	elif m["id"] == "c6":
+		var army = _alive("army")
+		for u in _alive("mira") + _alive("brandt"):
+			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht (geprüft wird der Ablauf)
+		if _play_step == 0 and t > 1.0:
+			for u in army:
+				u.cmd_move(_pos(["mid", -30, 45]) + Vector3(randf_range(-5, 5), 0, randf_range(-5, 5)), true)
+			_play_step = 1
+		elif _play_step == 1 and done.has("advance"):
+			for u in _alive("bombers"):
+				Game.apply_damage(u, 99999.0, "bomb", 1, null)   # Testhilfe: Bomber gelten als abgeschossen
+			for u in army:
+				u.cmd_move(_pos(["mid", 0, 45]) + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)), true)
+			_play_t = t
+			_play_step = 2
+		elif _play_step == 2 and not done.has("mira") and t - _play_t > 40.0 and int(t) % 4 == 0:
+			for u in _alive("city"):
+				Game.apply_damage(u, 99999.0, "shell", 0, null)   # Testhilfe: Stadt gilt als geräumt
+			for u in _alive("mira") + _alive("brandt"):
+				u.cmd_move(_pos(["mid", 0, 45]) + Vector3(randf_range(-2, 2), 0, randf_range(-2, 2)))
+				if u.global_position.distance_to(_pos(["mid", 0, 45])) > 30.0 and int(t) % 8 == 0:
+					u.global_position = u.global_position.move_toward(_pos(["mid", 0, 45]), 14.0)   # Testhilfe: Vorankommen sichern
+		elif _play_step == 2 and done.has("mira"):
+			_play_step = 3
+		elif _play_step == 3 and done.has("hold") and not done.has("disarm") and not _alive("aldane").is_empty() and int(t) % 5 == 0:
+			for u in _alive("aldane"):
+				Game.apply_damage(u, 0.2, "bullet", 0, null)   # Testhilfe: ein leichter Treffer auf die Waffe
+		elif _play_step == 3 and done.has("disarm"):
+			_play_step = 4
+		elif _play_step == 4 and flags.has("last") and int(t * 2.0) % 6 == 0:
+			for u in _alive("guard"):
+				Game.apply_damage(u, 99999.0, "shell", 0, null)   # Testhilfe: Angriff gilt als abgewehrt
 	elif m["id"] == "c5":
 		var esc = _alive("escort")
 		if _play_step == 0 and t > 1.0:

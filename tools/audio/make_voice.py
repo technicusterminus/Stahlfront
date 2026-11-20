@@ -8,7 +8,7 @@ Danach:  python tools/audio/process_voice.py   (Funkfilter, Zuschneiden, Ablage 
 """
 import base64, json, os, subprocess, sys, urllib.request, wave
 
-MODEL = "openai/gpt-audio-mini"
+MODEL = os.environ.get("VOICE_MODEL", "openai/gpt-audio")
 HERE = os.path.dirname(os.path.abspath(__file__))
 RAW = os.path.join(HERE, "raw")
 
