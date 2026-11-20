@@ -378,6 +378,26 @@ func _autoplay() -> void:
 			for u in _alive("drone"):
 				Game.apply_damage(u, 99999.0, "rocket", 1, null)   # Testhilfe: Drohne gilt als abgeschossen
 			_play_step = 2
+	elif m["id"] == "r1":
+		if _play_step == 0 and t > 2.0:
+			for r in ["supply", "power", "barracks", "factory"]:
+				_spawn_building({"side": "me", "role": r, "near": ["me", 12, 12]})
+			_play_step = 1
+		elif _play_step == 1 and t > 6.0:
+			for b in Game.buildings:
+				if b.owner_id == 0 and b.def["role"] == "barracks":
+					for i in 10:
+						b.queue_unit(_def_id("me", "inf"))
+			_play_step = 2
+		elif _play_step >= 2 and t > 20.0 + 25.0 * float(_play_step - 2) and _play_step < 20:
+			for b in Game.buildings:
+				if b.owner_id == 0 and b.def["role"] == "barracks":
+					for i in 6:
+						b.queue_unit(_def_id("me", "inf"))
+				elif b.owner_id == 0 and b.def["role"] == "factory":
+					for i in 2:
+						b.queue_unit(_def_id("me", "tank"))
+			_play_step += 1
 	elif m["id"] == "c7":
 		for u in _alive("elin") + _alive("mira") + _alive("brandt"):
 			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht

@@ -3,6 +3,12 @@ extends RefCounted
 
 const Missions = preload("res://scripts/missions.gd")
 
+const CAMPAIGN_TITLES := {
+	"west": "Das Licht über Lysa (Westbund)",
+	"red": "Der lange Marsch nach Aurelia (Rote Allianz)",
+	"shadow": "Wer am Feuer sitzt (Schattenfront)",
+}
+
 static func open(hud) -> void:
 	var layer = hud._dim_layer()
 	layer.color = Color(0.02, 0.04, 0.08, 0.97)
@@ -12,15 +18,19 @@ static func open(hud) -> void:
 	var fac: String = hud._cfg["faction"]
 	var fname: String = Defs.factions[fac]["name"]
 	Game.mission_faction = fac
-	v.add_child(hud._label("Tutorials spielst du mit deiner Fraktion aus dem Hauptmenü: %s. Die Kampagne führt den Westbund." % fname, 14, Color(0.7, 0.8, 0.9)))
+	v.add_child(hud._label("Tutorials spielst du mit deiner Fraktion aus dem Hauptmenü: %s. Jede Fraktion erzählt dieselbe Geschichte aus ihrer Sicht." % fname, 14, Color(0.7, 0.8, 0.9)))
 	v.add_child(HSeparator.new())
 	v.add_child(hud._label("Tutorial", 18, Color(0.55, 0.85, 1.0)))
 	for id in Missions.ids("tutorial"):
 		v.add_child(_row(hud, layer, id))
 	v.add_child(HSeparator.new())
-	v.add_child(hud._label("Kampagne: Das Licht über Lysa (Westbund)", 18, Color(0.55, 0.85, 1.0)))
-	for id in Missions.ids("campaign"):
-		v.add_child(_row(hud, layer, id))
+	for fk in ["west", "red", "shadow"]:
+		var ids: Array = Missions.campaign_ids(fk)
+		if ids.is_empty():
+			continue
+		v.add_child(hud._label("Kampagne: %s" % CAMPAIGN_TITLES[fk], 18, Color(0.55, 0.85, 1.0)))
+		for id in ids:
+			v.add_child(_row(hud, layer, id))
 	v.add_child(HSeparator.new())
 	v.add_child(hud._button("Zurück", func(): layer.queue_free(), Vector2(140, 40)))
 

@@ -20,6 +20,11 @@ const C_LENA := Color(1.0, 0.65, 0.55)
 const C_BRANDT := Color(0.8, 0.9, 0.75)
 const C_ALDANE := Color(0.9, 0.75, 0.55)
 const C_REYES := Color(0.65, 0.9, 1.0)
+const C_WOLKOW := Color(1.0, 0.55, 0.5)
+const C_NASTJA := Color(1.0, 0.75, 0.6)
+const C_FUNKE := Color(1.0, 0.85, 0.45)
+const C_ZELJENKO := Color(0.95, 0.5, 0.55)
+const C_LASAREW := Color(0.85, 0.7, 0.65)
 const C_KARGA := Color(0.95, 0.8, 0.6)
 
 static func radio(who: String, col: Color, text: String, secs := 0.0) -> Dictionary:
@@ -32,13 +37,21 @@ static func at(t: float, a: Dictionary) -> Dictionary:
 	return d
 
 static func list() -> Array:
-	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4(), _c5(), _c6(), _c7()]
+	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4(), _c5(), _c6(), _c7(), _r1()]
 
 static func by_id(id: String) -> Dictionary:
 	for m in list():
 		if m["id"] == id:
 			return m
 	return {}
+
+## Kapitel einer Fraktionskampagne in Reihenfolge ("west", "red", "shadow").
+static func campaign_ids(fac: String) -> Array:
+	var out: Array = []
+	for m in list():
+		if m["kind"] == "campaign" and String(m["faction"]) == fac:
+			out.append(m["id"])
+	return out
 
 static func ids(kind: String) -> Array:
 	var out: Array = []
@@ -74,7 +87,7 @@ static func unlocked(id: String) -> bool:
 	var m = by_id(id)
 	if m.is_empty() or m["kind"] == "tutorial":
 		return true
-	var camp = ids("campaign")
+	var camp = campaign_ids(String(m["faction"]))
 	var i = camp.find(id)
 	return i <= 0 or is_done(camp[i - 1])
 
@@ -728,4 +741,94 @@ static func _c7() -> Dictionary:
 			{"when": {"t": "tag_dead", "tag": "elin", "n": 1}, "do": [radio("Mira Tanaka", C_MIRA, "Elin! Elin, antworte!", 5.0)]},
 		],
 		"lose": [{"c": {"t": "tag_dead", "tag": "elin", "n": 1}, "text": "Elin Voss ist gefallen."}],
+	}
+
+# ---------------------------------------------------------------- Rote Allianz: Der lange Marsch nach Aurelia
+
+static func _r1() -> Dictionary:
+	return {
+		"id": "r1", "kind": "campaign", "title": "Kapitel 1: Die Halle in Kessel-Ost", "faction": "red", "enemy_faction": "shadow", "next": "",
+		"brief": "Jahr fünfzehn nach dem Blackout. Marschall Ilja Wolkow, „der Bär“, steht in der Halle, in der alles begann. Damals war er Vorarbeiter, und keine der zweihundert Maschinen lief mehr. Heute ist die Halle das Herz von Kessel-Ost, und der Rat der Genossen verlangt einen Marsch zum Prisma.\n\nZuerst aber muss Kessel-Ost aus eigener Kraft stehen: Nachschub, Strom, Kaserne, Fabrik. Wo der Westbund rechnet, arbeitet die Allianz, und je mehr Hände zusammenstehen, desto stärker ist jede Einheit (Hordenbonus). Aus den Bergen werden Raubzüge der Schattenfront kommen, die nehmen, was nicht bewacht wird.\n\nAuftrag: Baue Nachschub, Kraftwerk, Kaserne und Fabrik, stelle zehn Kampfeinheiten auf und halte Kessel-Ost, bis die Uhr 8:00 zeigt.",
+		"map": {"name": "Kessel-Ost", "size": 240, "water": 0.2, "islands": 0.0, "resources": 0.7, "hills": 0.3, "forest": 0.3, "layout": 1, "seed": 5201},
+		"hour": 6.0, "difficulty": 1, "credits": 4500, "ai": "off",
+		"intro": [
+			at(0.0, {"do": "cam_to", "at": ["me", 0, 10], "dist": 130.0, "yaw": 160.0, "pitch": -34.0, "time": 0.1}),
+			at(0.3, {"do": "cam_to", "at": ["me", 0, 14], "dist": 56.0, "yaw": 190.0, "pitch": -48.0, "time": 14.0}),
+			at(0.5, {"do": "title", "text": "KAPITEL 1", "sub": "DIE HALLE IN KESSEL-OST  ·  Jahr 15 nach dem Blackout", "secs": 6.0}),
+			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "In dieser Halle standen zweihundert Maschinen, und keine lief mehr. Am zwölften Tag habe ich gesagt: Wir haben Hände. Wir haben Eisen. Wir bauen es neu.")),
+			at(3.0, radio("Dmitri Karpow", C_FUNKE, "Und ich habe als Einziger gelacht, Chef! Womit fangen wir diesmal an?")),
+			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "Mit dem Kessel, Dmitri. Wie immer.")),
+			at(4.0, {"do": "end"})],
+		"outro": [
+			at(0.0, {"do": "cam_to", "at": ["me", 0, 10], "dist": 85.0, "yaw": 200.0, "pitch": -26.0, "time": 12.0}),
+			at(1.0, radio("Ilja Wolkow", C_WOLKOW, "Kessel-Ost steht. Wer uns im Dunkeln nehmen wollte, hat sich an Eisen die Zähne ausgebissen.")),
+			at(1.0, radio("Irina Zeljenko", C_ZELJENKO, "Der Rat der Genossen erwartet jetzt Ergebnisse, Marschall: Wann marschieren wir?")),
+			at(1.0, radio("Ilja Wolkow", C_WOLKOW, "Wenn ich weiß, wohin. Niemand wird vergessen, der für uns gestorben ist. Auch nicht der nächste.")),
+			at(4.0, {"do": "title", "text": "KESSEL-OST STEHT", "sub": "Die Rote Allianz marschiert bald", "secs": 6.0}),
+			at(5.0, {"do": "end"})],
+		"objectives": [
+			{"id": "supply", "text": "Baue ein Nachschubzentrum.", "c": {"t": "build", "role": "supply", "n": 1}},
+			{"id": "power", "text": "Baue ein Kraftwerk.", "c": {"t": "build", "role": "power", "n": 1}, "if_power": true},
+			{"id": "barracks", "text": "Baue eine Kaserne.", "c": {"t": "build", "role": "barracks", "n": 1}},
+			{"id": "factory", "text": "Baue eine Fahrzeugfabrik.", "c": {"t": "build", "role": "factory", "n": 1}},
+			{"id": "army", "text": "Stelle 10 Kampfeinheiten auf: viele Hände, starke Horde.", "c": {"t": "count", "role": "combat", "n": 10, "naval": false, "flying": false}},
+			{"id": "hold", "text": "Halte Kessel-Ost, bis die Uhr 8:00 zeigt.", "c": {"t": "time", "s": 480.0}},
+		],
+		"events": [
+			{"when": {"t": "time", "s": 3.0}, "do": [{"do": "banner", "text": "AKT 1 – WIR BAUEN ES NEU", "secs": 3.5}]},
+			# Funke zündet den Kessel
+			{"when": {"t": "time", "s": 90.0}, "do": [
+				{"do": "flash", "col": Color(1.0, 0.6, 0.25), "secs": 0.9},
+				{"do": "sfx", "name": "stinger"},
+				radio("Dmitri Karpow", C_FUNKE, "Chef, der Kessel brennt wieder! Ruß bis zum Dach, genau wie damals!", 6.0)]},
+			# Nastja hört das Signal
+			{"when": {"t": "time", "s": 160.0}, "do": [
+				radio("Nastja Petrowa", C_NASTJA, "Marschall, auf den alten Schienen liegt ein Signal. Ein Puls, regelmäßig wie ein Herz. Ich habe so etwas noch nie gehört.", 8.0),
+				radio("Ilja Wolkow", C_WOLKOW, "Schreib es auf, Nastja, und sag es keinem weiter, bis wir mehr wissen.", 6.0)]},
+			# Akt 2: Raubzüge
+			{"when": {"t": "time", "s": 200.0}, "do": [
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "AKT 2 – DIE RAUBZÜGE", "secs": 3.0, "col": Color(1.0, 0.45, 0.35)},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["en", 0, 20], "spread": 8.0, "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "tech", "n": 2, "at": ["en", 6, 22], "spread": 6.0, "attack": true},
+				radio("Oberst Lasarew", C_LASAREW, "Raubzug aus den Bergen, Ilja. Ich halte die Nordflanke. Verlass dich auf mich, wie immer.", 7.0)]},
+			# Wendepunkt: Stromausfall in der Halle
+			{"when": {"t": "time", "s": 300.0}, "do": [
+				{"do": "explode", "at": ["me", 0, -20], "size": 2.2},
+				{"do": "flash", "col": Color(0, 0, 0), "secs": 1.0},
+				{"do": "hour", "h": 22.5},
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "STROMAUSFALL – DIE HALLE LIEGT IM DUNKELN", "secs": 4.0, "col": Color(1.0, 0.7, 0.35)},
+				radio("Ilja Wolkow", C_WOLKOW, "Strom weg! Alles wie damals, nur dass wir diesmal Hände haben. Schulter an Schulter, Genossen!", 7.0)]},
+			{"when": {"t": "time", "s": 320.0}, "do": [
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 7, "at": ["en", 0, 20], "spread": 9.0, "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "tech", "n": 3, "at": ["en", 6, 22], "spread": 6.0, "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "at", "n": 2, "at": ["en", -6, 22], "spread": 4.0, "attack": true}]},
+			{"when": {"t": "time", "s": 360.0}, "do": [
+				{"do": "flash", "col": Color(1, 0.95, 0.8), "secs": 1.2},
+				{"do": "hour", "h": 7.0},
+				{"do": "banner", "text": "DER STROM IST ZURÜCK", "secs": 3.0, "col": Color(0.6, 1.0, 0.7)},
+				radio("Nastja Petrowa", C_NASTJA, "Der Strom ist zurück, und das Signal ist lauter geworden. Es hat den Ausfall nicht verursacht, aber es hat mitgetanzt.", 8.0)]},
+			# Hoffnung: Verstärkung aus der Halle
+			{"when": {"t": "time", "s": 390.0}, "do": [
+				{"do": "spawn", "side": "me", "def": "tank", "n": 3, "at": ["me", 26, 42], "spread": 6.0},
+				{"do": "spawn", "side": "me", "def": "inf", "n": 6, "at": ["me", 30, 44], "spread": 6.0},
+				{"do": "banner", "text": "VERSTÄRKUNG – DIE ARBEITER VON KESSEL-OST", "secs": 3.4, "col": Color(0.6, 1.0, 0.7)},
+				radio("Dmitri Karpow", C_FUNKE, "Die Schichten kommen, Chef! Alle, die noch einen Hammer halten können, und noch ein paar, die keinen halten können!", 7.0)]},
+			# Akt 3: die große Welle
+			{"when": {"t": "time", "s": 410.0}, "do": [
+				{"do": "banner", "text": "AKT 3 – DER LETZTE ANGRIFF", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)},
+				{"do": "sfx", "name": "siren"},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 8, "at": ["en", 0, 20], "spread": 10.0, "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "tech", "n": 4, "at": ["en", 6, 22], "spread": 7.0, "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "buggy", "n": 3, "at": ["en", -8, 22], "spread": 6.0, "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "arty", "n": 1, "at": ["en", 0, 30], "spread": 2.0, "attack": true},
+				radio("Irina Zeljenko", C_ZELJENKO, "Das ist der Angriff, auf den der Rat gewartet hat. Haltet die Linie, Genossen, für die Allianz!", 7.0)]},
+			# Auflösung: Morgenlicht
+			{"when": {"t": "time", "s": 460.0}, "do": [
+				{"do": "flash", "col": Color(1.0, 0.9, 0.7), "secs": 1.6},
+				{"do": "hour", "h": 7.8},
+				{"do": "banner", "text": "DER MORGEN GRAUT ÜBER KESSEL-OST", "secs": 3.0, "col": Color(1.0, 0.9, 0.6)}]},
+		],
+		"lose": [],
 	}
