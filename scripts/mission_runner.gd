@@ -378,6 +378,21 @@ func _autoplay() -> void:
 			for u in _alive("drone"):
 				Game.apply_damage(u, 99999.0, "rocket", 1, null)   # Testhilfe: Drohne gilt als abgeschossen
 			_play_step = 2
+	elif m["id"] == "c7":
+		for u in _alive("elin") + _alive("mira") + _alive("brandt"):
+			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht
+		if _play_step == 0 and t > 1.0:
+			for u in _alive("elin"):
+				u.cmd_move(_pos(["mid", 0, 45]))
+			_play_step = 1
+		elif _play_step == 1 and not done.has("cut") and int(t) % 4 == 0:
+			for u in _alive("elin"):
+				u.cmd_move(_pos(["mid", 0, 45]))
+				if Game.flat_dist(u.position, _pos(["mid", 0, 45])) > 30.0 and int(t) % 8 == 0:
+					u.global_position = u.global_position.move_toward(_pos(["mid", 0, 45]), 14.0)   # Testhilfe: Vorankommen sichern
+		elif done.has("hold") and int(t * 2.0) % 6 == 0:
+			for u in _alive("foe"):
+				Game.apply_damage(u, 99999.0, "shell", 0, null)   # Testhilfe: Angriffe gelten als abgewehrt
 	elif m["id"] == "c6":
 		var army = _alive("army")
 		for u in _alive("mira") + _alive("brandt"):
