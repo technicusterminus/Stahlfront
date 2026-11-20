@@ -338,7 +338,8 @@ def head_shape(nx, ny, nz):
 def make_head(name, scale, mat_skin, mat_lip, keep=None, smooth=0):
     """Kopfnetz. keep(nx,ny,nz) wählt Flächen (für Haar-/Bartschalen); ohne keep: ganzer Kopf mit Lippenmaterial."""
     bm = bmesh.new()
-    bmesh.ops.create_uvsphere(bm, u_segments=80, v_segments=52, radius=1.0)
+    # Kopf feiner, Schalen (Haar, Bart, Lippen) gröber: sie werden anschließend noch geglättet
+    bmesh.ops.create_uvsphere(bm, u_segments=(64 if (keep is None or name == "Lips") else 40), v_segments=(40 if (keep is None or name == "Lips") else 26), radius=1.0)
     for v in bm.verts:
         v.co.x, v.co.y, v.co.z = head_shape(v.co.x, v.co.y, v.co.z)
     if keep is not None:

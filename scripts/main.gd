@@ -170,7 +170,7 @@ func _environment() -> void:
 	env.ssil_enabled = true
 	env.ssil_intensity = 0.8
 	env.glow_enabled = true
-	env.glow_intensity = 0.7
+	env.glow_intensity = 0.55
 	env.glow_bloom = 0.04
 	env.glow_hdr_threshold = 1.1
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_SCREEN
@@ -186,9 +186,30 @@ func _environment() -> void:
 	env.adjustment_enabled = true
 	env.adjustment_contrast = 1.08
 	env.adjustment_saturation = 1.12
+	# Spiegelungen auf Wasser und glatten Flächen
+	env.ssr_enabled = args.has("ssr")
+	env.ssr_max_steps = 48
+	env.ssr_fade_in = 0.15
+	env.ssr_fade_out = 2.0
+	env.ssao_power = 1.6
+	env.ssao_horizon = 0.06
+	for gl in [3, 4]:
+		env.set_glow_level(gl, 0.8)
 	var we = WorldEnvironment.new()
 	we.environment = env
 	world.add_child(we)
+	# Nachbearbeitung (Schärfen, Farbgebung, Vignette, Filmkorn) unter der Oberfläche
+	if not args.has("nopost"):
+		var post_layer = CanvasLayer.new()
+		post_layer.layer = 5
+		var rect = ColorRect.new()
+		rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var pm = ShaderMaterial.new()
+		pm.shader = load("res://shaders/post.gdshader")
+		rect.material = pm
+		post_layer.add_child(rect)
+		add_child(post_layer)
 	sun = DirectionalLight3D.new()
 	sun.light_color = Color(1.0, 0.94, 0.84)
 	sun.light_energy = 1.5
