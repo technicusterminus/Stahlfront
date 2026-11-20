@@ -414,7 +414,7 @@ static func _c3() -> Dictionary:
 		"map": {"name": "Eisenkamm-Pass", "size": 320, "water": 0.35, "islands": 0.0, "resources": 0.5, "hills": 0.85, "forest": 0.3, "layout": 1, "seed": 5303, "dry_core": 34.0, "biome": "alpine", "sites": PASS_SITES},
 		"hour": 14.0, "difficulty": 1, "credits": 2000, "ai": "off",
 		"setup": [
-			{"do": "spawn", "side": "me", "def": "harv", "n": 6, "at": ["me", 0, 20], "spread": 9.0, "tag": "convoy", "speed": 0.38},
+			{"do": "spawn", "side": "me", "def": "harv", "n": 6, "at": ["me", 0, 20], "spread": 9.0, "tag": "convoy", "speed": 0.38, "hp": 1.6},
 			{"do": "spawn", "side": "me", "def": "tank", "n": 5, "at": ["me", 2, 28], "spread": 8.0},
 			{"do": "spawn", "side": "me", "def": "inf", "n": 6, "at": ["me", 0, 26], "spread": 8.0},
 			{"do": "spawn", "side": "me", "def": "at", "n": 3, "at": ["me", 6, 28], "spread": 4.0}],
@@ -481,7 +481,7 @@ static func _c3() -> Dictionary:
 				{"do": "explode", "at": ["mid", -12, 7], "size": 2.6},
 				{"do": "explode", "at": ["mid", 12, -6], "size": 2.6},
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", -26, -20], "spread": 8.0, "attack_tag": "convoy"},
-				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 28, 22], "spread": 7.0, "attack_tag": "convoy", "hp": 0.7},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 1, "at": ["mid", 28, 22], "spread": 7.0, "attack_tag": "convoy", "hp": 0.6},
 				radio("Mira Tanaka", C_MIRA, "Sperrfeuer am Pass. Weiterfahren. Nicht anhalten.", 6.0), radio("Dr. Brandt", C_BRANDT, "Hildegard hält durch! Hildegard hält durch!")]},
 		],
 		"lose": [{"c": {"t": "all", "c": [{"t": "not", "c": {"t": "flag", "f": "arrived"}}, {"t": "tag_dead", "tag": "convoy", "n": 3}]}, "text": "Drei Lkw des Konvois sind verloren."}],
