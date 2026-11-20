@@ -52,6 +52,11 @@ static func presets() -> Array:
 				"seed": 1000 + a * 37 + v * 211,
 			}
 			_presets.append(clean(sp))
+	_presets.append(clean({"name": "Mangrovenküste", "size": 288, "water": 0.58, "islands": 0.35,
+		"resources": 0.55, "hills": 0.20, "forest": 0.82, "layout": 3, "seed": 9211, "biome": "tropical",
+		"mist": [[0, 0, 66, 58, 0.022], [-38, 38, 30, 33, 0.017], [38, -38, 31, 33, 0.017]]}))
+	_presets.append(clean({"name": "Basaltinsel", "size": 304, "water": 0.55, "islands": 0.55,
+		"resources": 0.62, "hills": 0.44, "forest": 0.28, "layout": 2, "seed": 9237, "biome": "volcanic"}))
 	return _presets
 
 static func preset(i: int) -> Dictionary:

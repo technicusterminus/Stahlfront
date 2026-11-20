@@ -93,5 +93,25 @@
     "id": "bio_rooftop",
     "model": "black-forest-labs/flux.2-pro",
     "cost": 0.03
+  },
+  {
+    "id": "bio_patch_canvas",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_salvage_sheet",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_mangrove_silt",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_basalt_lava",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
   }
 ]

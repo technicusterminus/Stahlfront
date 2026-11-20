@@ -15,6 +15,8 @@ const WEIGHTS := {
 	"coast": {"crates": 1.8, "wreck": 0.7, "cairn": 0.6, "log": 0.8, "sign": 0.6, "fence": 0.5, "camp": 0.4},
 	"ashland": {"wreck": 2.2, "bones": 1.6, "camp": 1.2, "crates": 1.0, "sign": 0.6, "fence": 0.6, "stump": 0.6, "stone": 0.3},
 	"highland": {"stone": 3.0, "cairn": 2.0, "fence": 0.7, "hay": 0.3, "camp": 0.6, "bones": 0.5, "log": 0.5, "sign": 0.4},
+	"tropical": {"log": 2.1, "stump": 1.8, "crates": 1.0, "wreck": 0.6, "mushroom": 0.45},
+	"volcanic": {"stone": 3.3, "cairn": 1.6, "wreck": 0.8, "sign": 0.6, "bones": 0.4},
 }
 
 # Grundfarbe und Rauheit je Dekor-Art

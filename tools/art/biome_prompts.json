@@ -2,6 +2,26 @@
   "model": "black-forest-labs/flux.2-pro",
   "images": [
     {
+      "id": "bio_mangrove_silt",
+      "aspect_ratio": "1:1",
+      "prompt": "Top-down orthographic, seamless game albedo material scan of tropical mangrove tidal silt at low tide. Desaturated olive-brown mud, fine sand, faint drainage ripples, sparse tiny decomposing leaves and root impressions, moderately varied color readable from a strategy-game camera. Even overcast illumination, no reflections, no visible water volume, no cast shadows, no large roots, no frame, no labels. Fills the square with stone-free continuous silt, tileable at all edges."
+    },
+    {
+      "id": "bio_basalt_lava",
+      "aspect_ratio": "1:1",
+      "prompt": "Square top-down game albedo material scan of cooled volcanic basalt from a young oceanic island. Dark brown-charcoal rough aa lava, clustered vesicles and irregular overlapping clinker fragments, subtle rusty oxidation in crevices. Medium contrast at RTS camera distance. Tileable at all four edges, orthographic, uniform overcast lighting, no rim light or baked shadows, no glowing lava, no vegetation, no text, no border."
+    },
+    {
+      "id": "bio_patch_canvas",
+      "aspect_ratio": "1:1",
+      "prompt": "Square photoreal material scan for a weathered post-apocalyptic highland settlement tent roof, overhead orthographic view, flat tightly stretched faded olive-drab and sand heavy cotton canvas, a few irregular visibly sewn canvas repair patches, subtle dust and rain stains, matte woven fibers. Continuous game albedo swatch fills the entire square, moderate contrast at RTS camera distance, even diffuse illumination, no directional shadows, no creases with height silhouettes, no grommets at the borders, no people, no lettering, no symbols, no frame. Edges tile seamlessly."
+    },
+    {
+      "id": "bio_salvage_sheet",
+      "aspect_ratio": "1:1",
+      "prompt": "Square photoreal game material swatch for scavenged sheet-metal siding on a post-apocalyptic rural repair shed. Flat orthographic front view of narrow overlapping sheets with understated horizontal lap seams, faded zinc and dark gray-green remnants of paint, warm rust halos around occasional bolts, subtle long rain streaks. Moderate contrast at RTS camera distance, diffuse uniform lighting, no specular highlights, no deep directional shadows, no perspective, no text, no graffiti, no signage, no people, no border. Tileable across all four edges."
+    },
+    {
       "id": "bio_concrete",
       "aspect_ratio": "1:1",
       "prompt": "Seamless tileable top-down texture swatch of weathered poured concrete wall: pale grey, subtle formwork seams, rain streaks, hairline cracks, patches of dark grime and a little green algae. Flat orthographic view, even diffuse lighting, no shadows, no perspective, no objects, no text, fills the whole frame, game albedo texture."

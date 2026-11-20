@@ -462,7 +462,7 @@ func missing_prereq(def: Dictionary, pid: int) -> String:
 	return "Benötigt: " + ", ".join(miss)
 
 func enemies(a: int, b: int) -> bool:
-	return a != b and a >= 0 and b >= 0
+	return a != b and a >= 0 and b >= 0 and not players[a].get("neutral", false) and not players[b].get("neutral", false)
 
 # ---------------------------------------------------------------- Objekte
 
@@ -816,12 +816,12 @@ func check_victory() -> void:
 	if game_over:
 		return
 	for p in players:
-		if p["alive"] and player_strength(p["id"]) == 0:
+		if not p.get("neutral", false) and p["alive"] and player_strength(p["id"]) == 0:
 			p["alive"] = false
 			notify("%s (Spieler %d) wurde besiegt." % [p["name"], p["id"] + 1], Color(1, 0.8, 0.4))
 	var alive_ids: Array = []
 	for p in players:
-		if p["alive"]:
+		if p["alive"] and not p.get("neutral", false):
 			alive_ids.append(p["id"])
 	if mission != null:
 		# Im Missionsmodus entscheiden die Ziele über den Sieg; hier zählt nur die eigene Niederlage

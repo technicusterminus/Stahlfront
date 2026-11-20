@@ -525,11 +525,11 @@ static func _hut(parent: Node3D, t, p: Vector2, r: float) -> void:
 	_block(t, p, r + 0.4, r + 0.4)
 
 ## Halle mit Sägedach, Schornstein und Rohren.
-static func _hall(parent: Node3D, t, p: Vector2, w: float, d: float, h: float, ruin: float) -> void:
+static func _hall(parent: Node3D, t, p: Vector2, w: float, d: float, h: float, ruin: float, sheet := "corrugated") -> void:
 	var by: float = _base_y(t, p, w * 0.5, d * 0.5)
 	var local := Vector3(p.x - parent.position.x, by - parent.position.y, p.y - parent.position.z)
 	var metal := _mat("corrugated", Color(1, 1, 1) if ruin < 0.4 else Color(0.78, 0.72, 0.68), 0.7, 0.3, 0.35)
-	var wallm := _facade("corrugated", Color(1, 1, 1) if ruin < 0.4 else Color(0.78, 0.72, 0.68), h * 0.5, ruin, h * 0.7, 4.0, 0.7, Color(0.15, 0.2, 0.22))
+	var wallm := _facade(sheet, Color(1, 1, 1) if ruin < 0.4 else Color(0.78, 0.72, 0.68), h * 0.5, ruin, h * 0.7, 4.0, 0.7, Color(0.15, 0.2, 0.22))
 	var conc := _mat("concrete", Color(0.8, 0.8, 0.78), 0.9, 0.3)
 	_box(parent, Vector3(w, h, d), local + Vector3(0, h * 0.5, 0), wallm)
 	_box(parent, Vector3(w + 0.3, 0.5, d + 0.3), local + Vector3(0, 0.25, 0), conc)
@@ -822,6 +822,7 @@ static func _village(node: Node3D, t, c: Vector2, r: float, s: Dictionary) -> vo
 
 static func _industry(node: Node3D, t, c: Vector2, r: float, s: Dictionary) -> void:
 	var ruin: float = float(s.get("ruin", 0.0))
+	var sheet := "salvage_sheet" if s.get("salvage", false) else "corrugated"
 	var n := int(s.get("n", 5))
 	for i in n:
 		var a := TAU * float(i) / float(n) + 0.4
@@ -830,9 +831,9 @@ static func _industry(node: Node3D, t, c: Vector2, r: float, s: Dictionary) -> v
 		if i == 0 and s.get("furnace", true):
 			_furnace(node, t, p)
 		else:
-			_hall(node, t, p, _rng.randf_range(12.0, 20.0), _rng.randf_range(8.0, 12.0), _rng.randf_range(5.0, 7.5), ruin)
+			_hall(node, t, p, _rng.randf_range(12.0, 20.0), _rng.randf_range(8.0, 12.0), _rng.randf_range(5.0, 7.5), ruin, sheet)
 	# Tanks und Containerstapel
-	var tank := _mat("corrugated", Color(0.9, 0.95, 1.0), 0.55, 0.3, 0.5)
+	var tank := _mat(sheet, Color(0.9, 0.95, 1.0), 0.55, 0.3, 0.5)
 	for i in 3:
 		var a := _rng.randf() * TAU
 		var p := c + Vector2(cos(a), sin(a)) * r * _rng.randf_range(0.7, 1.0)
@@ -978,21 +979,27 @@ static func _bridge(node: Node3D, t, c: Vector2, s: Dictionary) -> void:
 	var iron := _flat(Color(0.18, 0.2, 0.22), 0.6)
 	var y0: float = t.height_at(c.x, c.y)
 	var n := int(length / 4.0)
+	var perp := Vector2(-ax.y, ax.x)
 	for i in n:
 		var u := -length * 0.5 + (float(i) + 0.5) * 4.0
 		var q := c + ax * u
 		var y: float = max(t.height_at(q.x, q.y), 1.0) + 0.5
 		var l := Vector3(q.x - node.position.x, y - node.position.y, q.y - node.position.z)
-		_box(node, Vector3(4.2, 0.35, 8.4), l, asphalt, -ang + PI * 0.5 if false else atan2(ax.x, ax.y))
-		var perp := Vector2(-ax.y, ax.x)
+		_box(node, Vector3(4.2, 0.35, 8.4), l, asphalt, -ang)
+		for along in [-1.0, 1.0]:
+			for across in [-3.0, -1.0, 1.0, 3.0]:
+				var paved: Vector2 = q + ax * float(along) + perp * float(across)
+				var cell := Game.world_to_cell(Vector3(paved.x, 0.0, paved.y))
+				if Game.in_grid(cell) and t.blocked[cell.y * Game.GRID + cell.x] == 0:
+					t.road_cells[cell.y * Game.GRID + cell.x] = 1
 		for sg in [-1.0, 1.0]:
 			var rp: Vector2 = perp * 4.0 * sg
-			_box(node, Vector3(4.2, 0.9, 0.35), l + Vector3(rp.x, 0.6, rp.y), stone, atan2(ax.x, ax.y))
+			_box(node, Vector3(4.2, 0.9, 0.35), l + Vector3(rp.x, 0.6, rp.y), stone, -ang)
 			if i % 3 == 0:
 				_cyl(node, 0.07, 0.09, 3.6, l + Vector3(rp.x, 2.0, rp.y), iron, 6)
 				_light_dot(node, l + Vector3(rp.x, 3.9, rp.y), Color(1.0, 0.85, 0.5))
 		if i % 4 == 0:
-			_box(node, Vector3(1.6, 3.0, 8.8), l + Vector3(0, -1.6, 0), stone, atan2(ax.x, ax.y))
+			_box(node, Vector3(1.6, 3.0, 8.8), l + Vector3(0, -1.6, 0), stone, -ang)
 
 ## Schienenstrang mit Schwellen und Schienen entlang einer Linie (Punkte relativ zum Anker).
 static func _rails(node: Node3D, t, c: Vector2, s: Dictionary, starts: Array) -> void:
@@ -1085,7 +1092,8 @@ static func _port(node: Node3D, t, c: Vector2, r: float, s: Dictionary) -> void:
 	_block(t, lp, 2.4, 2.4)
 
 static func _camp(node: Node3D, t, c: Vector2, r: float, s: Dictionary) -> void:
-	var canvas := _mat("plaster", Color(0.62, 0.6, 0.48), 0.95, 0.3)
+	var salvaged: bool = s.get("salvage", false)
+	var canvas := _mat("patch_canvas" if salvaged else "plaster", Color.WHITE if salvaged else Color(0.62, 0.6, 0.48), 0.95, 0.32)
 	var n := int(s.get("n", 5))
 	for i in n:
 		var a := TAU * float(i) / float(n) + 0.3

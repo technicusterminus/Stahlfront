@@ -16,6 +16,7 @@ var done := {}
 var fired := {}
 var tags := {}
 var tag_total := {}
+var _communities := {}
 var _check_t := 0.0
 var _mark_t := 0.0
 var _objs: Array = []
@@ -111,6 +112,9 @@ func _audit_land(node, path: Array) -> void:
 			_audit_land(node[k], path + [str(k)])
 	elif node is Array:
 		if node.size() == 3 and node[0] is String and (["me", "en", "mid"].has(node[0]) or String(node[0]).begins_with("site:")) and (node[1] is float or node[1] is int) and (node[2] is float or node[2] is int):
+			if String(node[0]).begins_with("site:") and not Game.sites.has(String(node[0]).substr(5)):
+				push_error("MISSION %s %s: unbekannter Ortsanker %s" % [m["id"], "/".join(path), node[0]])
+				return
 			if not _dry(_anchor(node[0]) + Vector3(float(node[1]), 0, float(node[2]))):
 				var base := _anchor(node[0])
 				var best = null
@@ -146,7 +150,10 @@ func _def_id(side: String, key: String) -> String:
 
 func _anchor(a: String) -> Vector3:
 	if a.begins_with("site:"):
-		return Game.sites.get(a.substr(5), Vector3.ZERO)
+		var key := a.substr(5)
+		if Game.sites.has(key):
+			return Game.sites[key]
+		push_error("MISSION %s: unbekannter Ortsanker %s" % [m["id"], a])
 	var p0: Vector3 = Game.players[0]["start"]
 	var p1: Vector3 = Game.players[1]["start"]
 	match a:
@@ -273,9 +280,14 @@ func _do(a: Dictionary) -> void:
 			_spawn_building(a)
 		"spawn":
 			_spawn_units(a)
+		"militia":
+			var volunteers: Dictionary = a.duplicate()
+			volunteers["side"] = "me"
+			_spawn_units(volunteers)
 		"convoy":
+			var spread: float = float(a.get("spread", 6.0))
 			for u in _alive(a["tag"]):
-				u.cmd_move(_pos(a["to"]) + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)))
+				u.cmd_move(_pos(a["to"]) + Vector3(randf_range(-spread, spread), 0, randf_range(-spread, spread)))
 		"cam_to":
 			_cam_to(a)
 		"title":
@@ -320,8 +332,17 @@ func _do(a: Dictionary) -> void:
 func _spawn_units(a: Dictionary) -> void:
 	var side: String = a.get("side", "me")
 	var owner = 0 if side == "me" else 1
-	var id: String = _def_id(side, a["def"])
 	var base: Vector3 = _pos(a["at"])
+	var id: String = _def_id(side, a["def"])
+	if side == "neutral":
+		var community: String = a.get("community", "Siedler")
+		if not _communities.has(community):
+			var p: Dictionary = Game.add_player("shadow", false, base)
+			p["neutral"] = true
+			p["name"] = community
+			p["color"] = Color(0.7, 0.66, 0.51)
+			_communities[community] = p["id"]
+		owner = _communities[community]
 	var spread: float = float(a.get("spread", 5.0))
 	var made: Array = []
 	var naval: bool = Defs.units[id]["naval"]
@@ -331,16 +352,17 @@ func _spawn_units(a: Dictionary) -> void:
 		var u = Game.spawn_unit(id, owner, Game.cell_center(c))
 		u.heading = 0.0
 		made.append(u)
-		if a.has("speed"):
+		if a.has("speed") or a.has("name"):
 			u.def = u.def.duplicate()
-			u.def["speed"] = float(u.def["speed"]) * float(a["speed"])
+			u.def["speed"] = float(u.def["speed"]) * float(a.get("speed", 1.0))
+			u.def["name"] = a.get("name", u.def["name"])
 		if a.has("hp"):
 			u.max_hp = float(u.max_hp) * float(a["hp"])
 			u.hp = u.max_hp
 		if a.has("dmg") and u.weapon != null:
 			u.weapon = u.weapon.duplicate()
 			u.weapon["dmg"] = float(u.weapon["dmg"]) * float(a["dmg"])
-		if a.get("truce", false):
+		if side == "neutral" or a.get("truce", false):
 			u.set_meta("truce", true)
 			u.weapon = null
 		if a.has("tag"):
@@ -374,18 +396,24 @@ func _spawn_building(a: Dictionary) -> void:
 						ok = false
 						break
 				if ok:
-					Game.spawn_building(id, owner, c, true)
+					var building = Game.spawn_building(id, owner, c, true)
+					if a.get("harvester", false) and a["role"] == "supply":
+						var harvester = Game.spawn_unit(Defs.harv_of(_faction(side)), owner, building._exit_point())
+						harvester.cmd_harvest()
 					Game.recalc_power(owner)
 					return
 
 # ---------------------------------------------------------------- Ablauf
 
-## Testspieler (--missionplay): spielt Tutorial 1 und 3 automatisch durch, um die Zielbedingungen zu prüfen.
+## Testspieler (--missionplay): führt Missionsziele mit Spielbefehlen durch.
 var _play_step := 0
 var _play_t := 0.0
 var _dbg_i := -1
 func _autoplay() -> void:
 	var t = Game.time - t0
+	if m.get("expedition", false):
+		_autoplay_expedition(t)
+		return
 	var dz = _mine(func(u): return u.def["role"] == "dozer")
 	if m["id"] == "t1":
 		if _play_step == 0 and t > 1.0 and not dz.is_empty():
@@ -404,18 +432,24 @@ func _autoplay() -> void:
 					for i in 3:
 						b.queue_unit(_def_id("me", "inf"))
 			_play_step = 4
+	elif m["id"] == "c1":
+		_autoplay_port_meridian(t)
 	elif m["id"] == "c2":
-		var wg = _alive("wing")
-		var legs = [[1.0, "mid", -34.0, 6.0], [25.0, "mid", 18.0, -30.0], [55.0, "en", -4.0, 4.0], [66.0, "me", 0.0, 10.0]]
-		if _play_step < legs.size() and t > float(legs[_play_step][0]):
-			print("AUTO c2 Etappe %d t=%d: Flieger %d" % [_play_step, int(t), wg.size()])
-			for u in wg:
-				u.cmd_move(_pos([legs[_play_step][1], legs[_play_step][2], legs[_play_step][3]]))
-			_play_step += 1
+		if t > 1.0:
+			var leg := 0
+			for o in _objs:
+				leg += 1
+				if done.has(o["id"]):
+					continue
+				if _play_step != leg:
+					_play_step = leg
+					for u in _alive("wing"):
+						u.cmd_move(_pos(o["mark"]))
+				break
 	elif m["id"] == "c3":
 		if _play_step == 0 and t > 1.0:
 			for u in _mine(func(u): return u.def["role"] != "dozer"):
-				u.cmd_move(_pos(["mid", 0, 0]) + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)), u.def["role"] == "combat")
+				u.cmd_move(_pos(["site:passhohe", 0, 0]) + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)), u.def["role"] == "combat")
 			_play_step = 1
 		elif _play_step == 1 and t > 150.0:
 			for u in _alive("drone"):
@@ -424,7 +458,7 @@ func _autoplay() -> void:
 	elif m["id"] == "r1":
 		if _play_step == 0 and t > 2.0:
 			for r in ["supply", "power", "barracks", "factory"]:
-				_spawn_building({"side": "me", "role": r, "near": ["me", 12, 12]})
+				_spawn_building({"side": "me", "role": r, "near": ["site:kesselhalle", 30, 30]})
 			_play_step = 1
 		elif _play_step == 1 and t > 6.0:
 			for b in Game.buildings:
@@ -444,7 +478,7 @@ func _autoplay() -> void:
 	elif m["id"] == "r2":
 		for u in _alive("nastja"):
 			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht
-		var stops = [["post1", ["mid", -24, 14]], ["post2", ["mid", 8, -18]], ["post3", ["mid", 34, -34]], ["home", ["me", 0, 18]]]
+		var stops = [["post1", ["site:westmast", 1, 2]], ["post2", ["site:mittelmast", -6, 5]], ["post3", ["site:ostmast", -4, 0]], ["home", ["site:bahnhof", 13, 8]]]
 		if int(t) % 4 == 0 and _play_step != int(t):
 			_play_step = int(t)
 			for st in stops:
@@ -461,7 +495,7 @@ func _autoplay() -> void:
 	elif m["id"] == "r3":
 		for u in _alive("funke") + _alive("mischa") + _alive("rescued"):
 			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht
-		var stops3 = [["march", ["mid", -26, 26]], ["tunnel", ["mid", -10, 10]], ["dig", ["mid", -10, 10]], ["carry", ["mid", 0, 0]]]
+		var stops3 = [["march", ["site:passdorf", 7, -2]], ["tunnel", ["site:tunnel", 5, -4]], ["dig", ["site:tunnel", 5, -4]], ["carry", ["site:passhohe", -8, 0]]]
 		if int(t) % 4 == 0 and _play_step != int(t):
 			_play_step = int(t)
 			for st in stops3:
@@ -487,13 +521,13 @@ func _autoplay() -> void:
 			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht
 		if _play_step == 0 and t > 1.0:
 			for u in _alive("elin"):
-				u.cmd_move(_pos(["mid", 0, 45]))
+				u.cmd_move(_pos(["site:kuppel", 0, 0]))
 			_play_step = 1
 		elif _play_step == 1 and not done.has("cut") and int(t) % 4 == 0:
 			for u in _alive("elin"):
-				u.cmd_move(_pos(["mid", 0, 45]))
-				if Game.flat_dist(u.position, _pos(["mid", 0, 45])) > 30.0 and int(t) % 8 == 0:
-					u.global_position = u.global_position.move_toward(_pos(["mid", 0, 45]), 14.0)   # Testhilfe: Vorankommen sichern
+				u.cmd_move(_pos(["site:kuppel", 0, 0]))
+				if Game.flat_dist(u.position, _pos(["site:kuppel", 0, 0])) > 30.0 and int(t) % 8 == 0:
+					u.global_position = u.global_position.move_toward(_pos(["site:kuppel", 0, 0]), 14.0)   # Testhilfe: Vorankommen sichern
 		elif done.has("hold") and int(t * 2.0) % 6 == 0:
 			for u in _alive("foe"):
 				Game.apply_damage(u, 99999.0, "shell", 0, null)   # Testhilfe: Angriffe gelten als abgewehrt
@@ -503,22 +537,22 @@ func _autoplay() -> void:
 			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht (geprüft wird der Ablauf)
 		if _play_step == 0 and t > 1.0:
 			for u in army:
-				u.cmd_move(_pos(["mid", -30, 45]) + Vector3(randf_range(-5, 5), 0, randf_range(-5, 5)), true)
+				u.cmd_move(_pos(["site:kuppel", -30, 0]) + Vector3(randf_range(-5, 5), 0, randf_range(-5, 5)), true)
 			_play_step = 1
 		elif _play_step == 1 and done.has("advance"):
 			for u in _alive("bombers"):
 				Game.apply_damage(u, 99999.0, "bomb", 1, null)   # Testhilfe: Bomber gelten als abgeschossen
 			for u in army:
-				u.cmd_move(_pos(["mid", 0, 45]) + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)), true)
+				u.cmd_move(_pos(["site:kuppel", 0, 0]) + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)), true)
 			_play_t = t
 			_play_step = 2
 		elif _play_step == 2 and not done.has("mira") and t - _play_t > 40.0 and int(t) % 4 == 0:
 			for u in _alive("city"):
 				Game.apply_damage(u, 99999.0, "shell", 0, null)   # Testhilfe: Stadt gilt als geräumt
 			for u in _alive("mira") + _alive("brandt"):
-				u.cmd_move(_pos(["mid", 0, 45]) + Vector3(randf_range(-2, 2), 0, randf_range(-2, 2)))
-				if u.global_position.distance_to(_pos(["mid", 0, 45])) > 30.0 and int(t) % 8 == 0:
-					u.global_position = u.global_position.move_toward(_pos(["mid", 0, 45]), 14.0)   # Testhilfe: Vorankommen sichern
+				u.cmd_move(_pos(["site:kuppel", 0, 0]) + Vector3(randf_range(-2, 2), 0, randf_range(-2, 2)))
+				if u.global_position.distance_to(_pos(["site:kuppel", 0, 0])) > 30.0 and int(t) % 8 == 0:
+					u.global_position = u.global_position.move_toward(_pos(["site:kuppel", 0, 0]), 14.0)   # Testhilfe: Vorankommen sichern
 		elif _play_step == 2 and done.has("mira"):
 			_play_step = 3
 		elif _play_step == 3 and done.has("hold") and not done.has("disarm") and not _alive("aldane").is_empty() and int(t) % 5 == 0:
@@ -533,11 +567,11 @@ func _autoplay() -> void:
 		var esc = _alive("escort")
 		if _play_step == 0 and t > 1.0:
 			for u in esc:
-				u.cmd_move(_pos(["mid", 22, -22]) + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
+				u.cmd_move(_pos(["site:fundstelle", -10, 3]) + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
 			_play_step = 1
 		elif _play_step == 1 and done.has("fetch"):
 			for u in _alive("falke") + _alive("pip"):
-				u.cmd_move(_pos(["me", 0, 14]) + Vector3(randf_range(-3, 3), 0, randf_range(-3, 3)))
+				u.cmd_move(_pos(["site:lazarett", 0, -8]) + Vector3(randf_range(-3, 3), 0, randf_range(-3, 3)))
 			for u in esc:
 				u.cmd_move(_pos(["mid", -20, 20]) + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
 			_play_step = 2
@@ -548,7 +582,7 @@ func _autoplay() -> void:
 					u.cmd_move(fk[0].position + Vector3(randf_range(-5, 5), 0, randf_range(-5, 5)), true)
 		elif _play_step == 2 and done.has("home"):
 			for u in _mine(func(u): return u.def["role"] == "combat" and not u.flying):
-				u.cmd_move(_pos(["me", 0, 6]) + Vector3(randf_range(-8, 8), 0, randf_range(-8, 8)), true)
+				u.cmd_move(_pos(["site:lazarett", 0, -16]) + Vector3(randf_range(-8, 8), 0, randf_range(-8, 8)), true)
 			_play_step = 3
 	elif m["id"] == "c4":
 		var gs = _mine(func(u): return u.def["role"] == "combat" and not u.flying)
@@ -558,10 +592,10 @@ func _autoplay() -> void:
 		var marks = [[1.0, -22.0, 0.0], [45.0, 0.0, 0.0], [90.0, 26.0, 0.0], [140.0, 38.0, 10.0], [200.0, 8.0, -4.0], [260.0, -4.0, -4.0], [320.0, 26.0, 0.0], [380.0, 38.0, 12.0], [440.0, 30.0, 6.0], [520.0, 36.0, 12.0]]
 		if _play_step < marks.size() and t > float(marks[_play_step][0]):
 			for bu in _alive("bridge"):
-				print("  Rest: %s bei %s (Abstand zur Mitte %d), naval=%s" % [bu.def["id"], str(bu.position), int(Game.flat_dist(bu.position, _anchor("mid"))), str(bu.naval)])
+				print("  Rest: %s bei %s (Abstand zur Mitte %d), naval=%s" % [bu.def["id"], str(bu.position), int(Game.flat_dist(bu.position, _anchor("site:sudbrucke"))), str(bu.naval)])
 			print("AUTO c4 Schritt %d t=%d: Brueckenverteidiger %d, eigene Bodeneinheiten %d, Gegner gesamt %d" % [_play_step, int(t), _alive("bridge").size(), gs.size(), Game.units.filter(func(u): return u.owner_id == 1 and u.alive).size()])
 			for u in gs:
-				u.cmd_move(_pos(["mid", marks[_play_step][1], marks[_play_step][2]]) + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
+				u.cmd_move(_pos(["site:sudbrucke", marks[_play_step][1], marks[_play_step][2]]) + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
 			_play_step += 1
 	elif m["id"] == "t3":
 		var us = _mine(func(u): return u.def["role"] == "combat")
@@ -577,6 +611,63 @@ func _autoplay() -> void:
 			for u in us:
 				u.cmd_move(_pos(["mid", 2, 0]) + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
 			_play_step = 3
+
+func _autoplay_expedition(t: float) -> void:
+	if t < 1.0 or t < _play_t:
+		return
+	_play_t = t + 6.0
+	for objective in _objs:
+		if done.has(objective["id"]):
+			continue
+		var condition: Dictionary = objective["c"]
+		if condition["t"] == "build":
+			_spawn_building({"role": condition["role"], "near": ["me", 13, 3]})
+		elif objective.has("mark"):
+			var target := _pos(objective["mark"])
+			for u in _alive("leitung"):
+				u.cmd_move(target)
+			var escort := _alive("eskorte") + _alive("miliz")
+			for i in escort.size():
+				var angle := TAU * float(i) / maxf(escort.size(), 1.0)
+				escort[i].cmd_move(target + Vector3(cos(angle), 0, sin(angle)) * 5.0, true)
+		elif objective["id"] == "abwehr":
+			var enemies := _alive("gegenschlag")
+			if not enemies.is_empty():
+				for u in _alive("eskorte") + _alive("miliz"):
+					u.cmd_move(enemies[0].position, true)
+		return
+
+func _autoplay_port_meridian(t: float) -> void:
+	if t < 1.0 or t < _play_t:
+		return
+	_play_t = t + 8.0
+	if _play_step == 0:
+		_spawn_building({"role": "supply", "near": ["me", 17, -12], "harvester": true})
+		_spawn_building({"role": "power", "near": ["me", -8, -8]})
+		_spawn_building({"role": "barracks", "near": ["me", 12, 8]})
+		_spawn_building({"role": "factory", "near": ["me", -2, 13]})
+		_play_step = 1
+	var base := _anchor("me")
+	var front := base + (_anchor("en") - base).normalized() * 19.0
+	var rally := Game.cell_center(Game.nearest_free(Game.world_to_cell(front)))
+	var army := _mine(func(u): return u.def["role"] == "combat" and not u.flying and not u.naval)
+	for u in army:
+		if u.order == "idle" and Game.flat_dist(u.position, rally) > 12.0:
+			u.cmd_move(rally, true)
+	for b in Game.buildings:
+		if b.owner_id != 0 or not b.complete or not b.queue.is_empty():
+			continue
+		match b.def["role"]:
+			"barracks":
+				b.has_rally = true
+				b.rally = rally
+				if army.size() < 24:
+					b.queue_unit(_def_id("me", "at" if int(t) % 3 == 0 else "inf"))
+			"factory":
+				b.has_rally = true
+				b.rally = rally
+				if army.size() < 32:
+					b.queue_unit(_def_id("me", "tank"))
 
 func _process(delta: float) -> void:
 	if main != null and main.args.has("missiondebug") and int(Game.time * 2.0) != _dbg_i and started and not finished and m["id"] == "c2":
@@ -658,6 +749,9 @@ func _finish(won: bool, text: String) -> void:
 		return
 	finished = true
 	print("MISSION %s: %s %s" % [m["id"], "SIEG" if won else "NIEDERLAGE", text])
+	if main != null and main.args.has("missionexit"):
+		get_tree().quit(0 if won else 1)
+		return
 	if won:
 		Missions.mark_done(m["id"])
 	Game.game_over = true

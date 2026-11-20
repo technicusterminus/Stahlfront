@@ -259,6 +259,7 @@ static func _trees(t, rng, kind) -> void:
 	var trunks := []
 	var cons := []
 	var leafs := []
+	var root_groups := []
 	for c in t.tree_cells:
 		for k in 2:
 			if tmul < 1.0 and rng.randf() > tmul:
@@ -269,6 +270,8 @@ static func _trees(t, rng, kind) -> void:
 			var s = rng.randf_range(0.75, 1.4)
 			var b = Basis(Vector3.UP, rng.randf() * TAU).scaled(Vector3(s, s, s))
 			trunks.append([Transform3D(b, Vector3(x, y + 1.2 * s, z)), Color(1, 1, 1)])
+			if bio.get("mangrove", false) and y < 2.8:
+				root_groups.append([Transform3D(b, Vector3(x, y, z)), Color.WHITE])
 			var is_conifer = y > 4.0 or kind.get_noise_2d(x, z) > 0.0
 			if bio.has("conifer"):
 				var cf: float = float(bio["conifer"])
@@ -290,6 +293,26 @@ static func _trees(t, rng, kind) -> void:
 	_emit_list(t, trunks, trunk, fog_trunk, true)
 	_emit_list(t, cons, conifer, conif_m, true)
 	_emit_list(t, leafs, leafy, leafy_m, true)
+	if not root_groups.is_empty():
+		_emit_list(t, root_groups, _mangrove_roots(), fog_trunk, true)
+
+static func _mangrove_roots() -> Mesh:
+	var roots := SurfaceTool.new()
+	roots.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var strut := CylinderMesh.new()
+	strut.radial_segments = 7
+	strut.rings = 1
+	strut.top_radius = 0.13
+	strut.bottom_radius = 0.055
+	var top := Vector3(0.0, 1.25, 0.0)
+	for i in 5:
+		var yaw := TAU * float(i) / 5.0
+		var foot := Vector3(cos(yaw) * 1.2, 0.0, sin(yaw) * 1.2)
+		var span := top - foot
+		strut.height = span.length()
+		var turn := Basis(Quaternion(Vector3.UP, span.normalized()))
+		roots.append_from(strut, 0, Transform3D(turn, (top + foot) * 0.5))
+	return roots.commit()
 
 static func _emit_list(t, arr: Array, mesh: Mesh, m: Material, shadows: bool) -> void:
 	var dict := {}

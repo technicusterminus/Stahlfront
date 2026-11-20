@@ -64,6 +64,18 @@ const TABLE := {
 		"snow_y": 11.0, "rocks": 1.8,
 		"fauna": {"goat": 6, "deer": 2}, "birds": {"eagle": 2, "crow": 2},
 	},
+	"tropical": {
+		"grass_a": Color(0.055, 0.19, 0.08), "grass_b": Color(0.16, 0.36, 0.12),
+		"blade": Color(0.37, 0.69, 0.31), "blade_amt": 0.66, "grass_dens": 1.0,
+		"conifer": 0.0, "trees": 1.0, "leaf": Color(0.21, 0.58, 0.20), "leaf_amt": 0.72,
+		"rocks": 0.4, "fauna": {"boar": 4}, "birds": {"gull": 5, "duck": 1}, "mangrove": true,
+	},
+	"volcanic": {
+		"grass_a": Color(0.125, 0.13, 0.105), "grass_b": Color(0.29, 0.26, 0.20),
+		"blade": Color(0.43, 0.40, 0.28), "blade_amt": 0.65, "grass_dens": 0.38,
+		"conifer": 0.15, "trees": 0.32, "dead": 0.5,
+		"rocks": 1.35, "fauna": {"goat": 2}, "birds": {"gull": 2, "eagle": 1},
+	},
 }
 
 static func get_biome(name: String) -> Dictionary:

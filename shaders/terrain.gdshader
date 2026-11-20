@@ -11,6 +11,9 @@ uniform sampler2D zone_tex : filter_linear, repeat_disable;
 uniform float snow_y = 999.0;
 uniform vec3 bio_a = vec3(-1.0);
 uniform vec3 bio_b = vec3(-1.0);
+uniform int surface_kind = 0;
+uniform sampler2D landmark_tex : source_color, repeat_enable, filter_linear_mipmap;
+uniform vec2 crater_center;
 
 varying vec3 wpos;
 float fog_at(vec2 uv) {
@@ -56,6 +59,20 @@ void fragment() {
 	col = mix(col, vec3(0.86, 0.89, 0.93) * (0.92 + 0.08 * n3), snow);
 	col *= 0.93 + 0.14 * n3;
 	float rough = 0.93;
+	vec3 glow = vec3(0.0);
+	if (surface_kind == 1) {
+		float tidal = 1.0 - smoothstep(0.2, 3.0, wpos.y + (n2 - 0.5) * 1.7);
+		col = mix(col, texture(landmark_tex, wpos.xz * 0.22).rgb, tidal * 0.75);
+	} else if (surface_kind == 2) {
+		float radial = distance(wpos.xz, crater_center) + (n2 - 0.5) * 3.0;
+		float clinker = 1.0 - smoothstep(24.0, 40.0, radial);
+		vec3 basalt = texture(landmark_tex, wpos.xz * 0.18).rgb;
+		col = mix(col, basalt, max(0.26, clinker));
+		float pool = (1.0 - smoothstep(3.5, 6.2, radial)) * (1.0 - smoothstep(14.0, 16.5, wpos.y));
+		float veins = smoothstep(0.38, 0.67, n2 * 0.7 + n3 * 0.3 + 0.08 * sin(TIME * 1.25 + n1 * 18.0));
+		col = mix(col, mix(vec3(0.14, 0.018, 0.008), vec3(0.6, 0.08, 0.01), veins), pool);
+		glow = mix(vec3(0.25, 0.025, 0.005), vec3(1.8, 0.36, 0.035), veins) * pool;
+	}
 
 	// Basisboden je Fraktion (aus der Belegungs-Textur, Rand mit Rauschen aufgebrochen)
 	vec4 base = texture(occ_tex, wpos.xz / world_size + 0.5);
@@ -82,10 +99,11 @@ void fragment() {
 	col = mix(col, cs, ms * (1.0 - mw) * (1.0 - mr));
 	rough = mix(rough, 0.78, max(mw, mr));
 
-	col *= 1.0 - 0.3 * wetness;
+	col *= 1.0 - 0.18 * wetness;
 	rough = mix(rough, 0.42, wetness);
 	float vis = fog_at(wpos.xz / world_size + 0.5);
 	ALBEDO = col * vis;
+	EMISSION = glow * vis;
 	ROUGHNESS = rough;
 	SPECULAR = 0.25 * vis;
 	NORMAL_MAP = texture(noise_n, wpos.xz * 0.11).rgb;

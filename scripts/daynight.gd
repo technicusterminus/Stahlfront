@@ -100,18 +100,25 @@ func apply(h: float) -> void:
 	else:
 		sun.rotation = Vector3(deg_to_rad(-38.0), deg_to_rad(38.0 + 180.0), 0.0)
 	var rn: float = Game.rain
+	var night := night_amount(h)
 	if rn > 0.01:
-		var grey := Color(0.36, 0.39, 0.43)
+		var night_rain := night * rn
+		var grey := Color(0.36, 0.39, 0.43).lerp(Color(0.23, 0.29, 0.37), night)
 		psm.sky_top_color = psm.sky_top_color.lerp(grey * 0.8, rn * 0.75)
 		psm.sky_horizon_color = psm.sky_horizon_color.lerp(grey, rn * 0.8)
 		psm.ground_horizon_color = psm.ground_horizon_color.lerp(grey, rn * 0.6)
-		sun.light_energy *= 1.0 - 0.55 * rn
-		env.ambient_light_energy *= 1.0 - 0.1 * rn
+		# Mondlicht und Wolkenaufhellung lassen Silhouetten im Nachtregen lesbar.
+		sun.light_energy *= 1.0 - 0.55 * rn * (1.0 - night)
+		sun.light_energy += 0.38 * night_rain
+		env.ambient_light_energy = env.ambient_light_energy * (1.0 - 0.1 * rn) + 0.6 * night_rain
+		env.tonemap_exposure += 0.18 * night_rain
 		env.fog_light_color = env.fog_light_color.lerp(grey, rn * 0.7)
-		env.fog_density = 0.0016 + 0.0042 * rn
-		env.volumetric_fog_density = 0.006 + 0.01 * rn
+		env.fog_density = 0.0016 + lerpf(0.0042, 0.0014, night) * rn
+		env.volumetric_fog_density = 0.006 + lerpf(0.01, 0.004, night) * rn
 	else:
 		env.fog_density = 0.0016
 		env.volumetric_fog_density = 0.006
-	Game.sight_mult = (1.0 - 0.28 * night_amount(h)) * (1.0 - 0.18 * rn)
+	Game.sight_mult = (1.0 - 0.28 * night) * (1.0 - 0.18 * rn)
 	Game.hour = h
+	if is_instance_valid(Game.terrain):
+		Game.terrain.update_mist(h, rn)

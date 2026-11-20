@@ -2,7 +2,7 @@
 
 **Echtzeitstrategie in Godot 4.7** – drei grundverschiedene Fraktionen, Basisbau mit Nachschub-Wirtschaft, Generalsfähigkeiten, Superwaffen, Nebel des Krieges, Luftwaffe und ein Computergegner. Alle Grafik, Effekte und der Großteil der Modelle entstehen im Code oder in Blender-Skripten; es werden keine fremden Assets verwendet.
 
-> Stand: spielbarer Prototyp (Skirmish gegen KI oder Zuschauermodus). Vier Tutorials und der Beginn einer Kampagne, Ton (Stimmen und Geräusche), kein Mehrspieler. Siehe [Stand und bekannte Lücken](#stand-und-bekannte-lücken).
+> Stand: spielbarer Prototyp (Skirmish gegen KI oder Zuschauermodus). Vier Tutorials und drei Kampagnen mit je sieben Kapiteln, Ton (Stimmen und Geräusche), kein Mehrspieler. Siehe [Stand und bekannte Lücken](#stand-und-bekannte-lücken).
 
 ## Visuelle Testfassung
 
@@ -101,7 +101,7 @@ Die Karte hat einen **Mittelsee**, vier **Kanäle** zu den Ecken und je eine **B
 | **Rote Allianz** | Schiffswerft mit Sägedach, Schlot, Drehkran | Sturm-Kanonenboot: billig und robust | Oktober-Schlachtkreuzer: drei Doppelgeschütze, zerlegt Gebäude |
 | **Schattenfront** | Schmugglerhafen aus Holz, Zeltplane, Ausguck | Schmuggler-Kutter: schnell, MG | Piraten-Fregatte: Raketensalven, Containerstapel, Totenkopfflagge |
 
-Alle Schiffe haben Reling, Bullaugen, Rettungsboote, Besatzung, drehendes Radar, wehende Flaggen und Rauch. Die KI baut eine Werft und eine Flotte von höchstens sechs Schiffen, die ab drei Schiffen die Werft oder Küste des Gegners angreift. Test: `--seashow` stellt Werft und alle Schiffe in die Heimatbucht. Test der Abwehrbauten: `--defensetest` (Drehung, Ausrichtung, Schaden je Fraktion). Karten: `--map=1..40`, `--size= --water= --islands= --resources= --hills= --forest= --seed=` und `--mapimg=datei.png` (Kartenbild in `shots/`); Tageszeit: `--hour=` und `--daycycle=` (Minuten pro Tag); Explosionen: `--boomtest`; Menü: `--mapdialog`, `--menupick=N`. Schnellboot (Rote Allianz) und Jetski (Schattenfront) sind schnelle, zerbrechliche Ergänzungen der Werft; der Westbund hat mit der Korvette sein Schnellschiff. Nahaufnahme der Arbeiterfiguren: `--workershow`. U-Boote (Rote Allianz, Schattenfront) sind getaucht unsichtbar, solange kein Gegner näher als 10 m ist, und tauchen nur nach einem Torpedoschuss kurz auf. Der Atlas-Flugzeugträger (Westbund) baut selbstständig bis zu vier Falken-Kampfdrohnen (je 250 Credits).
+Alle Schiffe haben Reling, Bullaugen, Rettungsboote, Besatzung, drehendes Radar, wehende Flaggen und Rauch. Die KI baut eine Werft und eine Flotte von höchstens sechs Schiffen, die ab drei Schiffen die Werft oder Küste des Gegners angreift. Test: `--seashow` stellt Werft und alle Schiffe in die Heimatbucht. Test der Abwehrbauten: `--defensetest` (Drehung, Ausrichtung, Schaden je Fraktion). Karten: `--map=1..42`, `--size= --water= --islands= --resources= --hills= --forest= --seed=` und `--mapimg=datei.png` (Kartenbild in `shots/`); Tageszeit: `--hour=` und `--daycycle=` (Minuten pro Tag); Explosionen: `--boomtest`; Menü: `--mapdialog`, `--menupick=N`. Schnellboot (Rote Allianz) und Jetski (Schattenfront) sind schnelle, zerbrechliche Ergänzungen der Werft; der Westbund hat mit der Korvette sein Schnellschiff. Nahaufnahme der Arbeiterfiguren: `--workershow`. U-Boote (Rote Allianz, Schattenfront) sind getaucht unsichtbar, solange kein Gegner näher als 10 m ist, und tauchen nur nach einem Torpedoschuss kurz auf. Der Atlas-Flugzeugträger (Westbund) baut selbstständig bis zu vier Falken-Kampfdrohnen (je 250 Credits).
 
 Der **Nebel des Krieges** verdeckt Gelände, das du noch nicht erkundet hast. Bauplätze müssen erkundet sein.
 
@@ -111,7 +111,7 @@ Der **Nebel des Krieges** verdeckt Gelände, das du noch nicht erkundet hast. Ba
 
 Im Startmenü öffnet **Karte und Tageszeit …** einen Dialog mit Vorschau:
 
-- **40 Standardkarten:** zehn Landschaftstypen (Kreuzsee, Windungen, Seenplatte, Uferkanal, Hochland, Inselmeer, Waldwelt, Steppe, Schären, Klamm) in je vier Größen und Abwandlungen.
+- **42 Gefechtskarten:** zehn Kartenfamilien (Kreuzsee, Windungen, Seenplatte, Uferkanal, Hochland, Inselmeer, Waldwelt, Steppe, Schären, Klamm) in je vier Größen und Abwandlungen, dazu **Mangrovenküste** und **Basaltinsel**.
 - **Regler für eigene Karten:** Größe (160 bis 336 m), Wasseranteil, Inseln, Rohstoffe, Hügel, Wald, dazu Gewässerform und Zufallszahl. Die Vorschau zeigt Gewässer, Höhen, Startpunkte und Vorkommen. „Zufällige Karte" würfelt alles.
 - **Gewässerformen:** *Kreuzsee* (Mittelsee mit vier Kanälen zu den Buchten), *Windungen* (geschwungene Kanäle), *Getrennte Seen* (eigene See je Basis, keine Seeverbindung), *Uferkanal* (Kanal entlang dreier Ränder). Landbrücken sichern, dass alle Basen und Vorkommen zu Fuß erreichbar bleiben.
 - **Tag und Nacht:** Startzeit und Tagesdauer (fest, 6, 14 oder 30 Minuten pro Tag). Sonne und Mond wandern, Himmel, Nebel und Belichtung wechseln, die Uhr steht in der Kopfleiste. Nachts sehen Einheiten und Gebäude etwa ein Viertel weniger weit.
@@ -229,11 +229,12 @@ Im Hauptmenü öffnet **Kampagne und Tutorial …** die Missionsliste. Jede Miss
 
 - **Tutorials** (mit der im Hauptmenü gewählten Fraktion, ohne Gegner-KI): 1 Erste Schritte (Auswählen, Bewegen, Nachschub, Strom, Kaserne, Truppe), 2 Wirtschaft und Fabrik, 3 Gefechtsbefehle (Rahmen, Gruppen, Angriffsmarsch), 4 Luft, See und Fähigkeiten.
 - **Kampagne „Das Licht über Lysa“ (Westbund)**, sieben Kapitel nach der Erzählung: 1 Port Meridian (Basis aufbauen, Raubzüge der Schattenfront abwehren, zehn Minuten halten), 2 Der Falke fliegt (Messpunkte mit Jägern und Drohne überfliegen, Flugabwehr umgehen), 3 Der Pass (Konvoi mit sechs Lkw eskortieren, zwei Hinterhalte überstehen, eine Drohne ohne Kennsignal abschießen), 4 Die Brücke über Lysa (Brücke erobern, Elins Begegnung mit Lena, Falke wird abgeschossen, Gegenangriff abwehren), 5 Zeugen (Falke und das Kind Pip heimgeleiten, das Lazarett gegen die Elitegarde des Rates halten, bis Dr. Brandt die Datenspur gesichert hat), 6 Die Nacht von Aurelia (Falke hält den Himmel, Mira und Brandt gehen zur Kuppel am Lysa-Ufer, Aldane wird entwaffnet, die letzte Welle abgewehrt), 7 Das Licht (Elin kappt ORAKEL, die Kuppel gegen drei Wellen halten, bis das Prisma den Lichtschild legt; Ende des Westbund-Feldzugs).
-- **Kampagne „Der lange Marsch nach Aurelia“ (Rote Allianz)**, im Aufbau: alle drei Kampagnen erzählen dieselbe Geschichte aus ihrer Sicht (`docs/story/`). Bisher spielbar: 2 Kapitel: 1 Die Halle in Kessel-Ost (Basis aus eigener Kraft aufbauen, Hordenbonus nutzen, Raubzüge der Schattenfront und einen Stromausfall überstehen), 2 Das Signal (Nastja belauscht an drei Schienenmasten den Puls und die zweite Frequenz aus dem Westen, Patrouillen abwehren). Das Kampagnenmenü zeigt je Fraktion eine eigene Kapitelreihe mit eigener Freischaltung.
-- **Missionen schreiben:** `scripts/missions.gd` beschreibt jede Mission als Daten (Karte, Start, Ziele, Ereignisse, Funksprüche, Niederlage); `scripts/mission_runner.gd` führt sie aus. Neue Bedingungen und Aktionen stehen in `_cond` und `_do`.
+- **„Der lange Marsch nach Aurelia“ (Rote Allianz):** Die Halle in Kessel-Ost, Das Signal, Der Pass, Der lange Marsch, Die Frequenz, Die Nacht von Aurelia und Der Schlaf. Wolkow bringt den Tross nach Aurelia, Nastja sichert Zeugen und Funke erreicht das Silo.
+- **„Wer am Feuer sitzt“ (Schattenfront):** Was übrig blieb, Das Pochen, Der Pass, Die Werkstatt, Die Wahrheit unter den Füßen, Die Nacht von Aurelia und Das Feuer. Asha, Karga, Lena und Jago führen den Tross von den Siedlungen zur Kuppel. Jede Kampagne schaltet ihre Kapitel separat frei.
+- **Missionen schreiben:** `scripts/missions.gd` enthält Karten, Ziele und Ereignisse. `scripts/mission_runner.gd` führt sie aus. `map.sites` definiert Siedlungen und Landmarken. Ziele, Kameras und Einheiten nutzen `["site:name", dx, dz]` für relative Positionen. `--missioncheck` meldet fehlende Ortsnamen und warnt vor blockierten Bodenpositionen. Neutrale Siedler und Zeugen greifen nicht an. Ortsmilizen können als spielbare Verstärkung beitreten.
 - **Spannungsbogen und Inszenierung:** Die Kampagnenkapitel haben ein filmisches Intro und Outro (Letterbox, Kamerafahrt, Titelkarte, Funksprüche; mit Leertaste überspringbar) und gliedern sich in Akte mit Bannern: Aufbau, Wendepunkt, Höhepunkt, Auflösung. Skript-Ereignisse sind unter anderem Alarmsirenen, Kamerafahrten zum Geschehen, Blackout mit Tageszeitwechsel, Artillerieeinschläge, Verstärkung, Abschüsse und Fluchtbewegungen. Entscheidungen zählen: In Kapitel 4 bleibt Lena nur am Leben, wenn du sie nicht ausdrücklich angreifst.
-- **Gesprochene Funksprüche:** Jede Funkzeile der Missionen ist vertont, mit eigener Stimme und Gefühlslage je Sprecher. `tools/audio/make_lines.py` liest die Funksprüche aus `scripts/missions.gd`, erzeugt fehlende oder geänderte Zeilen und legt sie unter `audio/lines/` ab (Dateiname = Hash des Textes). Wer einen Text ändert, startet das Skript erneut.
-- **Test:** `--mission=<id>` startet eine Mission direkt (`t1`–`t4`, `c1`–`c3`), `--missionauto` überspringt die Besprechung, `--missioncheck` wertet alle Bedingungen aus, `--missionplay` spielt Tutorial 1 und 3 automatisch durch, `--missionchain` startet danach die Folgemission, `--cine` zeigt Intro und Outro auch mit `--missionauto`, `--campaignmenu` zeigt die Liste.
+- **Funksprüche:** Vorhandene Aufnahmen liegen unter `audio/lines/`. Die neuen Kapitel der Roten Allianz und Schattenfront zeigen ihre neuen Funksprüche als Text, bis Sprachaufnahmen dafür vorliegen.
+- **Test:** `--mission=<id>` startet `t1`–`t4`, `c1`–`c7`, `r1`–`r7` oder `s1`–`s7`. `--missionauto` überspringt die Besprechung, `--missioncheck` prüft Startzustand und Ortsangaben. `--missionplay` steuert den Autotest in den Kampagnen sowie t1 und t3. Dazu kann `--missionexit` Godot bei Sieg (0) oder Niederlage (1) ohne Spielstandschreiben beenden. `--quit=650` begrenzt die Spielzeit, `--missionchain` startet im normalen Testmodus das nächste Kapitel. `--cine` zeigt auch mit `--missionauto` die Filmsequenzen. `--campaignmenu` zeigt die Kapitelliste.
 
 ## Ton
 
@@ -251,9 +252,17 @@ Drei Erzählungen derselben Ereignisse – in jeder gewinnt die erzählende Frak
 - [Der lange Marsch nach Aurelia – Rote Allianz](docs/story/02_rote_allianz.md) (Wolkow, Nastja, Funke)
 - [Wer am Feuer sitzt – Schattenfront](docs/story/03_schattenfront.md) (Asha, Jago, Karga)
 
-Der Beginn der Westbund-Kampagne ist spielbar (siehe Abschnitt Kampagne und Tutorial). Spielbare Helden gibt es noch nicht.
+Die drei Kampagnen sind spielbar. Die Missionsfiguren nutzen bestehende Einheitenmodelle.
 
 ---
+
+## Landschaft und Wetter
+
+- **Biome:** Die Kampagne nutzt alpine, steppe, boreal, marsh, coast, ashland und highland. Bodenfarben, Vegetation, Schneegrenze, Felsmenge, Tierherden und Vögel werden je Biom bestimmt. Zwölf Dekortypen werden nach Biom gewichtet, darunter Steinmarken, Baumstämme, Knochen und Wracks.
+- **Siedlungen:** Häuser, Ruinen, Hallen und Hochhäuser säumen die Straßen. Die Materialpipeline verwendet lokale Kacheln aus `models/resources/bio_*`. Die OpenRouter-Texturen für geflickte Zeltplane, Schrottblech, Ufer-Schlick und erkaltete Lava wurden mit FLUX.2 Pro erstellt. Prompts und Provenienz stehen unter `tools/art/biome_prompts.json` und `models/source/biome/`.
+- **Regen:** c4 startet mit Regen. `--rain=0..1` überschreibt die Stärke. Missionen können `"rain"` setzen oder das Wetter mit `{"do":"weather","rain":0.7}` ändern. Bodeneinheiten verlieren abseits befestigter Wege bis zu 40 % Tempo. Bei stärkerem Regen werden Straßen bei der Wegsuche bevorzugt. F8 schaltet auch die Regenschleife stumm.
+- **Nachtregen und Nebel:** Mondlicht bleibt bei Regen kräftiger, damit Boden und Einheiten lesbar bleiben. Lokale Nebelbänke liegen über Lysa und den Mangrovengewässern. Der Nebel der Karte beeinflusst die Darstellung. Die spielmechanische Sichtweite verwendet weiterhin Tageszeit und Regenstärke.
+- **Themenkarten:** `--map=41` öffnet die Mangrovenküste mit Stelzwurzeln und Tideufern. `--map=42` öffnet die Basaltinsel mit Krater, glühendem Lavasee und aufsteigendem Rauch. Der Krater ist für Bodeneinheiten gesperrt.
 
 ## Grafik und Technik
 
@@ -373,13 +382,13 @@ powershell -File tools/balance_test.ps1 -Godot <pfad\zu\godot_console.exe> -Seed
 
 ## Stand und bekannte Lücken
 
-**Spielbar:** Gefechte gegen KI und Zuschauermodus mit drei Fraktionen, Basisbau, Rohstoffwirtschaft, Land-, Luft- und Seeeinheiten, Generalsfähigkeiten und Superwaffen. Verfügbar sind 40 Standardkarten sowie ein Dialog für eigene Karten. Viele Einheiten und Gebäude haben eigene Blender-Modelle. Die [Modellübersicht](#eigene-modelle-und-blender-werkzeuge) listet die vorhandenen Exporte und die Modellskripte.
+**Spielbar:** Gefechte gegen KI und Zuschauermodus mit drei Fraktionen, Basisbau, Rohstoffwirtschaft, Land-, Luft- und Seeeinheiten, Generalsfähigkeiten und Superwaffen. Verfügbar sind 42 Gefechtskarten sowie ein Dialog für eigene Karten. Viele Einheiten und Gebäude haben eigene Blender-Modelle. Die [Modellübersicht](#eigene-modelle-und-blender-werkzeuge) listet die vorhandenen Exporte und die Modellskripte.
 
 **Offen:**
 
 - **Balance:** In KI-Messungen war die Schattenfront auffällig oft früh unterlegen; wird untersucht.
 - **Helden:** Die Story-Helden sind noch keine spielbaren Einheiten.
-- **Kampagne:** alle sieben Kapitel des Westbunds und Kapitel 1–2 der Roten Allianz sind spielbar; die übrigen Kapitel der Roten Allianz und die Schattenfront fehlen noch.
+- **Kampagne:** Die neuen Kapitel verwenden vorhandene Einheitenmodelle und Textfunk für neue Dialoge.
 - **Musik:** nicht vorhanden. Stimmen und Geräusche gibt es (siehe Abschnitt Ton).
 - **Mehrspieler:** nicht vorhanden.
 - **Plattformen:** nur unter Windows 11 getestet.
