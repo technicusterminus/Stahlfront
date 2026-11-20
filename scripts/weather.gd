@@ -8,8 +8,8 @@ var snd: AudioStreamPlayer
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	parts = GPUParticles3D.new()
-	parts.amount = 5200
-	parts.lifetime = 0.8
+	parts.amount = 18000
+	parts.lifetime = 1.0
 	parts.visibility_aabb = AABB(Vector3(-70, -40, -70), Vector3(140, 60, 140))
 	parts.local_coords = false
 	var pm := ParticleProcessMaterial.new()
@@ -22,11 +22,11 @@ func _ready() -> void:
 	pm.gravity = Vector3(0, -12, 0)
 	parts.process_material = pm
 	var q := QuadMesh.new()
-	q.size = Vector2(0.045, 0.9)
+	q.size = Vector2(0.035, 1.3)
 	var mat := StandardMaterial3D.new()
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = Color(0.78, 0.85, 0.95, 0.32)
+	mat.albedo_color = Color(0.85, 0.9, 1.0, 0.4)
 	mat.billboard_mode = BaseMaterial3D.BILLBOARD_FIXED_Y
 	mat.no_depth_test = false
 	q.material = mat

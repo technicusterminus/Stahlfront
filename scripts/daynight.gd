@@ -105,7 +105,7 @@ func apply(h: float) -> void:
 		psm.sky_top_color = psm.sky_top_color.lerp(grey * 0.8, rn * 0.75)
 		psm.sky_horizon_color = psm.sky_horizon_color.lerp(grey, rn * 0.8)
 		psm.ground_horizon_color = psm.ground_horizon_color.lerp(grey, rn * 0.6)
-		sun.light_energy *= 1.0 - 0.55 * rn
+		sun.light_energy *= 1.0 - 0.4 * rn
 		env.ambient_light_energy *= 1.0 - 0.1 * rn
 		env.fog_light_color = env.fog_light_color.lerp(grey, rn * 0.7)
 		env.fog_density = 0.0016 + 0.0042 * rn
