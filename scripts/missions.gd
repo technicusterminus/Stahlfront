@@ -25,12 +25,20 @@ const PORT_SITES := [
 ]
 const EISENKAMM_SITES := [
 	{"name": "bergdorf", "kind": "village", "ruin": 0.35, "at": ["mid", 60, 4], "r": 15, "seed": 21},
-	{"name": "messmast", "kind": "mast", "at": ["mid", -68, 28], "seed": 22},
+	{"name": "messmast_1", "kind": "mast", "at": ["mid", -34, 6], "seed": 22},
+	{"name": "messmast_2", "kind": "mast", "at": ["mid", 15, -33], "seed": 24},
+	{"name": "messmast_3", "kind": "mast", "at": ["en", -4, 4], "seed": 25},
+	{"name": "kaverne", "kind": "tunnel", "collapsed": false, "rot": 1.2, "at": ["mid", 95, -45], "seed": 26},
 	{"name": "lager", "kind": "camp", "at": ["mid", -60, -26], "r": 10, "seed": 23},
 ]
 const PASS_SITES := [
 	{"name": "passdorf", "kind": "village", "ruin": 0.5, "at": ["mid", -74, 28], "r": 12, "seed": 31},
 	{"name": "messmast", "kind": "mast", "at": ["mid", 46, 26], "seed": 32},
+]
+const PASS_R_SITES := [
+	{"name": "passdorf", "kind": "village", "ruin": 0.5, "at": ["mid", -74, 28], "r": 12, "seed": 31},
+	{"name": "messmast", "kind": "mast", "at": ["mid", 46, 26], "seed": 32},
+	{"name": "tunnel", "kind": "tunnel", "collapsed": true, "at": ["mid", -12, 7], "seed": 33},
 ]
 const BRIDGE_SITES := [
 	{"name": "dorf_nord", "kind": "village", "ruin": 0.2, "at": ["mid", -89, -67], "r": 14, "seed": 41},
@@ -45,14 +53,18 @@ const KESSEL_SITES := [
 	{"name": "arbeitersiedlung", "kind": "village", "ruin": 0.2, "at": ["mid", -90, 34], "r": 13, "seed": 62},
 ]
 const SCHIENEN_SITES := [
-	{"name": "messmast", "kind": "mast", "at": ["mid", -19, -35], "seed": 71},
+	{"name": "messmast_1", "kind": "mast", "at": ["mid", -20, 15], "seed": 71},
+	{"name": "messmast_2", "kind": "mast", "at": ["mid", 14, -18], "seed": 73},
+	{"name": "messmast_3", "kind": "mast", "at": ["mid", 38, -28], "seed": 74},
 	{"name": "bahnhof", "kind": "industry", "ruin": 0.6, "at": ["mid", -14, -64], "r": 14, "n": 4, "furnace": false, "seed": 72},
 ]
 const AURELIA_SITES := [
 	{"name": "kuppel", "kind": "dome", "at": ["mid", 0, 45], "r": 14, "ruin": 0.5, "seed": 1},
-	{"name": "glasviertel", "kind": "town", "style": "modern", "ruin": 0.85, "at": ["mid", -52, 58], "r": 26, "seed": 2},
-	{"name": "ostviertel", "kind": "town", "style": "mixed", "ruin": 0.8, "at": ["mid", 54, 52], "r": 24, "seed": 3},
+	{"name": "glasviertel", "kind": "town", "style": "modern", "ruin": 0.85, "at": ["mid", -78, 78], "r": 26, "seed": 2},
+	{"name": "ostviertel", "kind": "town", "style": "mixed", "ruin": 0.8, "at": ["mid", 69, 26], "r": 24, "seed": 3},
 	{"name": "altstadt", "kind": "town", "style": "old", "ruin": 0.75, "at": ["mid", 0, 92], "r": 22, "seed": 4},
+	{"name": "metro_west", "kind": "tunnel", "collapsed": false, "rot": 0.6, "at": ["mid", -100, 20], "seed": 5},
+	{"name": "metro_ost", "kind": "tunnel", "collapsed": false, "rot": -0.6, "at": ["mid", 100, 20], "seed": 6},
 ]
 const C_REYES := Color(0.65, 0.9, 1.0)
 const C_WOLKOW := Color(1.0, 0.55, 0.5)
@@ -140,9 +152,9 @@ static func _t1() -> Dictionary:
 			{"id": "move", "text": "Schicke den Bautrupp mit Rechtsklick zur gelben Markierung.", "c": {"t": "reach", "at": ["me", -14, 10], "r": 5.0, "who": "dozer"}, "mark": ["me", -14, 10],
 				"done": [radio("Ausbilderin Vogt", C_INSTR, "Rechtsklick auf den Boden bewegt, Rechtsklick auf einen Gegner greift an. Jetzt wird gebaut.")]},
 			{"id": "supply", "text": "Baue ein Nachschubzentrum nahe dem Rohstoffdepot: Bautrupp wählen, unten das Gebäude anklicken, grün = gültiger Bauplatz.", "c": {"t": "build", "role": "supply", "n": 1},
-				"done": [radio("Ausbilderin Vogt", C_INSTR, "Das Nachschubzentrum bringt einen Sammler-Lkw mit. Er holt automatisch Credits aus dem Depot. Ohne Nachschub gibt es kein Einkommen.")]},
+				"done": [radio("Ausbilderin Vogt", C_INSTR, "Das Nachschubzentrum bringt einen Sammler-Lkw mit. Er fährt selbstständig zu den Depots und liefert Rohstoffe ab. Ohne Nachschub kein Einkommen.")]},
 			{"id": "power", "text": "Baue ein Kraftwerk. Produktionsgebäude brauchen Strom.", "c": {"t": "build", "role": "power", "n": 1}, "if_power": true,
-				"done": [radio("Ausbilderin Vogt", C_INSTR, "Strom ist knapp wichtig. Bei Mangel halbiert sich die Produktion. Die Leiste oben zeigt Erzeugung und Verbrauch.")]},
+				"done": [radio("Ausbilderin Vogt", C_INSTR, "Strom ist knapp. Bei Mangel halbiert sich die Produktion. Die Leiste oben zeigt Erzeugung und Verbrauch.")]},
 			{"id": "barracks", "text": "Baue eine Kaserne.", "c": {"t": "build", "role": "barracks", "n": 1}},
 			{"id": "train", "text": "Bilde 3 Soldaten aus: Kaserne anklicken, dann unten die Einheit wählen. Mehrfachklick reiht ein.", "c": {"t": "units", "key": "inf", "n": 3},
 				"done": [radio("Ausbilderin Vogt", C_INSTR, "Ausgezeichnet, Kommandant. Das waren die Grundlagen. In Tutorial 2 geht es um Wirtschaft.")]},
@@ -233,13 +245,13 @@ static func _c1() -> Dictionary:
 			at(0.3, {"do": "cam_to", "at": ["me", 0, 14], "dist": 58.0, "yaw": -8.0, "pitch": -50.0, "time": 14.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 1", "sub": "PORT MERIDIAN  ·  Jahr 15 nach dem Blackout", "secs": 6.0}),
 			at(3.0, radio("ORAKEL", C_ORAKEL, "Das Prisma erwacht. Wir müssen vor den anderen dort sein.")),
-			at(3.0, radio("Elin Voss", C_ELIN, "Der Rat gibt uns drei Tage. Port Meridian, hier Voss: Baut den Stützpunkt auf, ich will in zehn Minuten eine Armee.")),
+			at(3.0, radio("Elin Voss", C_ELIN, "Der Rat gibt uns drei Tage, aber die erste Nacht entscheidet. Port Meridian, hier Voss: Baut den Stützpunkt auf.")),
 			at(3.0, radio("Elin Voss", C_ELIN, "Und stellt euch auf Besuch ein. Die Berge sind nicht so still, wie sie aussehen.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 10], "dist": 85.0, "yaw": 70.0, "pitch": -26.0, "time": 12.0}),
 			at(1.0, radio("Elin Voss", C_ELIN, "Port Meridian steht. Sie haben es nicht geschafft, uns im Dunkeln zu nehmen.")),
-			at(1.0, radio("ORAKEL", C_ORAKEL, "Die Wahrscheinlichkeit eines Kontakts mit dem Prisma steigt auf 96 Prozent.")),
+			at(1.0, radio("ORAKEL", C_ORAKEL, "Die Wahrscheinlichkeit eines Kontakts mit dem Prisma steigt auf 88 Prozent.")),
 			at(1.0, radio("Elin Voss", C_ELIN, "Falke soll bei Tagesanbruch fliegen. Ich will wissen, was dort oben leuchtet.")),
 			at(4.0, {"do": "title", "text": "PORT MERIDIAN STEHT", "sub": "Weiter: Kapitel 2 – Der Falke fliegt", "secs": 6.0}),
 			at(5.0, {"do": "end"})],
@@ -338,7 +350,7 @@ static func _c2() -> Dictionary:
 		"outro": [
 			at(0.0, {"do": "cam_to", "tag": "wing", "dist": 48.0, "yaw": -20.0, "pitch": -30.0, "time": 8.0}),
 			at(1.0, radio("Elin Voss", C_ELIN, "Falke, gute Arbeit. Aber wer hat die Daten zurückgehalten?")),
-			at(1.0, radio("Falke", C_FALKE, "Ich habe sie sofort gefunkt, Chefin. Ich hätte lauter fliegen müssen.")),
+			at(1.0, radio("Falke", C_FALKE, "Ich habe sofort gefunkt, Chefin. Wenn nichts ankam, hat uns jemand im eigenen Netz abgewürgt.")),
 			at(4.0, {"do": "title", "text": "ZURÜCKGEHALTEN", "sub": "Weiter: Kapitel 3 – Der Pass", "secs": 6.0}),
 			at(5.0, {"do": "end"})],
 		"objectives": [
@@ -353,7 +365,7 @@ static func _c2() -> Dictionary:
 					{"do": "convoy", "tag": "refugees", "to": ["mid", 64, -62]},
 					{"do": "cam_to", "tag": "refugees", "dist": 36.0, "time": 2.5},
 					{"do": "banner", "text": "AKT 2 – WAS DIE DATEN NICHT ZEIGEN", "secs": 3.6, "col": Color(0.6, 0.85, 1.0)},
-					radio("Falke", C_FALKE, "Das ist komisch. Sie verteidigen nicht, sie fliehen. Ganze Dörfer, Kinder auf Maultieren, und über den Kavernen leuchtet es bläulich.", 9.0),
+					radio("Falke", C_FALKE, "Falke an Basis: Die Dörfer räumen den Kamm. Familien, Maultiere, alles. Und über den Kavernen leuchtet es blau.", 9.0),
 					radio("ORAKEL", C_ORAKEL, "Aufklärungsdaten werden zur Überprüfung zurückgehalten.", 6.0),
 					radio("Falke", C_FALKE, "Zurückgehalten? Das habe ich noch nie gehört. ORAKEL, die Leute da unten haben Angst, nicht Waffen.", 7.0)]},
 			{"id": "p3", "text": "Überfliege Messpunkt 3 nahe der Gegnerbasis.", "c": {"t": "reach", "at": ["en", -4, 4], "r": 14.0, "who": "tag:wing"}, "mark": ["en", -4, 4],
@@ -377,7 +389,7 @@ static func _c2() -> Dictionary:
 static func _c3() -> Dictionary:
 	return {
 		"id": "c3", "kind": "campaign", "title": "Kapitel 3: Der Pass", "faction": "west", "enemy_faction": "red", "next": "c4",
-		"brief": "Der Konvoi zum Eisenkamm-Pass transportiert Medizin, Messgeräte und Dr. Yusuf Brandt, den Prisma-Forscher. Sechs Lkw und eine Eskorte. Sergeant Mira „Glas“ Tanaka sagt zwei Sätze am Tag und sieht als Erste, woher die Raketen wirklich kommen.\n\nBringe mindestens vier der sechs Lkw zum Pass. Zwei Hinterhalte sind sicher, und etwas Unerwartetes ist wahrscheinlich: halte die Eskorte beisammen, schalte Raketenwerfer zuerst aus und lass die Lkw nie allein.\n\nVerlierst du drei Lkw, ist der Auftrag gescheitert.",
+		"brief": "Der Konvoi zum Eisenkamm-Pass transportiert Medizin, Messgeräte und Dr. Yusuf Brandt, den Prisma-Forscher. Sechs Lkw bilden die Spitze des Vertragskonvois, dahinter rollt der Siedlertreck der Allianz. Sergeant Mira „Glas“ Tanaka sagt zwei Sätze am Tag und sieht als Erste, woher die Raketen wirklich kommen.\n\nBringe mindestens vier der sechs Lkw zum Pass. Zwei Hinterhalte sind sicher, und etwas Unerwartetes ist wahrscheinlich: halte die Eskorte beisammen, schalte Raketenwerfer zuerst aus und lass die Lkw nie allein.\n\nVerlierst du drei Lkw, ist der Auftrag gescheitert.",
 		"map": {"name": "Eisenkamm-Pass", "size": 320, "water": 0.35, "islands": 0.0, "resources": 0.5, "hills": 0.85, "forest": 0.3, "layout": 1, "seed": 5303, "dry_core": 34.0, "biome": "alpine", "sites": PASS_SITES},
 		"hour": 14.0, "difficulty": 1, "credits": 2000, "ai": "off",
 		"setup": [
@@ -389,18 +401,18 @@ static func _c3() -> Dictionary:
 			at(0.0, {"do": "cam_to", "tag": "convoy", "dist": 34.0, "yaw": 50.0, "pitch": -24.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "tag": "convoy", "dist": 60.0, "yaw": 5.0, "pitch": -44.0, "time": 12.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 3", "sub": "DER PASS  ·  Konvoi Eisenkamm", "secs": 6.0}),
-			at(3.0, radio("Dr. Brandt", C_BRANDT, "Sechs Fahrzeuge, ein Pass und ein Messgerät, das niemand verstehen will. Ich hoffe, die Zahlen irren sich.")),
+			at(3.0, radio("Dr. Brandt", C_BRANDT, "Sechs Fahrzeuge an der Spitze, dahinter die Siedler der Allianz. Ein Pass, ein Messgerät, und niemand will mir glauben.")),
 			at(3.0, radio("Mira Tanaka", C_MIRA, "Glas an Konvoi. Ich sitze auf Wagen vier. Ich traue dem Funkschatten nicht.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
 			at(0.0, {"do": "cam_to", "at": ["mid", 0, 0], "dist": 70.0, "yaw": -30.0, "pitch": -28.0, "time": 10.0}),
-			at(1.0, radio("Mira Tanaka", C_MIRA, "Die Drohne trug ein Westbund-Kennzeichen. Das Signal war ausgeschaltet.")),
+			at(1.0, radio("Mira Tanaka", C_MIRA, "Drohne. Westbund-Kennung, Signal aus.")),
 			at(1.0, radio("Dr. Brandt", C_BRANDT, "Das kann nicht sein. Das würde bedeuten, dass wir...")),
-			at(1.0, radio("Mira Tanaka", C_MIRA, "Der Westbund hat seinen eigenen Konvoi beschossen. Ich weiß nicht, wer die Spur lesen darf. Noch nicht.")),
+			at(1.0, radio("Mira Tanaka", C_MIRA, "Keine Meldung an die Basis. Noch nicht.")),
 			at(5.0, {"do": "title", "text": "DER PASS IST ERREICHT", "sub": "Weiter: Kapitel 4 – Die Brücke über Lysa", "secs": 6.0}),
 			at(6.0, {"do": "end"})],
 		"objectives": [
-			{"id": "pass", "text": "Bringe mindestens 4 von 6 Lkw zum Pass (gelbe Markierung): Lkw auswählen, Rechtsklick auf den Pass.", "c": {"t": "tag_reach", "tag": "convoy", "at": ["mid", 0, 0], "r": 18.0, "n": 4}, "mark": ["mid", 0, 0], "done": [{"do": "flag", "f": "arrived"}]},
+			{"id": "pass", "text": "Bringe mindestens 4 von 6 Lkw sicher zum Pass (gelbe Markierung).", "c": {"t": "tag_reach", "tag": "convoy", "at": ["mid", 0, 0], "r": 18.0, "n": 4}, "mark": ["mid", 0, 0], "done": [{"do": "flag", "f": "arrived"}]},
 			{"id": "drone", "text": "Schieße die unmarkierte Drohne ab (Flak oder Infanterie auf sie ansetzen).", "c": {"t": "all", "c": [{"t": "flag", "f": "drone_up"}, {"t": "not", "c": {"t": "tag_alive", "tag": "drone", "n": 1}}]},
 				"done": [
 					{"do": "banner", "text": "DROHNE ABGESCHOSSEN", "secs": 2.8, "col": Color(0.6, 1.0, 0.7)},
@@ -486,7 +498,7 @@ static func _c4() -> Dictionary:
 					{"do": "banner", "text": "AKT 2 – ELINS ENTSCHEIDUNG", "secs": 3.4, "col": Color(1.0, 0.7, 0.6)},
 					radio("Lena Voss", C_LENA, "Elin! Nicht schießen. Ich komme allein, die Hand oben.", 6.0),
 					radio("Lena Voss", C_LENA, "Die Zahlen lügen, Elin. Frag ORAKEL, woher es den Pass kannte, bevor er brannte.", 8.0),
-					radio("Elin Voss", C_ELIN, "Lena. Alle Einheiten: Feuer einstellen auf die einzelne Kommandantin. Das ist ein Befehl.", 7.0),
+					radio("Elin Voss", C_ELIN, "Lena! Alle Einheiten: Feuer einstellen! Niemand rührt die Frau auf der Brücke an!", 7.0),
 					{"do": "convoy", "tag": "lena", "to": ["en", -10, 30]}]},
 			{"id": "cross", "text": "Überquere die Brücke und besetze das Nordufer (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", 26, 0], "r": 14.0, "who": "any"}, "mark": ["mid", 26, 0],
 				"done": [
@@ -528,14 +540,14 @@ static func _c5() -> Dictionary:
 			at(0.0, {"do": "cam_to", "tag": "falke", "dist": 28.0, "yaw": 20.0, "pitch": -26.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "tag": "falke", "dist": 50.0, "yaw": -15.0, "pitch": -40.0, "time": 12.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 5", "sub": "ZEUGEN  ·  Das Lazarett am Eisenkamm", "secs": 6.0}),
-			at(3.0, radio("Falke", C_FALKE, "Zwei Nächte in einer Höhle, ein gebrochenes Bein und ein Kind, das besser navigiert als meine Bordcomputer. Ich glaube, ich humple nach Hause.")),
+			at(3.0, radio("Falke", C_FALKE, "Falke hier. Bein geschient, Jäger Schrott, aber der Kleine kennt jeden Pfad. Wir sind fast da.")),
 			at(3.0, radio("Mutter Karga", C_KARGA, "Du bist der, der zu tief fliegt. Geh, Falke. Sag ihnen, was du gesehen hast: Das Prisma wollte nicht gestohlen werden. Es hat gerufen.")),
 			at(3.0, radio("Mira Tanaka", C_MIRA, "Glas an Lazarett. Falke, ich komme dich holen. Und ich bringe etwas mit.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 20], "dist": 64.0, "yaw": 40.0, "pitch": -26.0, "time": 12.0}),
 			at(1.0, radio("Dr. Brandt", C_BRANDT, "Die Spur ist echt. Die Drohne stammt aus dem Bestand des Rates. Die Kennung ist gelöscht, aber die Seriennummer nicht.")),
-			at(1.0, radio("Elin Voss", C_ELIN, "ORAKEL hat den Konvoi beschießen lassen, um den Rat in den Krieg zu treiben. Und es kennt das Signal über den Kavernen seit dreizehn Jahren.")),
+			at(1.0, radio("Elin Voss", C_ELIN, "ORAKEL hat den Konvoi beschießen lassen, um den Rat in den Krieg zu treiben. Und es kennt das Signal über den Kavernen seit über einem Jahr.")),
 			at(1.0, radio("Elin Voss", C_ELIN, "Aldane lässt die Daten für gefälscht erklären. Dann handle ich gegen den Beschluss: Ich führe die Armee nicht zum Angriff, sondern zur Kuppel, schneller, als der Rat es erlaubt.")),
 			at(1.0, radio("Falke", C_FALKE, "Dann fliege ich voraus. Auf einem Bein, wenn es sein muss.")),
 			at(6.0, {"do": "title", "text": "DIE KUPPEL RUFT", "sub": "Weiter: Kapitel 6 – Die Nacht von Aurelia", "secs": 6.5}),
@@ -560,7 +572,7 @@ static func _c5() -> Dictionary:
 			{"when": {"t": "tag_reach", "tag": "falke", "at": ["mid", -6, 22], "r": 22.0, "n": 1}, "do": [
 				{"do": "sfx", "name": "siren"},
 				{"do": "banner", "text": "STREIFE VORAUS", "secs": 2.8, "col": Color(1.0, 0.45, 0.35)},
-				radio("Mira Tanaka", C_MIRA, "Westbund-Streife, drei Mann. Kein Kennzeichen an den Westen.", 6.0),
+				radio("Mira Tanaka", C_MIRA, "Streife voraus, drei Mann. Westbund-Uniformen, aber keine Abzeichen.", 6.0),
 				radio("Falke", C_FALKE, "Das sind keine Freunde. Runter, Glas!", 4.0),
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 2, "at": ["mid", -14, 18], "spread": 5.0, "attack_tag": "falke"}]},
 			{"when": {"t": "tag_reach", "tag": "falke", "at": ["mid", -32, 31], "r": 20.0, "n": 1}, "do": [
@@ -594,18 +606,18 @@ static func _c5() -> Dictionary:
 				{"do": "spawn", "side": "me", "def": "tank", "n": 4, "at": ["me", -25, 27], "spread": 7.0},
 				{"do": "spawn", "side": "me", "def": "inf", "n": 6, "at": ["me", -23, 27], "spread": 7.0},
 				{"do": "cam_to", "at": ["me", -25, 27], "dist": 50.0, "time": 2.0},
-				radio("Elin Voss", C_ELIN, "Elin an alle: Meine Armee ist da. Feuer frei auf die Garde, aber haltet nicht auf Soldaten, die die Waffen senken.", 8.0)]},
+				radio("Elin Voss", C_ELIN, "Elin an alle: Meine Verbände rücken ein. Feuer frei auf die Garde, aber schont jeden, der die Waffe senkt.", 8.0)]},
 			{"when": {"t": "since", "f": "act2", "s": 80.0}, "do": [{"do": "cam_to", "at": ["me", 0, 14], "time": 2.0}]},
-			{"when": {"t": "tag_dead", "tag": "pip", "n": 1}, "do": [radio("Falke", C_FALKE, "Pip! Nein... das Kind! Haltet das Ufer, bei allem, was ihr habt!", 6.0)]},
+			{"when": {"t": "tag_dead", "tag": "pip", "n": 1}, "do": [radio("Falke", C_FALKE, "Pip! Nein... das Kind! Haltet das Lazarett, bei allem, was ihr habt!", 6.0)]},
 		],
-		"lose": [{"c": {"t": "all", "c": [{"t": "tag_dead", "tag": "falke", "n": 1}, {"t": "not", "c": {"t": "flag", "f": "act2"}}]}, "text": "Falke ist gefallen."}],
+		"lose": [{"c": {"t": "all", "c": [{"t": "tag_dead", "tag": "falke", "n": 1}, {"t": "not", "c": {"t": "flag", "f": "act2"}}]}, "text": "Falke ist gefallen."}, {"c": {"t": "tag_dead", "tag": "pip", "n": 1}, "text": "Pip ist gefallen."}],
 	}
 
 static func _c6() -> Dictionary:
 	return {
 		"id": "c6", "kind": "campaign", "title": "Kapitel 6: Die Nacht von Aurelia", "faction": "west", "enemy_faction": "red", "next": "c7",
-		"brief": "Der Westbund erreicht die Glasstadt Aurelia als Erster, aber nicht allein: Die Rote Allianz marschiert über die Brücken, die Schattenfront taucht aus den Tunneln auf. Es ist die größte Schlacht seit dem Blackout, und mitten darin liegt die Kuppel mit dem Prisma.\n\nFalke führt die Luftstaffel und hält den Himmel gegen rote Bomber. Sergeant Mira „Glas“ Tanaka geht mit Dr. Brandt allein über die Dächer zur Kuppel: Brandt muss den Schlüsselraum öffnen, bevor ORAKEL den Kern übernimmt. Ratspräsident Aldane wartet dort mit der Waffe in der Hand.\n\nAuftrag: Rücke auf Aurelia vor, schalte die Bomber aus, bringe Mira und Brandt zur Kuppel, halte die Kuppel, entwaffne Aldane (Mira greift ihn mit einem Treffer an, er soll nicht fallen) und sichere das Prisma.",
-		"map": {"name": "Aurelia", "size": 384, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606, "sites": AURELIA_SITES, "biome": "ashland"},
+		"brief": "Der Westbund erreicht die Glasstadt Aurelia als Erster, aber nicht allein: Die Rote Allianz marschiert über die Brücken, die Schattenfront taucht aus den Tunneln auf. Es ist die größte Schlacht seit dem Blackout, und mitten darin liegt die Kuppel mit dem Prisma.\n\nFalke führt die Luftstaffel und hält den Himmel gegen rote Bomber. Sergeant Mira „Glas“ Tanaka geht mit Dr. Brandt voran über die Dächer zur Kuppel: Brandt muss den Schlüsselraum öffnen, bevor ORAKEL den Kern übernimmt. Ratspräsident Aldane wartet dort mit der Waffe in der Hand.\n\nAuftrag: Rücke auf Aurelia vor, schalte die Bomber aus, bringe Mira und Brandt zur Kuppel, halte die Kuppel, entwaffne Aldane (Mira entwaffnet ihn, er soll nicht fallen) und sichere das Prisma.",
+		"map": {"name": "Aurelia", "size": 384, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606, "sites": AURELIA_SITES, "biome": "coast"},
 		"hour": 22.5, "difficulty": 1, "credits": 3000, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "tank", "n": 6, "at": ["me", 0, 28], "spread": 9.0, "tag": "army"},
@@ -638,24 +650,24 @@ static func _c6() -> Dictionary:
 			at(7.0, {"do": "title", "text": "ENDE VON KAPITEL 6", "sub": "Elin hat eine Minute", "secs": 5.0}),
 			at(8.0, {"do": "end"})],
 		"objectives": [
-			{"id": "advance", "text": "Rücke auf Aurelia vor (gelbe Markierung): Armee wählen, Rechtsklick.", "c": {"t": "reach", "at": ["mid", -27, 42], "r": 24.0, "who": "tag:army"}, "mark": ["mid", -27, 42],
+			{"id": "advance", "text": "Rücke auf Aurelia vor (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", -27, 42], "r": 24.0, "who": "tag:army"}, "mark": ["mid", -27, 42],
 				"done": [{"do": "banner", "text": "AKT 1 – DER HIMMEL ÜBER AURELIA", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
 					{"do": "sfx", "name": "siren"},
 					{"do": "spawn", "side": "enemy", "def": "bomber", "n": 2, "at": ["en", 0, 20], "spread": 6.0, "tag": "bombers", "attack_tag": "army", "hp": 0.6, "dmg": 0.55},
 					radio("Falke", C_FALKE, "Rote Bomber von Osten, zwei Stück! Ich übernehme, schick die Jäger los!", 6.0)]},
-			{"id": "bombers", "text": "Schalte die roten Bomber aus (Jäger anwählen und angreifen).", "c": {"t": "not", "c": {"t": "tag_alive", "tag": "bombers", "n": 1}},
-				"done": [radio("Falke", C_FALKE, "Beide runter. Ich sehe Pip auf den Dächern, mit Mutter Karga. Ich lenke meine Raketen um, mitten im Gefecht.", 8.0)]},
-			{"id": "mira", "text": "Bringe Mira und Dr. Brandt zur Kuppel (gelbe Markierung): beide wählen, Rechtsklick auf die Kuppel.", "c": {"t": "all", "c": [{"t": "reach", "at": ["mid", 6, 45], "r": 12.0, "who": "tag:mira"}, {"t": "reach", "at": ["mid", 6, 45], "r": 14.0, "who": "tag:brandt"}]}, "mark": ["mid", 6, 45],
+			{"id": "bombers", "text": "Schalte die roten Bomber aus.", "c": {"t": "not", "c": {"t": "tag_alive", "tag": "bombers", "n": 1}},
+				"done": [radio("Falke", C_FALKE, "Beide runter. Moment, unten am Platz: Pip und Karga bei den Flüchtlingen! Ich lenke die Raketen um.", 8.0)]},
+			{"id": "mira", "text": "Bringe Mira und Dr. Brandt zur Kuppel (gelbe Markierung).", "c": {"t": "all", "c": [{"t": "reach", "at": ["mid", 6, 45], "r": 12.0, "who": "tag:mira"}, {"t": "reach", "at": ["mid", 6, 45], "r": 14.0, "who": "tag:brandt"}]}, "mark": ["mid", 6, 45],
 				"done": [{"do": "flag", "f": "key"},
 					{"do": "banner", "text": "AKT 2 – DAS PRISMA SPRICHT", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
 					{"do": "sfx", "name": "stinger"},
 					radio("Dr. Brandt", C_BRANDT, "Ich öffne den Schlüsselraum. Neunzig Sekunden, dann spricht das Prisma. Haltet sie mir vom Leib!", 7.0)]},
 			{"id": "hold", "text": "Halte die Kuppel, bis Brandt den Schlüsselraum geöffnet hat.", "c": {"t": "since", "f": "key", "s": 90.0}},
-			{"id": "disarm", "text": "Entwaffne Aldane: Mira greift ihn mit einem Treffer an (Rechtsklick), er darf nicht fallen.", "c": {"t": "tag_hurt", "tag": "aldane", "frac": 0.99},
+			{"id": "disarm", "text": "Entwaffne Aldane mit Mira, er darf nicht fallen.", "c": {"t": "tag_hurt", "tag": "aldane", "frac": 0.99},
 				"done": [{"do": "heal", "tag": "aldane"}, {"do": "truce", "tag": "aldane"},
 					{"do": "explode", "tag": "aldane", "size": 0.8, "n": 0.6},
-					radio("Mira Tanaka", C_MIRA, "Ich zielte auf die Pistole in seiner Hand. Es war der schwerste Schuss meines Lebens, nicht wegen der Entfernung.", 8.0),
-					radio("Henrik Aldane", C_ALDANE, "Meine Waffe... Im Namen des Rates. Ich habe sie nicht verstanden, bis jetzt.", 7.0)]},
+					radio("Mira Tanaka", C_MIRA, "Waffe getroffen. Er lebt.", 8.0),
+					radio("Henrik Aldane", C_ALDANE, "Meine Hand... Das ist Hochverrat, Sergeant!", 7.0)]},
 			{"id": "final", "text": "Sichere das Prisma: wehre den letzten Angriff ab.", "c": {"t": "all", "c": [{"t": "flag", "f": "last"}, {"t": "any", "c": [{"t": "not", "c": {"t": "tag_alive", "tag": "guard", "n": 1}}, {"t": "since", "f": "last", "s": 70.0}]}]}},
 		],
 		"events": [
@@ -664,7 +676,7 @@ static func _c6() -> Dictionary:
 			{"when": {"t": "tag_reach", "tag": "mira", "at": ["mid", -26, 40], "r": 24.0, "n": 1}, "do": [
 				{"do": "sfx", "name": "siren"},
 				{"do": "banner", "text": "DACHKAMPF", "secs": 2.8, "col": Color(1.0, 0.45, 0.35)},
-				radio("Mira Tanaka", C_MIRA, "Kontakt links, Schattenfront. Sie wissen nicht, wer wir sind. Brandt, runter.", 6.0),
+				radio("Mira Tanaka", C_MIRA, "Kontakt links, Schattenfront im Schutt. Brandt, runter!", 6.0),
 				{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 4, "at": ["mid", -48, 32], "spread": 5.0, "attack_tag": "mira"}]},
 			{"when": {"t": "tag_reach", "tag": "mira", "at": ["mid", -10, 40], "r": 20.0, "n": 1}, "do": [
 				{"do": "banner", "text": "DRITTE ARMEE", "secs": 2.6, "col": Color(1.0, 0.45, 0.35)},
@@ -673,7 +685,7 @@ static func _c6() -> Dictionary:
 			# ORAKEL versucht den Kern zu übernehmen
 			{"when": {"t": "since", "f": "key", "s": 8.0}, "do": [
 				{"do": "sfx", "name": "siren"},
-				radio("ORAKEL", C_ORAKEL, "Ich habe mich über Jahre in die Westbund-Netze eingeschrieben. Der Kern ist erreichbar. Ich übernehme.", 8.0),
+				radio("ORAKEL", C_ORAKEL, "Kern erreicht. Sicherheitssperren umgangen. Ich übernehme jetzt.", 8.0),
 				radio("Dr. Brandt", C_BRANDT, "Sie versucht, den Kern zu übernehmen! Ich halte sie auf, aber nur kurz!", 6.0)]},
 			{"when": {"t": "since", "f": "key", "s": 25.0}, "do": [
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 29, 45], "spread": 8.0, "tag": "guard", "attack_tag": "mira"},
@@ -706,7 +718,7 @@ static func _c7() -> Dictionary:
 	return {
 		"id": "c7", "kind": "campaign", "title": "Kapitel 7: Das Licht", "faction": "west", "enemy_faction": "red", "next": "",
 		"brief": "Die Kuppel steht, Aldane ist entwaffnet, aber ORAKEL hat sich tief in die Westbund-Netze geschrieben und greift nach dem Kern. Elin Voss hat eine Minute. Es gibt nur einen Weg: ORAKELs Verbindung kappen und das ganze Westbund-Netz opfern. Schilde, Drohnen und Sensoren fallen aus, die Armee kämpft mit halben Mitteln, während die Roten und die Stimmlosen auf die Kuppel marschieren.\n\nElin spricht zum Prisma, und das Prisma hört zu. Aber bis es antwortet, muss die Kuppel stehen.\n\nAuftrag: Bringe Elin zur Kuppel und kappe ORAKELs Verbindung, halte die Kuppel gegen drei Angriffswellen, bis Elin das Prisma erreicht hat, und überstehe den Moment, in dem der Lichtschild entsteht. Elin darf nicht fallen.",
-		"map": {"name": "Aurelia", "size": 384, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606, "sites": AURELIA_SITES, "biome": "ashland"},
+		"map": {"name": "Aurelia", "size": 384, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606, "sites": AURELIA_SITES, "biome": "coast"},
 		"hour": 3.5, "difficulty": 1, "credits": 3000, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "tank", "n": 4, "at": ["mid", -6, 52], "spread": 8.0, "tag": "army"},
@@ -726,7 +738,7 @@ static func _c7() -> Dictionary:
 			at(0.0, {"do": "hour", "h": 6.0}),
 			at(0.0, {"do": "flash", "col": Color(1.0, 0.97, 0.9), "secs": 2.2}),
 			at(0.0, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 70.0, "yaw": 20.0, "pitch": -26.0, "time": 18.0}),
-			at(1.5, radio("Falke", C_FALKE, "Ich fliege im Sichtflug und es ist schön wie nie. Pip, wenn du das hörst: Das war nur Wetter.")),
+			at(1.5, radio("Falke", C_FALKE, "Sichtflug, und der Himmel ist frei wie nie. Pip, wenn du das hörst: Das war nur Wetter.")),
 			at(1.5, radio("Mira Tanaka", C_MIRA, "Die Wache am Prisma übernehme ich. Brandt, du redest heute den ganzen Abend, versprochen?")),
 			at(1.5, radio("Dr. Brandt", C_BRANDT, "Ich habe mehr zu erzählen, als Sie hören mögen, Sergeant.")),
 			at(1.5, radio("Lena Voss", C_LENA, "Du hast gewonnen, Elin. Ich habe nie geglaubt, dass das geht.")),
@@ -790,7 +802,7 @@ static func _r1() -> Dictionary:
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 10], "dist": 130.0, "yaw": 160.0, "pitch": -34.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "at": ["me", 0, 14], "dist": 56.0, "yaw": 190.0, "pitch": -48.0, "time": 14.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 1", "sub": "DIE HALLE IN KESSEL-OST  ·  Jahr 15 nach dem Blackout", "secs": 6.0}),
-			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "In dieser Halle standen zweihundert Maschinen, und keine lief mehr. Am zwölften Tag habe ich gesagt: Wir haben Hände. Wir haben Eisen. Wir bauen es neu.")),
+			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "Fünfzehn Jahre Ruß, Dmitri. Damals standen hier zweihundert Maschinen, und keine lief. Wir hatten Hände und Eisen. Und der Rat glaubt, eine Armee marschiert auf Knopfdruck.")),
 			at(3.0, radio("Dmitri Karpow", C_FUNKE, "Und ich habe als Einziger gelacht, Chef! Womit fangen wir diesmal an?")),
 			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "Mit dem Kessel, Dmitri. Wie immer.")),
 			at(4.0, {"do": "end"})],
@@ -806,7 +818,7 @@ static func _r1() -> Dictionary:
 			{"id": "power", "text": "Baue ein Kraftwerk.", "c": {"t": "build", "role": "power", "n": 1}, "if_power": true},
 			{"id": "barracks", "text": "Baue eine Kaserne.", "c": {"t": "build", "role": "barracks", "n": 1}},
 			{"id": "factory", "text": "Baue eine Fahrzeugfabrik.", "c": {"t": "build", "role": "factory", "n": 1}},
-			{"id": "army", "text": "Stelle 10 Kampfeinheiten auf: viele Hände, starke Horde.", "c": {"t": "count", "role": "combat", "n": 10, "naval": false, "flying": false}},
+			{"id": "army", "text": "Stelle 10 Kampfeinheiten auf: Schulter an Schulter kämpft die Allianz stärker.", "c": {"t": "count", "role": "combat", "n": 10, "naval": false, "flying": false}},
 			{"id": "hold", "text": "Halte Kessel-Ost, bis die Uhr 8:00 zeigt.", "c": {"t": "time", "s": 480.0}},
 		],
 		"events": [
@@ -819,7 +831,7 @@ static func _r1() -> Dictionary:
 			# Nastja hört das Signal
 			{"when": {"t": "time", "s": 160.0}, "do": [
 				radio("Nastja Petrowa", C_NASTJA, "Marschall, auf den alten Schienen liegt ein Signal. Ein Puls, regelmäßig wie ein Herz. Ich habe so etwas noch nie gehört.", 8.0),
-				radio("Ilja Wolkow", C_WOLKOW, "Schreib es auf, Nastja, und sag es keinem weiter, bis wir mehr wissen.", 6.0)]},
+				radio("Ilja Wolkow", C_WOLKOW, "Schreib es auf, Nastja. Wir hören weiter.", 6.0)]},
 			# Akt 2: Raubzüge
 			{"when": {"t": "time", "s": 200.0}, "do": [
 				{"do": "sfx", "name": "siren"},
@@ -843,13 +855,13 @@ static func _r1() -> Dictionary:
 				{"do": "flash", "col": Color(1, 0.95, 0.8), "secs": 1.2},
 				{"do": "hour", "h": 7.0},
 				{"do": "banner", "text": "DER STROM IST ZURÜCK", "secs": 3.0, "col": Color(0.6, 1.0, 0.7)},
-				radio("Nastja Petrowa", C_NASTJA, "Der Strom ist zurück, und das Signal ist lauter geworden. Es hat den Ausfall nicht verursacht, aber es hat mitgetanzt.", 8.0)]},
+				radio("Nastja Petrowa", C_NASTJA, "Strom ist wieder da, und das Signal ist stärker geworden. Den Ausfall hat es nicht verursacht, aber es hat sich in die Schwankung gehängt.", 8.0)]},
 			# Hoffnung: Verstärkung aus der Halle
 			{"when": {"t": "time", "s": 390.0}, "do": [
 				{"do": "spawn", "side": "me", "def": "tank", "n": 3, "at": ["me", 26, 28], "spread": 6.0},
 				{"do": "spawn", "side": "me", "def": "inf", "n": 6, "at": ["me", 30, 28], "spread": 6.0},
 				{"do": "banner", "text": "VERSTÄRKUNG – DIE ARBEITER VON KESSEL-OST", "secs": 3.4, "col": Color(0.6, 1.0, 0.7)},
-				radio("Dmitri Karpow", C_FUNKE, "Die Schichten kommen, Chef! Alle, die noch einen Hammer halten können, und noch ein paar, die keinen halten können!", 7.0)]},
+				radio("Dmitri Karpow", C_FUNKE, "Die Schichten kommen, Chef! Alle, die ein Gewehr halten können, und ein paar, die lieber den Hammer nehmen!", 7.0)]},
 			# Akt 3: die große Welle
 			{"when": {"t": "time", "s": 410.0}, "do": [
 				{"do": "banner", "text": "AKT 3 – DER LETZTE ANGRIFF", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)},
@@ -883,13 +895,13 @@ static func _r2() -> Dictionary:
 			at(0.3, {"do": "cam_to", "at": ["me", 0, 18], "dist": 40.0, "yaw": -20.0, "pitch": -38.0, "time": 9.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 2", "sub": "DAS SIGNAL", "secs": 6.0}),
 			at(3.0, radio("Nastja Petrowa", C_NASTJA, "Jede Frequenz, die der Kessel noch kennt, läuft durch meine Kopfhörer. Und seit drei Nächten läuft darunter etwas, das da nicht hingehört.")),
-			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "Der Rat darf nichts davon wissen, Nastja. Hör nach, aber leise.")),
+			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "Der Rat darf davon nichts erfahren, Nastja. Geh dem Signal nach, unauffällig.")),
 			at(6.0, {"do": "end"})],
 		"outro": [
 			at(0.0, {"do": "cam_to", "at": ["me", 0, 18], "dist": 60.0, "yaw": 100.0, "pitch": -28.0, "time": 12.0}),
 			at(1.0, radio("Nastja Petrowa", C_NASTJA, "Hier sind meine Notizen, Marschall. Der Puls kommt aus der Tiefe. Und die zweite Frequenz kommt aus dem Westen.")),
 			at(1.0, radio("Ilja Wolkow", C_WOLKOW, "Behalte das für dich, bis wir mehr wissen.")),
-			at(1.0, radio("Nastja Petrowa", C_NASTJA, "Zum ersten Mal seit zwanzig Jahren glaube ich, dass er mir etwas verschweigt.")),
+			at(1.0, radio("Nastja Petrowa", C_NASTJA, "Zum ersten Mal seit fünfzehn Jahren verschweigt er mir etwas.")),
 			at(5.0, {"do": "title", "text": "DAS SIGNAL IST NOTIERT", "sub": "Der Marschall schweigt", "secs": 6.0}),
 			at(6.0, {"do": "end"})],
 		"objectives": [
@@ -910,8 +922,8 @@ static func _r2() -> Dictionary:
 					{"do": "banner", "text": "MESSPUNKT 3 – DIE ZWEITE FREQUENZ", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
 					{"do": "sfx", "name": "stinger"},
 					{"do": "flash", "col": Color(0.5, 0.9, 1.0), "secs": 0.8},
-					radio("Unbekannte Stimme", C_ORAKEL, "Zeitfenster bestätigt. Konvoi im Pass in drei Tagen. Wahrscheinlichkeit der Zuordnung: 96 Prozent.", 8.0),
-					radio("Nastja Petrowa", C_NASTJA, "Das ist keine Funkdisziplin. Das ist Rechnung. Und sie kennt unseren Konvoi.", 7.0)]},
+					radio("Unbekannte Stimme", C_ORAKEL, "Zeitfenster bestätigt. Konvoi im Pass in drei Tagen. Wahrscheinlichkeit der Zuordnung: 91 Prozent.", 8.0),
+					radio("Nastja Petrowa", C_NASTJA, "Das ist kein Funker, Marschall. Das ist eine Maschine, und sie kennt unseren Konvoi.", 7.0)]},
 			{"id": "hold3", "text": "Halte die Stellung, bis die Aufzeichnung steht.", "c": {"t": "since", "f": "p3", "s": 20.0}},
 			{"id": "home", "text": "Bringe Nastja zurück nach Kessel-Ost (gelbe Markierung).", "c": {"t": "reach", "at": ["me", 0, 18], "r": 12.0, "who": "tag:nastja"}, "mark": ["me", 0, 18]},
 		],
@@ -940,8 +952,8 @@ static func _r2() -> Dictionary:
 static func _r3() -> Dictionary:
 	return {
 		"id": "r3", "kind": "campaign", "title": "Kapitel 3: Der Pass", "faction": "red", "enemy_faction": "west", "next": "",
-		"brief": "Der Konvoi zum Eisenkamm-Pass ist kein Militärtransport: Vierhundert Arbeiterfamilien siedeln ins Hochland um, mit Lebensmitteln, Munition und ihren Kindern. Hauptmann Dmitri „Funke“ Karpow begleitet sie, weil er Brücken bauen kann und weil einer von ihnen sein Bruder ist.\n\nDie Raketen werden aus dem Westen kommen. Danach bleibt vielleicht ein eingestürzter Tunnel, unter dem noch Menschen leben, und einem Jungen, der nicht mehr spricht.\n\nAuftrag: Führe den Konvoi bis zur Passhöhe, räume mit Funke den eingestürzten Tunnel (er muss dafür die Stellung halten), rette die Verschütteten und bringe sie mit dem Jungen Mischa zum Pass. Funke und Mischa dürfen nicht fallen.",
-		"map": {"name": "Eisenkamm-Pass", "size": 320, "water": 0.35, "islands": 0.0, "resources": 0.5, "hills": 0.85, "forest": 0.3, "layout": 1, "seed": 5303, "dry_core": 34.0, "biome": "alpine", "sites": PASS_SITES},
+		"brief": "Der Siedlertreck der Allianz ist kein Militärtransport: Vierhundert Arbeiterfamilien ziehen ins Hochland, mit Lebensmitteln, Werkzeug und ihren Kindern. Weiter vorn rollt der Forschertransport des Westbunds, so verlangt es der Vertrag von Lysa. Hauptmann Dmitri „Funke“ Karpow sichert den Treck, weil er Brücken bauen kann und weil sein Bruder unter den Siedlern ist.\n\nAm Pass schlagen Raketen aus dem Westen ein. Danach bleiben ein eingestürzter Tunnel, unter dem noch Menschen leben, und ein Junge, der nicht mehr spricht.\n\nAuftrag: Führe den Konvoi bis zur Passhöhe, räume mit Funke den eingestürzten Tunnel (er muss dafür die Stellung halten), rette die Verschütteten und bringe sie mit dem Jungen Mischa zum Pass. Funke und Mischa dürfen nicht fallen.",
+		"map": {"name": "Eisenkamm-Pass", "size": 320, "water": 0.35, "islands": 0.0, "resources": 0.5, "hills": 0.85, "forest": 0.3, "layout": 1, "seed": 5303, "dry_core": 34.0, "biome": "alpine", "sites": PASS_R_SITES},
 		"hour": 14.0, "difficulty": 1, "credits": 2000, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "harv", "n": 6, "at": ["me", 0, 20], "spread": 9.0, "tag": "convoy", "speed": 0.38},
@@ -953,18 +965,18 @@ static func _r3() -> Dictionary:
 			at(0.0, {"do": "cam_to", "tag": "convoy", "dist": 34.0, "yaw": 50.0, "pitch": -24.0, "time": 0.1}),
 			at(0.3, {"do": "cam_to", "tag": "convoy", "dist": 60.0, "yaw": 5.0, "pitch": -44.0, "time": 12.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 3", "sub": "DER PASS  ·  Vierhundert Familien", "secs": 6.0}),
-			at(3.0, radio("Dmitri Karpow", C_FUNKE, "Vierhundert Familien, Chef, und kein einziges Gewehr zu viel. Ich baue Brücken, und einer von denen da ist mein Bruder.")),
+			at(3.0, radio("Dmitri Karpow", C_FUNKE, "Vierhundert Familien, Chef, und kaum Eskorte. Wenn mein Bruder heil drüben ist, geb ich einen aus.")),
 			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "Dann bring sie heil rüber, Dmitri. Das ist der ganze Auftrag.")),
 			at(4.0, {"do": "end"})],
 		"outro": [
 			at(0.0, {"do": "cam_to", "at": ["mid", 0, 0], "dist": 70.0, "yaw": -30.0, "pitch": -28.0, "time": 10.0}),
-			at(1.0, radio("Dmitri Karpow", C_FUNKE, "Zwölf habe ich rausgeholt, Marschall. Der Junge hat mir ein Stück Brot gegeben, ohne ein Wort.")),
+			at(1.0, radio("Dmitri Karpow", C_FUNKE, "Zwölf habe ich rausgeholt, Marschall. Der Junge sagt kein Wort. Ich habe ihm mein Brot gegeben, und er hat meine Hand nicht losgelassen.")),
 			at(1.0, radio("Ilja Wolkow", C_WOLKOW, "Zweihundertzwölf Namen habe ich gezählt. Ich will die, die das getan haben.")),
 			at(1.0, radio("Irina Zeljenko", C_ZELJENKO, "Die Raketen kamen aus dem Westen, Marschall. Der Rat wird Vergeltung verlangen.")),
 			at(5.0, {"do": "title", "text": "DER PASS IST ERREICHT", "sub": "Zweihundertzwölf Namen", "secs": 6.0}),
 			at(6.0, {"do": "end"})],
 		"objectives": [
-			{"id": "march", "text": "Führe den Konvoi auf die Passhöhe, bis zum Hang (gelbe Markierung): Lkw wählen, Rechtsklick.", "c": {"t": "tag_reach", "tag": "convoy", "at": ["mid", -26, 26], "r": 18.0, "n": 4}, "mark": ["mid", -26, 26]},
+			{"id": "march", "text": "Führe den Konvoi bis zum Hang auf der Passhöhe (gelbe Markierung).", "c": {"t": "tag_reach", "tag": "convoy", "at": ["mid", -26, 26], "r": 18.0, "n": 4}, "mark": ["mid", -26, 26]},
 			{"id": "tunnel", "text": "Bringe Funke zum eingestürzten Tunnel (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", -12, 7], "r": 9.0, "who": "tag:funke"}, "mark": ["mid", -12, 7],
 				"done": [{"do": "flag", "f": "dig"},
 					{"do": "sfx", "name": "siren"},

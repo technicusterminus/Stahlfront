@@ -10,7 +10,7 @@
 
 Ilja Wolkow war Vorarbeiter, als der Strom starb. In seiner Halle standen zweihundert Maschinen, und keine lief mehr. Am vierten Tag brach der erste Mann in der Kantine zusammen, am zehnten der erste Vorarbeiter. Am zwölften stand Ilja auf einem Maschinenblock und sagte den Satz, der ihn zu einem Anführer machte: *„Wir haben Hände. Wir haben Eisen. Wir bauen es neu.“*
 
-Neben ihm stand an diesem Tag ein verrußter Lehrling von neunzehn Jahren, **Dmitri Karpow**, der als Einziger lachte. *„Womit fangen wir an, Chef?“* – *„Mit dem Kessel.“* Dmitri zündete ihn eigenhändig an. Aus der Halle wurde ein Bataillon, aus dem Bataillon die **Rote Allianz**. Wo der Westbund rechnete, arbeitete sie. Wo die Schattenfront stahl, teilte sie. Den Rat der Genossen führte Ilja nicht, aber er trug seine Entscheidungen.
+Neben ihm stand an diesem Tag ein verrußter Lehrling von siebzehn Jahren, **Dmitri Karpow**, der als Einziger lachte. *„Womit fangen wir an, Chef?“* – *„Mit dem Kessel.“* Dmitri zündete ihn eigenhändig an. Aus der Halle wurde ein Bataillon, aus dem Bataillon die **Rote Allianz**. Wo der Westbund rechnete, arbeitete sie. Wo die Schattenfront stahl, teilte sie. Den Rat der Genossen führte Ilja nicht, aber er trug seine Entscheidungen.
 
 Im Jahr fünfzehn ist Ilja einundsechzig, Marschall, Bär, und er hat ein einziges Versprechen gegeben und nie gebrochen: **Niemand wird vergessen, der für uns gestorben ist.**
 
@@ -23,14 +23,14 @@ Nastja Petrowa war Funkerin in Iljas Halle, bevor sie Offizierin wurde. Sie ist 
 
 Der Rat sagt: *Der Westbund hat das Prisma geweckt.* Nastja sagt nichts. Sie hört weiter. Und sie hört ein zweites, leiseres Signal darunter: **eine Frequenz, die mit dem Puls tanzt** und aus dem Westen kommt, verschlüsselt, regelmäßig, kalt. Sie notiert die Muster.
 
-Ilja liest ihre Notizen und sagt: *„Behalte das für dich, bis wir mehr wissen.“* Zum ersten Mal in zwanzig Jahren glaubt Nastja, dass er etwas verschweigt.
+Ilja liest ihre Notizen und sagt: *„Behalte das für dich, bis wir mehr wissen.“* Zum ersten Mal in fünfzehn Jahren glaubt Nastja, dass er etwas verschweigt.
 
 ---
 
 ## Kapitel 3 – Der Pass
 **Held im Fokus: Hauptmann Dmitri „Funke“ Karpow**
 
-Der Allianz-Konvoi zum Eisenkamm-Pass ist kein Militärtransport. Es sind **vierhundert Arbeiterfamilien**, die ins Hochland umsiedeln, mit Lebensmitteln, Munition und ihren Kindern. Dmitri Karpow, inzwischen Hauptmann der Pioniere, begleitet sie, weil er Brücken bauen kann und weil einer von ihnen sein Bruder ist.
+Der Allianz-Konvoi zum Eisenkamm-Pass ist kein Militärtransport. Es sind **vierhundert Arbeiterfamilien**, die ins Hochland umsiedeln, mit Lebensmitteln, Werkzeug und ihren Kindern. Weit vor ihnen rollt der Forschertransport des Westbunds, so verlangt es der Vertrag von Lysa. Dmitri Karpow, inzwischen Hauptmann der Pioniere, begleitet sie, weil er Brücken bauen kann und weil einer von ihnen sein Bruder ist.
 
 Die Raketen kommen aus dem Westen. 212 sterben. Dmitri rennt gegen den Strom, räumt mit bloßen Händen einen eingestürzten Tunnel und zieht **zwölf Menschen** heraus, darunter einen Jungen von sieben Jahren, **Mischa**, dessen Eltern im Wagen davor verbrannt sind. Er trägt ihn drei Kilometer. Mischa spricht nicht. In der Nacht reicht er ihm schweigend ein Stück Brot. Dmitri nimmt den Jungen auf. Von diesem Tag an trägt er ihn auf der Schulter, wenn der Weg zu lang wird.
 
@@ -73,7 +73,7 @@ Die Allianz erreicht die Glasstadt in der dritten Nachtstunde. Wolkows **Koloss-
 
 Im Zentrum ist die Kuppel geöffnet. Ilja sieht, wie **Elin Voss**, die Strategin des Westbunds, ORAKEL kappt, wie die Schilde der Westbund-Armee zusammenbrechen. Er sieht die Gelegenheit – und steht still.
 
-Dann tritt **Lasarew** auf ihn zu. Er trägt eine Waffe. *„Der Rat hat entschieden, Marschall. Das Prisma gehört der Allianz. Und Sie sind zu weich.“* Es ist Lasarew, der den Konvoi sprengen ließ, im Auftrag eines Rates, der einen Krieg brauchte, um die Armee zu einen. Pawels Tod war ein Versuch, den Marschall zu isolieren.
+Dann tritt **Lasarew** auf ihn zu. Er trägt eine Waffe. *„Der Rat hat entschieden, Marschall. Das Prisma gehört der Allianz. Und Sie sind zu weich.“* Es ist Lasarew, der den Konvoi sprengen ließ, im Glauben, einen Pakt mit Hardlinern im Westbund-Rat zu erfüllen. Der Kontakt war ORAKEL, die sich als Westbund-Rat ausgab, um den Krieg zu erzwingen. Pawels Tod war ein Versuch, den Marschall zu isolieren.
 
 Irina Zeljenko sieht alles. Sie steht zwischen beiden Männern. Und sie entscheidet sich: **Sie erschießt Lasarew.** Es ist der einzige Schuss, den sie in diesem Krieg abfeuert.
 
@@ -125,7 +125,7 @@ Anfang dreißig, Pionier, immer verrußt, immer fröhlich. Iljas ältester Lehrl
 
 | Figur | Rolle | Besonderheit |
 |---|---|---|
-| **Oberst Gregor Lasarew** | Iljas „bester Freund“ | Der **Verräter im Innern**, vom Rat gelenkt. Treu im Ton, kalt im Plan. |
+| **Oberst Gregor Lasarew** | Iljas „bester Freund“ | Der **Verräter im Innern**, von ORAKEL gelenkt, ohne es zu wissen. Treu im Ton, kalt im Plan. |
 | **Kommissarin Irina Zeljenko** | Politische Offizierin | Hart, doktrinär, aufrichtig. **Ihr Schuss im Finale** entscheidet über das Ende. |
 | **General Pawel Wolkow** | Iljas Vater | Veteran, stirbt früh, hinterlässt den Hinweis auf Lasarew. |
 | **Mischa** | Waisenjunge, von Funke gerettet | Erinnert die Helden, wofür sie marschieren. |

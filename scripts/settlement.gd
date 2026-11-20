@@ -77,7 +77,8 @@ static func build(world: Node3D, t, sp: Dictionary, starts: Array) -> Dictionary
 				var a := TAU * k / 8.0
 				if t.height_at(c.x + cos(a) * r * 0.7, c.y + sin(a) * r * 0.7) < t.WATER_Y + 0.3:
 					wet += 1
-			if y < t.WATER_Y + 0.3 or wet > 1:
+			var limit: int = 8 if String(s["kind"]) in ["mast", "tunnel"] else (3 if String(s["kind"]) == "town" else 1)
+			if y < t.WATER_Y + 0.3 or wet > limit:
 				push_warning("SITE NASS: %s (%s) Mitte %.1f, %d/8 Randpunkte im Wasser" % [node.name, s["kind"], y, wet])
 				print("SITE NASS: %s (%s) %d/8" % [node.name, s["kind"], wet])
 				if OS.get_cmdline_user_args().has("--dryfind"):
@@ -91,7 +92,7 @@ static func build(world: Node3D, t, sp: Dictionary, starts: Array) -> Dictionary
 							var ok: bool = t.height_at(q.x, q.y) > t.WATER_Y + 0.6
 							for j in 16:
 								var a3 := TAU * j / 16.0
-								if t.height_at(q.x + cos(a3) * (r + 4.0), q.y + sin(a3) * (r + 4.0)) < t.WATER_Y + 0.5:
+								if t.height_at(q.x + cos(a3) * (r * 0.8), q.y + sin(a3) * (r * 0.8)) < t.WATER_Y + 0.5:
 									ok = false
 									break
 							if ok:

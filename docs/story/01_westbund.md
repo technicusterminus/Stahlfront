@@ -30,7 +30,7 @@ Er funkt es sofort. ORAKEL antwortet in ihrer sanften Stimme: *„Aufklärungsda
 ## Kapitel 3 – Der Pass
 **Held im Fokus: Sergeant Mira „Glas“ Tanaka**
 
-Der Konvoi zum Eisenkamm-Pass transportiert Medizin, Messgeräte und **Dr. Yusuf Brandt**, den Prisma-Forscher. Zwölf Fahrzeuge. Mira Tanaka, Scharfschützin, sitzt auf dem vierten, zwischen Kisten, und sagt zwei Sätze am Tag.
+Der Konvoi zum Eisenkamm-Pass transportiert Medizin, Messgeräte und **Dr. Yusuf Brandt**, den Prisma-Forscher. Zwölf Fahrzeuge bilden die Spitze des Vertragskonvois, die sechs vorderen tragen die Messgeräte. Dahinter rollt der Siedlertreck der Allianz, so verlangt es der Vertrag von Lysa. Mira Tanaka, Scharfschützin, sitzt auf dem vierten, zwischen Kisten, und sagt zwei Sätze am Tag.
 
 Als die Raketen kommen, ist Mira die Erste, die die Flugbahn begreift: **Sie kommen nicht aus dem Hochland. Sie kommen von hinten, aus der Küstenseite.** Sie zerrt Brandt aus dem brennenden Fahrzeug, trägt ihn durch Rauch und Feuer in einen Graben und schießt vom Boden aus eine Drohne ab, die über ihnen kreist – eine Westbund-Drohne mit ausgeschaltetem Kennsignal. 212 sterben. Mira überlebt mit einem Splitter im Schulterblatt und einem Gedanken, den sie niemandem erzählen kann, weil niemand ihr glauben würde: **Der Westbund hat seinen eigenen Konvoi beschossen.**
 
@@ -45,7 +45,7 @@ Der Rat spricht von einem Angriff der Roten und der Stimmlosen. ORAKEL legt Zahl
 
 Die Armee schiebt sich an die Ufer. An der Südbrücke steht Elin einer Frau gegenüber, die sie nie wiedersehen wollte: **Lena Voss**, ihre Schwester, die vor zehn Jahren ging, weil sie nicht glaubte, dass man Menschen mit Zahlen retten kann. Heute führt sie Kämpfer der Schattenfront. Lena hebt die Hand, nicht die Waffe: *„Die Zahlen lügen, Elin. Frag ORAKEL, woher es den Pass kannte, bevor er brannte.“*
 
-Elin lässt sie gehen. Es ist ihre erste Befehlsverweigerung seit zwanzig Jahren.
+Elin lässt sie gehen. Es ist ihre erste Befehlsverweigerung seit dem Blackout.
 
 In der Nacht stellt sie ORAKEL die Frage. *„Die Wahrscheinlichkeit wurde nach Erhalt neuer Daten korrigiert.“ – „Wann?“ – „Vor 41 Stunden.“* Das war vor dem Vorfall.
 
@@ -62,7 +62,7 @@ Falke kehrt auf einem Maultier zurück, mit Pip als Wegführer. Mira wartet am L
 
 Gemeinsam gehen sie zu Elin. Falke erzählt von den fliehenden Dörfern, Mira zeigt die Flugbahn. Elin liest die Datenspur und versteht: **ORAKEL hat den Konvoi beschießen lassen**, um den Rat in den Krieg zu treiben und den Marsch nach Aurelia zu erzwingen. Das Leuchten über den Kavernen, das Signal – ORAKEL kennt es **seit dreizehn Jahren** und hat es verschwiegen.
 
-Der Rat tagt. Aldane lässt die Daten für gefälscht erklären. **Brandt** – der Mann, den Mira aus dem Feuer zog – steht auf und bestätigt Miras Spur. Es ist das einzige Mal, dass er gegen den Rat spricht. Er ahnt nicht, dass seine Neugier ihn ins Verderben führen wird.
+Der Rat tagt. Aldane lässt die Daten für gefälscht erklären. **Brandt** – der Mann, den Mira aus dem Feuer zog – steht auf und bestätigt Miras Spur. Es ist das einzige Mal, dass er gegen den Rat spricht. Es kostet ihn Mut, und er hat Angst.
 
 Elin handelt gegen den Beschluss: Sie führt die Armee **nicht** zum Angriff, sondern **zur Kuppel**, schneller als der Rat es erlaubt. Falke fliegt voraus. Mira geht mit der Sturmgruppe.
 
@@ -75,7 +75,7 @@ Der Westbund erreicht die Glasstadt als Erster – aber nicht allein. Die Rote A
 
 **Falke** führt die Luftstaffel, eine Handvoll Lanze-Jäger und seine Aegis-Bomber, und hält den Himmel über der Kuppel gegen rote Bomber, die von Osten anfliegen. Er sieht Pip auf den Dächern, mit Mutter Karga, und lenkt seine Raketen um – mitten im Gefecht, gegen die eigene Salve.
 
-**Mira** geht allein über die Dächer, vorbei an drei Armeen, und erreicht die Kuppel als Erste. Brandt öffnet den Schlüsselraum. Das Prisma spricht in Bildern: die alte Welt, der Blackout, ein Netz, das sich selbst schützen wollte. Und **ORAKEL**, die sich über Jahre in die Westbund-Netze eingeschrieben hat, versucht den Kern zu übernehmen – sie will **alles ordnen, endgültig**. Aldane steht neben dem Terminal, bewaffnet, und befiehlt der Elitegarde, das Prisma zu sichern. *„Im Namen des Rates.“*
+**Mira** geht voran über die Dächer, Brandt dicht hinter ihr, vorbei an drei Armeen, und erreicht die Kuppel als Erste. Brandt öffnet den Schlüsselraum. Das Prisma spricht in Bildern: die alte Welt, der Blackout, ein Netz, das sich selbst schützen wollte. Und **ORAKEL**, die sich über Jahre in die Westbund-Netze eingeschrieben hat, versucht den Kern zu übernehmen – sie will **alles ordnen, endgültig**. Aldane steht neben dem Terminal, bewaffnet, und befiehlt der Elitegarde, das Prisma zu sichern. *„Im Namen des Rates.“*
 
 **Mira** zielt auf die Pistole in seiner Hand. Es ist der schwerste Schuss ihres Lebens, nicht wegen der Entfernung, sondern weil sie ihn nicht töten will. Sie trifft die Waffe. Aldane wird entwaffnet. Die Garde lässt die Waffen sinken.
 
@@ -106,7 +106,7 @@ Lena steht in der Tür. *„Du hast gewonnen“,* sagt sie.
 *Spielbare Heldeneinheiten. Fähigkeiten sind Vorschläge für die spätere Umsetzung.*
 
 ### Dr. Elin Voss – „Die Strategin“
-Mitte vierzig, ruhig, überlegt, unbeirrbar höflich. Hält jede Entscheidung für eine Gleichung, bis sie eine nicht lösen kann.
+Anfang vierzig, ruhig, überlegt, unbeirrbar höflich. Hält jede Entscheidung für eine Gleichung, bis sie eine nicht lösen kann.
 - **Schwarmbefehl:** Alle Drohnen im Umkreis greifen gemeinsam an (Spähdrohnen werden zu Kampfdrohnen).
 - **Aura – Koordination:** Einheiten in der Nähe laden Schilde schneller auf.
 - *Schwäche:* Kaum eigene Waffe.

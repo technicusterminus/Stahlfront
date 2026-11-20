@@ -30,7 +30,7 @@ Die Runde beschließt, nach Aurelia zu horchen, nicht zu marschieren. Es ist Kar
 ## Kapitel 3 – Der Pass
 **Held im Fokus: Asha Karim**
 
-Dann kommt der **Vorfall am Eisenkamm-Pass**. Ein Konvoi explodiert auf Schattenfront-Gebiet, Westbund-Drohnen kreisen kurz danach, rote Panzer rollen den Hang hinunter. Beide Seiten beschuldigen die Stimmlosen, und beide Seiten marschieren.
+Dann kommt der **Vorfall am Eisenkamm-Pass**. Der gemeinsame Vertragskonvoi von Westbund und Allianz explodiert auf Schattenfront-Gebiet, Westbund-Drohnen kreisen kurz danach, rote Panzer rollen den Hang hinunter. Beide Seiten beschuldigen die Stimmlosen, und beide Seiten marschieren.
 
 Asha geht allein zum Pass. Sie liest die Spuren wie ein Buch: **zwei Sprengungen**, eine von oben, eine von unten – und eine **dritte Spur**, die niemand erklärt: Stiefelabdrücke von jemandem, der **in beide Lager gegangen ist**. Sie folgt ihr zwei Tage durch die Berge und findet einen alten Bunker mit einem Mann am Kartentisch: **Tobias Wehn, den Kartografen**, der alle Pfade des Kessels kennt.
 

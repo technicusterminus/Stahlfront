@@ -13,9 +13,9 @@ Unter Aurelia ruht **Vitrium**, ein bläulich schimmerndes Kristallgestein. Es l
 1. **Jahr 0 – Der Blackout.** In einer einzigen Nacht stirbt jede Satelliten- und Netzinfrastruktur der Erde. Ursache offiziell: ein Sonnensturm. Ursache tatsächlich: umstritten (siehe die drei Erzählungen).
 2. **Jahr 1–3 – Der Hungerwinter.** Städte zerfallen, Konvois werden überfallen. Aus den Überlebenden formen sich drei Machtblöcke.
 3. **Jahr 4 – Die Blockbildung.** Der **Westbund** sichert die Küstenstädte, die **Rote Allianz** die Industriegürtel im Osten, die **Schattenfront** nimmt das Hochland und die Pässe.
-4. **Jahr 9 – Der Vertrag von Lysa.** Sieben Jahre Waffenstillstand um den See. Kein Block darf Aurelia betreten.
-5. **Jahr 14 – Das Erwachen.** Messstationen aller drei Seiten melden dasselbe Signal aus der Tiefe: ein regelmäßiger Puls im Vitrium. **Das Prisma erwacht.**
-6. **Jahr 15 – Der Vorfall am Eisenkamm-Pass.** Ein Konvoi explodiert, 212 Tote. Jede Seite beschuldigt eine andere. Der Vertrag bricht.
+4. **Jahr 9 – Der Vertrag von Lysa.** Sieben Jahre Waffenstillstand um den See. Kein Block darf Aurelia betreten. Einmal im Jahr rollt ein gemeinsamer Konvoi über den Eisenkamm-Pass: Hilfsgüter und Forscher des Westbunds, dahinter Siedler der Allianz, unter gegenseitiger Aufsicht.
+5. **Jahr 14 – Das Erwachen.** Messstationen aller drei Seiten melden dasselbe Signal aus der Tiefe: ein regelmäßiger Puls im Vitrium. **Das Prisma erwacht.** Nur ORAKEL, die KI des Westbunds, hat das Signal schon über ein Jahr früher aufgefangen und verschwiegen.
+6. **Jahr 15 – Der Vorfall am Eisenkamm-Pass.** Der gemeinsame Vertragskonvoi explodiert, vorn der Forschertransport des Westbunds, dahinter der Siedlertreck der Allianz. 212 Tote. Jede Seite beschuldigt eine andere. Der Vertrag bricht.
 7. **Jahr 15 – Die Nacht von Aurelia.** Alle drei Blöcke marschieren zugleich in die Ruinen. Das Ende des Krieges.
 
 ## Das Prisma
