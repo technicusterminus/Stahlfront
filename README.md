@@ -62,6 +62,8 @@ oder das Projekt im Godot-Editor öffnen und F5 drücken. Das Startmenü bietet:
 
 ## Spielprinzip
 
+Die KI setzt auf Leicht und Mittel offensive Generalsfähigkeiten (Sperrfeuer, Luftschlag, Gift, Fallschirmjäger) erst 180 Sekunden nach Gefechtsbeginn ein, damit der erste Wirtschaftsaufbau nicht sofort beschossen wird; auf Schwer gilt keine Sperre. Beim ersten Bauschritt markiert das Spiel Baudrohne und Nachschubdepot über der Szene.
+
 Du startest mit einem Hauptquartier, 5.000 Credits und einem Bautrupp. Die Schattenfront beginnt mit zwei Arbeitern. Die Kommandoleiste zeigt während des Einstiegs den nächsten Bauschritt für deine Fraktion. Der Hinweis bleibt auch bei ausgewählten Einheiten sichtbar und endet mit der ersten fertigen Fahrzeugfabrik.
 
 1. **Nachschub:** Baue ein Nachschubzentrum nahe einem Depot. Es liefert einen Sammler-Lkw mit, der automatisch Credits aus dem Depot holt. Ohne Nachschubzentrum gibt es kein Einkommen.
@@ -353,7 +355,8 @@ Schalter folgen auf `--` hinter dem Godot-Aufruf, z. B. `godot --path . -- --aut
 | `--showcase=tank\|inf\|jet\|bomber…` | Stellt Einheiten zum Begutachten auf (`--camdist=` für den Abstand) |
 | `--firetest=GRÖSSE` | Einzelnes Feuer vor der Kamera |
 | `--animalcam` | Kamera auf eine Hirschherde |
-| `--uitest` | Automatisierter Bedientest mit simulierten Mausklicks |
+| `--uitest` | Automatisierter Bedientest mit simulierten Mausklicks (`--nowarp`: echte Maus bleibt unbewegt, prüft den Betrieb ohne Fensterfokus) |
+| `--verbose` | Meldet u.a. jede KI-Generalsfähigkeit mit Zeit und Ziel |
 
 **Balance-Messreihe:** `tools/balance_test.ps1` simuliert KI-Gefechte ohne Fenster, rotiert Fraktionen und Startpositionen über mehrere Karten und fasst Überlebensquote, Abschüsse, Verluste und Skriptfehler je Fraktion zusammen:
 

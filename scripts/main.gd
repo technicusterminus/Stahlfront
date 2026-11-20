@@ -477,10 +477,15 @@ func start_match(cfg: Dictionary) -> void:
 func _wait(t: float) -> void:
 	await get_tree().create_timer(t, true, false, true).timeout
 
+## Klick in Viewport-Koordinaten. Die echte Maus wird in Fensterpixeln gesetzt (Skalierung des Fensters berücksichtigt),
+## die Ereignisse tragen Viewport-Koordinaten; der Controller liest die Position aus den Ereignissen, nicht vom Fokus abhängig.
 func _click(pos: Vector2, button := MOUSE_BUTTON_LEFT) -> void:
-	Input.warp_mouse(pos)
+	if not args.has("nowarp"):
+		DisplayServer.window_move_to_foreground()
+		Input.warp_mouse(get_viewport().get_screen_transform() * pos)
 	var mm = InputEventMouseMotion.new()
 	mm.position = pos
+	mm.global_position = pos
 	Input.parse_input_event(mm)
 	await _wait(0.15)
 	for pressed in [true, false]:
@@ -496,6 +501,9 @@ func _check(ok: bool, what: String) -> void:
 	print(("UITEST OK   " if ok else "UITEST FAIL ") + what)
 
 func _ui_test() -> void:
+	if args.has("nowarp"):
+		# Echte Maus bleibt unbewegt und liegt über der unteren Leiste (wie bei fehlendem Fensterfokus)
+		Input.warp_mouse(Vector2(300, get_viewport().get_visible_rect().size.y - 40))
 	await _wait(1.5)
 	var cam = Game.cam
 	var dozer = null
@@ -505,8 +513,13 @@ func _ui_test() -> void:
 	# 1) Bauarbeiter per Klick auswaehlen
 	cam.look_at_pos(dozer.position)
 	await _wait(0.8)
-	await _click(cam.cam.unproject_position(dozer.aim_point()))
-	await _wait(0.3)
+	for attempt in 3:
+		await _click(cam.cam.unproject_position(dozer.aim_point()))
+		await _wait(0.3)
+		if Game.ctrl.selection.has(dozer):
+			break
+		cam.look_at_pos(dozer.position)
+		await _wait(0.6)
 	_check(Game.ctrl.selection.has(dozer), "Bauarbeiter per Linksklick ausgewaehlt")
 	# 2) Nachschubzentrum platzieren
 	var fac: String = Game.players[0]["faction"]
@@ -535,7 +548,12 @@ func _ui_test() -> void:
 	await _wait(0.2)
 	_check(Game.ctrl.mode == "place", "Platzierungsmodus aktiv")
 	var sp = cam.cam.unproject_position(Vector3(site.x, Game.terrain.height_at(site.x, site.z), site.z))
-	Input.warp_mouse(sp)
+	if not args.has("nowarp"):
+		Input.warp_mouse(get_viewport().get_screen_transform() * sp)
+	var mm2 = InputEventMouseMotion.new()
+	mm2.position = sp
+	mm2.global_position = sp
+	Input.parse_input_event(mm2)
 	await _wait(0.4)
 	var credits_before: float = Game.players[0]["credits"]
 	await _click(sp)

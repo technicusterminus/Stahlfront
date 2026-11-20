@@ -342,8 +342,8 @@ func set_game_ui(on: bool) -> void:
 	bottom.visible = on
 	msg_box.visible = on
 
-func mouse_over_ui() -> bool:
-	var mp = root.get_viewport().get_mouse_position()
+func mouse_over_ui(at := Vector2(-1.0, -1.0)) -> bool:
+	var mp: Vector2 = at if at.x >= 0.0 else root.get_viewport().get_mouse_position()
 	for c in [top, bottom, powers_panel, help_panel, pause_panel, menu_layer, end_layer]:
 		if c != null and c.visible and c.get_global_rect().has_point(mp):
 			return true
@@ -912,7 +912,7 @@ func _opening_hint(faction: String) -> String:
 		return "%s auswählen und mit Rechtsklick auf die Baustelle den Bau fortsetzen." % builder_name
 	if Game.ctrl.selected_dozer() != null:
 		return "Unten „%s“ wählen%s." % [name_of_building, " und nahe einem Nachschubdepot bauen" if role == "supply" else ""]
-	return "%s auswählen und unten „%s“ wählen%s." % [builder_name, name_of_building, " (Bauplatz am Nachschubdepot)" if role == "supply" else ""]
+	return "%s auswählen (gelb markiert) und unten „%s“ wählen%s." % [builder_name, name_of_building, " (Bauplatz am blau markierten Nachschubdepot)" if role == "supply" else ""]
 
 func _set_hp(hp: float, mhp: float) -> void:
 	var f: float = clamp(hp / max(mhp, 1.0), 0.0, 1.0)
@@ -1226,13 +1226,98 @@ func _draw_overlay() -> void:
 			var a = cam.unproject_position(o.position)
 			var b = cam.unproject_position(o.path[o.path.size() - 1])
 			overlay.draw_dashed_line(a, b, Color(0.4, 1.0, 0.5, 0.35) if o.order == "move" else Color(1, 0.45, 0.35, 0.4), 1.2, 5.0)
+	_draw_opening_marks(cam)
 	if c.hint != "":
-		var mp = overlay.get_viewport().get_mouse_position()
+		var mp = c.mouse_pos()
 		var font = overlay.get_theme_default_font()
 		overlay.draw_string_outline(font, mp + Vector2(18, 30), c.hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, 4, Color(0, 0, 0, 0.9))
 		overlay.draw_string(font, mp + Vector2(18, 30), c.hint, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 0.85, 0.5))
 
 # ---------------------------------------------------------------- Ende
+
+# ---------------------------------------------------------------- Einstiegsmarkierungen
+
+## Erster Bauschritt: Baudrohne und Nachschubdepot werden über der Szene markiert (auch wenn Drohne und Hauptquartier sich überlagern);
+## beim Platzieren zeigen zwei Ringe um das Depot den gesperrten Bereich (rot) und die empfohlene Reichweite (grün).
+func _draw_opening_marks(cam: Camera3D) -> void:
+	if _opening_complete or Game.spectator or Game.mission != null:
+		return
+	var fac: String = Game.players[Game.human]["faction"]
+	var sid: String = fac + "_supply"
+	for b in Game.buildings:
+		if b.owner_id == Game.human and b.alive and b.def["id"] == sid:
+			return
+	var t = Time.get_ticks_msec() / 1000.0
+	var pulse: float = 0.5 + 0.5 * sin(t * 4.0)
+	var font = overlay.get_theme_default_font()
+	var dz = null
+	for u in Game.units:
+		if u.owner_id == Game.human and u.alive and u.def["role"] == "dozer":
+			dz = u
+			break
+	if dz != null and not cam.is_position_behind(dz.aim_point()):
+		var sp = cam.unproject_position(dz.aim_point())
+		var picked: bool = Game.ctrl.selected_dozer() != null
+		var col = Color(0.5, 1.0, 0.6) if picked else Color(1.0, 0.85, 0.3)
+		overlay.draw_arc(sp, 26.0 + pulse * 5.0, 0.0, TAU, 40, col, 2.5)
+		var lp = sp + Vector2(80, -56)
+		overlay.draw_line(sp + Vector2(18, -15), lp + Vector2(-6, 6), col, 1.5)
+		_mark_text(font, lp, "Baudrohne ✓ ausgewählt" if picked else "1  Baudrohne anklicken", col)
+	var dep = null
+	var home: Vector3 = Game.players[Game.human]["start"]
+	var bd = 1e9
+	for dp in Game.depots:
+		if dp.kind == "supply" and Game.flat_dist(dp.position, home) < bd:
+			bd = Game.flat_dist(dp.position, home)
+			dep = dp
+	if dep == null:
+		return
+	var dpos: Vector3 = Vector3(dep.position.x, Game.terrain.height_at(dep.position.x, dep.position.z) + 0.3, dep.position.z)
+	if not cam.is_position_behind(dpos):
+		var sp2 = cam.unproject_position(dpos)
+		var col2 = Color(0.55, 0.85, 1.0)
+		var vs2 = overlay.get_viewport_rect().size
+		var safe = Rect2(60, 110, vs2.x - 120, vs2.y - 290)   # frei von oberer Leiste und unterer Befehlsleiste
+		if safe.has_point(sp2):
+			overlay.draw_arc(sp2, 22.0 + pulse * 4.0, 0.0, TAU, 40, col2, 2.5)
+			var lp2 = sp2 + Vector2(70, -48)
+			overlay.draw_line(sp2 + Vector2(15, -12), lp2 + Vector2(-6, 6), col2, 1.5)
+			_mark_text(font, lp2, "2  Nachschubdepot: Zentrum hier in der Nähe bauen", col2)
+		else:
+			# Depot außerhalb des sichtbaren Bereichs: Pfeil am Rand in seine Richtung
+			var ctr = safe.get_center()
+			var dir = (sp2 - ctr).normalized()
+			var edge = Vector2(clamp(sp2.x, safe.position.x, safe.end.x), clamp(sp2.y, safe.position.y, safe.end.y))
+			var side = Vector2(-dir.y, dir.x)
+			var tip = edge + dir * 6.0
+			overlay.draw_colored_polygon(PackedVector2Array([tip, tip - dir * 26.0 + side * 14.0, tip - dir * 26.0 - side * 14.0]), Color(col2.r, col2.g, col2.b, 0.65 + pulse * 0.3))
+			var tx = edge - dir * 30.0
+			var label = "2  Nachschubdepot (dorthin scrollen)"
+			var wlab = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
+			_mark_text(font, Vector2(clamp(tx.x - wlab * 0.5, 10.0, vs2.x - wlab - 10.0), tx.y + 5.0), label, col2)
+	if Game.ctrl.mode == "place" and Game.ctrl.place_id == sid:
+		var size: int = int(Defs.buildings[sid]["size"])
+		_ground_ring(cam, dpos, 5.0 + size, Color(1.0, 0.4, 0.35, 0.9), false)
+		_ground_ring(cam, dpos, 24.0, Color(0.5, 1.0, 0.6, 0.8), true)
+
+func _mark_text(font, pos: Vector2, text: String, col: Color) -> void:
+	overlay.draw_string_outline(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 5, Color(0, 0, 0, 0.9))
+	overlay.draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, col)
+
+func _ground_ring(cam: Camera3D, center: Vector3, radius: float, col: Color, dashed: bool) -> void:
+	var pts := PackedVector2Array()
+	for i in 49:
+		var a = TAU * i / 48.0
+		var wp = center + Vector3(cos(a), 0, sin(a)) * radius
+		wp.y = Game.terrain.height_at(wp.x, wp.z) + 0.2
+		if cam.is_position_behind(wp):
+			return
+		pts.append(cam.unproject_position(wp))
+	if dashed:
+		for i in range(0, pts.size() - 1, 2):
+			overlay.draw_line(pts[i], pts[i + 1], col, 2.0)
+	else:
+		overlay.draw_polyline(pts, col, 2.5)
 
 func _on_match_end(won: bool) -> void:
 	if Game.mission != null:

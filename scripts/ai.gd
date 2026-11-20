@@ -6,6 +6,12 @@ var faction = ""
 var order_list: Array = []
 var think_t = 1.0
 var wave = 0
+## Offensive Generalsfähigkeiten der KI warten auf Leicht und Mittel die Aufbauphase des Menschen ab (Sekunden ab Gefechtsbeginn).
+## Grundlage: Nachschubzentrum 15 s Bauzeit + erster Lkw 8 s + Lesen der Hinweise und Platzieren ca. 45 s + erste Fahrt zum Depot ca. 40 s
+## + Puffer = 180 s. Auf Schwer (Stufe 2) gilt keine Sperre. Aufklärung und wirtschaftliche Fähigkeiten sind nie gesperrt.
+const OFFENSIVE_POWER_GRACE_S := 180.0
+const NON_OFFENSIVE_POWERS := ["cash", "heal_all", "reveal"]
+var _t_start := 0.0
 var next_attack = 0.0
 var attackers: Array = []
 var rng = RandomNumberGenerator.new()
@@ -14,6 +20,7 @@ var target_pid = -1
 
 func setup(p: int) -> void:
 	pid = p
+	_t_start = Game.time
 	faction = Game.faction_of(p)
 	rng.randomize()
 	var base = ["supply", "power", "barracks", "power", "factory", "defense", "power", "airfield", "dock", "tech", "power", "defense", "supply", "power", "super", "defense", "power", "defense"]
@@ -401,6 +408,8 @@ func _powers() -> void:
 	for pw in f["powers"]:
 		if Game.powers.why_not(pid, pw) != "":
 			continue
+		if _power_locked_by_grace(pw):
+			continue
 		match pw["id"]:
 			"cash":
 				Game.powers.use(pid, pw, Vector3.ZERO)
@@ -418,7 +427,15 @@ func _powers() -> void:
 			_:
 				var tgt = _cluster_target()
 				if tgt != null:
+					if OS.get_cmdline_user_args().has("--verbose"):
+						print("KI-FAEHIGKEIT P%d %s bei t=%d s auf (%d, %d)" % [pid, pw["id"], int(Game.time), int(tgt.x), int(tgt.z)])
 					Game.powers.use(pid, pw, tgt)
+
+## Offensive Fähigkeiten sind auf Leicht und Mittel in der Aufbauphase gesperrt.
+func _power_locked_by_grace(pw: Dictionary) -> bool:
+	if Game.difficulty >= 2 or NON_OFFENSIVE_POWERS.has(pw["id"]):
+		return false
+	return Game.time - _t_start < OFFENSIVE_POWER_GRACE_S
 
 ## Ziel mit vielen Feinden auf einem Haufen (Einheiten oder Gebäude).
 func _cluster_target():

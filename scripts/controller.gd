@@ -130,12 +130,25 @@ func single_building():
 
 # ---------------------------------------------------------------- Ablauf
 
+## Letzte bekannte Mausposition aus den Eingabeereignissen. Sie gilt auch für eingespeiste Ereignisse (Tests, Fernsteuerung),
+## wenn das Fenster keinen Fokus hat und die echte Maus nicht bewegt wird.
+var _mouse := Vector2.ZERO
+var _mouse_seen := false
+
+func mouse_pos() -> Vector2:
+	return _mouse if _mouse_seen else get_viewport().get_mouse_position()
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouse:
+		_mouse = (event as InputEventMouse).position
+		_mouse_seen = true
+
 func _process(_delta: float) -> void:
 	if not Game.running or Game.cam == null:
 		return
 	clean_selection()
-	var mp = get_viewport().get_mouse_position()
-	var over_ui: bool = Game.hud != null and Game.hud.mouse_over_ui()
+	var mp = mouse_pos()
+	var over_ui: bool = Game.hud != null and Game.hud.mouse_over_ui(mp)
 	hover = null if over_ui else pick(mp)
 	hover_ground = null if over_ui else ground_at(mp)
 	hint = ""
@@ -269,7 +282,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_key(event as InputEventKey)
 
 func box_rect() -> Rect2:
-	var mp = get_viewport().get_mouse_position()
+	var mp = mouse_pos()
 	return Rect2(drag_start, mp - drag_start).abs()
 
 func _mouse_button(mb: InputEventMouseButton) -> void:
