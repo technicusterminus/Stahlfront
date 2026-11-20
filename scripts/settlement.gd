@@ -43,6 +43,13 @@ static func build(world: Node3D, t, sp: Dictionary, starts: Array) -> Dictionary
 	root.name = "Sites"
 	world.add_child(root)
 	var found := {}
+	if OS.get_cmdline_user_args().has("--drygrid"):
+		print("DRY mid=", (starts[0] + starts[1]) * 0.5, " me=", starts[0], " en=", starts[1])
+		for gz in range(-int(Game.HALF) + 10, int(Game.HALF) - 9, 12):
+			var line := ""
+			for gx in range(-int(Game.HALF) + 10, int(Game.HALF) - 9, 12):
+				line += "#" if t.height_at(gx, gz) < t.WATER_Y + 0.6 else "."
+			print("DRY z=%4d %s" % [gz, line])
 	for s in sp.get("sites", []):
 		var c := resolve(s["at"], starts)
 		var y: float = t.height_at(c.x, c.y)
@@ -64,6 +71,35 @@ static func build(world: Node3D, t, sp: Dictionary, starts: Array) -> Dictionary
 			"rails": _rails(node, t, c, s, starts)
 			"port": _port(node, t, c, r, s)
 			"camp": _camp(node, t, c, r, s)
+		if not (String(s["kind"]) in ["port", "bridge"]):
+			var wet := 0
+			for k in 8:
+				var a := TAU * k / 8.0
+				if t.height_at(c.x + cos(a) * r * 0.7, c.y + sin(a) * r * 0.7) < t.WATER_Y + 0.3:
+					wet += 1
+			if y < t.WATER_Y + 0.3 or wet > 1:
+				push_warning("SITE NASS: %s (%s) Mitte %.1f, %d/8 Randpunkte im Wasser" % [node.name, s["kind"], y, wet])
+				print("SITE NASS: %s (%s) %d/8" % [node.name, s["kind"], wet])
+				if OS.get_cmdline_user_args().has("--dryfind"):
+					var best := Vector2.INF
+					for ring in range(1, 17):
+						for k in 24:
+							var a2 := TAU * k / 24.0
+							var q := c + Vector2(cos(a2), sin(a2)) * ring * 5.0
+							if absf(q.x) > Game.HALF - r - 8.0 or absf(q.y) > Game.HALF - r - 8.0:
+								continue
+							var ok: bool = t.height_at(q.x, q.y) > t.WATER_Y + 0.6
+							for j in 16:
+								var a3 := TAU * j / 16.0
+								if t.height_at(q.x + cos(a3) * (r + 4.0), q.y + sin(a3) * (r + 4.0)) < t.WATER_Y + 0.5:
+									ok = false
+									break
+							if ok:
+								best = q - c
+								break
+						if best != Vector2.INF:
+							break
+					print("SUGGEST %s dx=%d dz=%d" % [node.name, int(round(best.x)), int(round(best.y))])
 		found[String(s.get("name", s["kind"]))] = Vector3(c.x, y, c.y)
 	return found
 
