@@ -1,0 +1,47 @@
+[
+  {
+    "id": "bio_concrete",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_brick",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_plaster",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_roof",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_glass",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_asphalt",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_rubble",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_thatch",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "bio_corrugated",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  }
+]

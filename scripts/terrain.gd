@@ -133,6 +133,8 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	flat_list = flats
 	for s in starts:
 		flats.append(Vector3(s.x, s.y, 34.0 + max(0.0, float(SIZE) / 240.0 - 1.0) * 58.0))
+	for sf in load("res://scripts/settlement.gd").flats(spec, starts):
+		flats.append(sf)
 	for d in depots:
 		flats.append(Vector3(d.x, d.y, 9.0))
 

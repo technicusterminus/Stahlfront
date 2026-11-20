@@ -11,12 +11,14 @@ extends RefCounted
 ##   dry_core   Radius (m) um die Kartenmitte, der trocken bleibt (Pässe, Hochebenen im Zentrum); 0 = aus
 ##   causeway   halbe Breite (m) eines Damms/einer Brücke quer über den Mittelsee; 0 = aus
 ##   causeway_deg  Richtung des Damms in Grad (0 = entlang der x-Achse)
+##   biome      Landschaftsprägung (Pflanzen, Farben, Schneegrenze, Tiere), siehe scripts/biome.gd; "" = Standard
+##   sites      Orte der Karte (Städte, Ruinen, Kuppel, Masten ...), siehe scripts/settlement.gd
 
 const SIZE_MIN := 160
 const SIZE_MAX := 336
 
 static func default_spec() -> Dictionary:
-	return {"name": "Standardkarte", "size": 240, "water": 0.5, "islands": 0.3, "resources": 0.5, "hills": 0.5, "forest": 0.5, "layout": 0, "seed": 7, "dry_core": 0.0, "causeway": 0.0, "causeway_deg": 0.0}
+	return {"name": "Standardkarte", "size": 240, "water": 0.5, "islands": 0.3, "resources": 0.5, "hills": 0.5, "forest": 0.5, "layout": 0, "seed": 7, "dry_core": 0.0, "causeway": 0.0, "causeway_deg": 0.0, "biome": "", "sites": []}
 
 const LAYOUT_NAMES := ["Kreuzsee", "Windungen", "Getrennte Seen", "Uferkanal"]
 const ARCH := [

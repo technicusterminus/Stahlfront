@@ -106,9 +106,11 @@ func begin() -> void:
 func _audit_land(node, path: Array) -> void:
 	if node is Dictionary:
 		for k in node.keys():
+			if path.is_empty() and str(k) == "map":
+				continue   # die Orte der Karte stehen selbst auf blockierten Zellen
 			_audit_land(node[k], path + [str(k)])
 	elif node is Array:
-		if node.size() == 3 and node[0] is String and ["me", "en", "mid"].has(node[0]) and (node[1] is float or node[1] is int) and (node[2] is float or node[2] is int):
+		if node.size() == 3 and node[0] is String and (["me", "en", "mid"].has(node[0]) or String(node[0]).begins_with("site:")) and (node[1] is float or node[1] is int) and (node[2] is float or node[2] is int):
 			if not _dry(_anchor(node[0]) + Vector3(float(node[1]), 0, float(node[2]))):
 				var base := _anchor(node[0])
 				var best = null
@@ -122,13 +124,17 @@ func _audit_land(node, path: Array) -> void:
 							bd = r
 							best = [node[0], int(round(float(node[1]) + cos(a) * r)), int(round(float(node[2]) + sin(a) * r))]
 					r += 2.0
-				print("WASSER %s %s: %s liegt im Wasser, naechstes Land: %s" % [m["id"], "/".join(path), str(node), str(best)])
+				print("WASSER %s %s: %s liegt im Wasser oder auf Gebaeude, naechstes freies Land: %s" % [m["id"], "/".join(path), str(node), str(best)])
 		else:
 			for i in node.size():
 				_audit_land(node[i], path + [str(i)])
 
 func _dry(p: Vector3) -> bool:
-	return Game.terrain.height_at(p.x, p.z) > Terrain_WATER_Y + 0.5
+	if Game.terrain.height_at(p.x, p.z) <= Terrain_WATER_Y + 0.5:
+		return false
+	var cx := int(floor((p.x + Game.HALF) / 2.0))
+	var cz := int(floor((p.z + Game.HALF) / 2.0))
+	return Game.terrain.blocked[clampi(cz, 0, Game.GRID - 1) * Game.GRID + clampi(cx, 0, Game.GRID - 1)] == 0
 
 const Terrain_WATER_Y := -0.6
 
@@ -139,6 +145,8 @@ func _def_id(side: String, key: String) -> String:
 	return key if Defs.units.has(key) else _faction(side) + "_" + key
 
 func _anchor(a: String) -> Vector3:
+	if a.begins_with("site:"):
+		return Game.sites.get(a.substr(5), Vector3.ZERO)
 	var p0: Vector3 = Game.players[0]["start"]
 	var p1: Vector3 = Game.players[1]["start"]
 	match a:

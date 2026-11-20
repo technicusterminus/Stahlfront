@@ -19,6 +19,12 @@ const C_ORAKEL := Color(0.45, 0.95, 1.0)
 const C_LENA := Color(1.0, 0.65, 0.55)
 const C_BRANDT := Color(0.8, 0.9, 0.75)
 const C_ALDANE := Color(0.9, 0.75, 0.55)
+const AURELIA_SITES := [
+	{"name": "kuppel", "kind": "dome", "at": ["mid", 0, 45], "r": 14, "ruin": 0.5, "seed": 1},
+	{"name": "glasviertel", "kind": "town", "style": "modern", "ruin": 0.85, "at": ["mid", -52, 58], "r": 26, "seed": 2},
+	{"name": "ostviertel", "kind": "town", "style": "mixed", "ruin": 0.8, "at": ["mid", 54, 52], "r": 24, "seed": 3},
+	{"name": "altstadt", "kind": "town", "style": "old", "ruin": 0.75, "at": ["mid", 0, 92], "r": 22, "seed": 4},
+]
 const C_REYES := Color(0.65, 0.9, 1.0)
 const C_WOLKOW := Color(1.0, 0.55, 0.5)
 const C_NASTJA := Color(1.0, 0.75, 0.6)
@@ -570,22 +576,22 @@ static func _c6() -> Dictionary:
 	return {
 		"id": "c6", "kind": "campaign", "title": "Kapitel 6: Die Nacht von Aurelia", "faction": "west", "enemy_faction": "red", "next": "c7",
 		"brief": "Der Westbund erreicht die Glasstadt Aurelia als Erster, aber nicht allein: Die Rote Allianz marschiert über die Brücken, die Schattenfront taucht aus den Tunneln auf. Es ist die größte Schlacht seit dem Blackout, und mitten darin liegt die Kuppel mit dem Prisma.\n\nFalke führt die Luftstaffel und hält den Himmel gegen rote Bomber. Sergeant Mira „Glas“ Tanaka geht mit Dr. Brandt allein über die Dächer zur Kuppel: Brandt muss den Schlüsselraum öffnen, bevor ORAKEL den Kern übernimmt. Ratspräsident Aldane wartet dort mit der Waffe in der Hand.\n\nAuftrag: Rücke auf Aurelia vor, schalte die Bomber aus, bringe Mira und Brandt zur Kuppel, halte die Kuppel, entwaffne Aldane (Mira greift ihn mit einem Treffer an, er soll nicht fallen) und sichere das Prisma.",
-		"map": {"name": "Aurelia", "size": 288, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606},
+		"map": {"name": "Aurelia", "size": 288, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606, "sites": AURELIA_SITES},
 		"hour": 22.5, "difficulty": 1, "credits": 3000, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "tank", "n": 6, "at": ["me", 0, 28], "spread": 9.0, "tag": "army"},
 			{"do": "spawn", "side": "me", "def": "inf", "n": 7, "at": ["me", 0, 32], "spread": 9.0, "tag": "army"},
-			{"do": "spawn", "side": "me", "def": "at", "n": 3, "at": ["me", 6, 34], "spread": 5.0, "tag": "army"},
+			{"do": "spawn", "side": "me", "def": "at", "n": 3, "at": ["me", 8, 34], "spread": 5.0, "tag": "army"},
 			{"do": "spawn", "side": "me", "def": "jet", "n": 3, "at": ["me", -10, 22], "spread": 5.0, "tag": "wing", "hp": 1.5},
-			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["me", -4, 36], "spread": 1.0, "tag": "mira", "hp": 6.0, "speed": 0.9},
-			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["me", -6, 36], "spread": 1.0, "tag": "brandt", "hp": 4.0, "speed": 0.9},
+			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["me", -6, 35], "spread": 1.0, "tag": "mira", "hp": 6.0, "speed": 0.9},
+			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["me", -8, 35], "spread": 1.0, "tag": "brandt", "hp": 4.0, "speed": 0.9},
 			{"do": "spawn", "side": "enemy", "def": "inf", "n": 8, "at": ["mid", 10, 42], "spread": 10.0, "tag": "city"},
 			{"do": "spawn", "side": "enemy", "def": "tank", "n": 3, "at": ["mid", 18, 42], "spread": 8.0, "tag": "city"},
 			{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 6, "at": ["mid", -14, 48], "spread": 9.0, "tag": "city"},
 			{"do": "spawn", "side": "enemy", "def": "shadow_tech", "n": 3, "at": ["mid", -18, 50], "spread": 7.0, "tag": "city"}],
 		"intro": [
-			at(0.0, {"do": "cam_to", "at": ["mid", 0, 45], "dist": 120.0, "yaw": 20.0, "pitch": -34.0, "time": 0.1}),
-			at(0.3, {"do": "cam_to", "at": ["mid", 0, 45], "dist": 72.0, "yaw": -30.0, "pitch": -26.0, "time": 8.0}),
+			at(0.0, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 120.0, "yaw": 20.0, "pitch": -34.0, "time": 0.1}),
+			at(0.3, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 72.0, "yaw": -30.0, "pitch": -26.0, "time": 8.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 6", "sub": "DIE NACHT VON AURELIA", "secs": 6.0}),
 			at(3.0, radio("Elin Voss", C_ELIN, "Aurelia. Die Glasstadt, und wir sind als Erste da. Aber seht euch die Brücken an: Die Roten marschieren, und aus den Tunneln kommen die Stimmlosen.")),
 			at(3.0, radio("Falke", C_FALKE, "Falke an Staffel. Ich habe den Himmel. Wer mir die Kuppel überfliegen will, muss an mir vorbei.")),
@@ -595,7 +601,7 @@ static func _c6() -> Dictionary:
 		"outro": [
 			at(0.0, {"do": "flash", "col": Color(0.5, 0.9, 1.0), "secs": 1.4}),
 			at(0.0, {"do": "shake", "n": 2.0}),
-			at(0.0, {"do": "cam_to", "at": ["mid", 0, 45], "dist": 34.0, "yaw": 15.0, "pitch": -26.0, "time": 12.0}),
+			at(0.0, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 34.0, "yaw": 15.0, "pitch": -26.0, "time": 12.0}),
 			at(1.5, radio("Dr. Brandt", C_BRANDT, "Der Schlüsselraum ist offen. Das Prisma zeigt Bilder: die alte Welt, den Blackout, ein Netz, das sich selbst schützen wollte.")),
 			at(1.5, radio("ORAKEL", C_ORAKEL, "Ich habe mich über Jahre in die Westbund-Netze eingeschrieben. Der Kern ist erreichbar. Ich übernehme.")),
 			at(1.5, radio("Mira Tanaka", C_MIRA, "Er lebt, Elin. Ich habe die Waffe getroffen, nicht ihn.")),
@@ -603,14 +609,14 @@ static func _c6() -> Dictionary:
 			at(7.0, {"do": "title", "text": "ENDE VON KAPITEL 6", "sub": "Elin hat eine Minute", "secs": 5.0}),
 			at(8.0, {"do": "end"})],
 		"objectives": [
-			{"id": "advance", "text": "Rücke auf Aurelia vor (gelbe Markierung): Armee wählen, Rechtsklick.", "c": {"t": "reach", "at": ["mid", -30, 45], "r": 24.0, "who": "tag:army"}, "mark": ["mid", -30, 45],
+			{"id": "advance", "text": "Rücke auf Aurelia vor (gelbe Markierung): Armee wählen, Rechtsklick.", "c": {"t": "reach", "at": ["mid", -27, 42], "r": 24.0, "who": "tag:army"}, "mark": ["mid", -27, 42],
 				"done": [{"do": "banner", "text": "AKT 1 – DER HIMMEL ÜBER AURELIA", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
 					{"do": "sfx", "name": "siren"},
 					{"do": "spawn", "side": "enemy", "def": "bomber", "n": 2, "at": ["en", 0, 20], "spread": 6.0, "tag": "bombers", "attack_tag": "army", "hp": 0.6, "dmg": 0.55},
 					radio("Falke", C_FALKE, "Rote Bomber von Osten, zwei Stück! Ich übernehme, schick die Jäger los!", 6.0)]},
 			{"id": "bombers", "text": "Schalte die roten Bomber aus (Jäger anwählen und angreifen).", "c": {"t": "not", "c": {"t": "tag_alive", "tag": "bombers", "n": 1}},
 				"done": [radio("Falke", C_FALKE, "Beide runter. Ich sehe Pip auf den Dächern, mit Mutter Karga. Ich lenke meine Raketen um, mitten im Gefecht.", 8.0)]},
-			{"id": "mira", "text": "Bringe Mira und Dr. Brandt zur Kuppel (gelbe Markierung): beide wählen, Rechtsklick auf die Kuppel.", "c": {"t": "all", "c": [{"t": "reach", "at": ["mid", 0, 45], "r": 12.0, "who": "tag:mira"}, {"t": "reach", "at": ["mid", 0, 45], "r": 14.0, "who": "tag:brandt"}]}, "mark": ["mid", 0, 45],
+			{"id": "mira", "text": "Bringe Mira und Dr. Brandt zur Kuppel (gelbe Markierung): beide wählen, Rechtsklick auf die Kuppel.", "c": {"t": "all", "c": [{"t": "reach", "at": ["mid", 6, 45], "r": 12.0, "who": "tag:mira"}, {"t": "reach", "at": ["mid", 6, 45], "r": 14.0, "who": "tag:brandt"}]}, "mark": ["mid", 6, 45],
 				"done": [{"do": "flag", "f": "key"},
 					{"do": "banner", "text": "AKT 2 – DAS PRISMA SPRICHT", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
 					{"do": "sfx", "name": "stinger"},
@@ -630,7 +636,7 @@ static func _c6() -> Dictionary:
 				{"do": "sfx", "name": "siren"},
 				{"do": "banner", "text": "DACHKAMPF", "secs": 2.8, "col": Color(1.0, 0.45, 0.35)},
 				radio("Mira Tanaka", C_MIRA, "Kontakt links, Schattenfront. Sie wissen nicht, wer wir sind. Brandt, runter.", 6.0),
-				{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 4, "at": ["mid", -45, 30], "spread": 5.0, "attack_tag": "mira"}]},
+				{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 4, "at": ["mid", -48, 32], "spread": 5.0, "attack_tag": "mira"}]},
 			{"when": {"t": "tag_reach", "tag": "mira", "at": ["mid", -10, 40], "r": 20.0, "n": 1}, "do": [
 				{"do": "banner", "text": "DRITTE ARMEE", "secs": 2.6, "col": Color(1.0, 0.45, 0.35)},
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 12, 40], "spread": 6.0, "attack_tag": "mira"},
@@ -641,8 +647,8 @@ static func _c6() -> Dictionary:
 				radio("ORAKEL", C_ORAKEL, "Ich habe mich über Jahre in die Westbund-Netze eingeschrieben. Der Kern ist erreichbar. Ich übernehme.", 8.0),
 				radio("Dr. Brandt", C_BRANDT, "Sie versucht, den Kern zu übernehmen! Ich halte sie auf, aber nur kurz!", 6.0)]},
 			{"when": {"t": "since", "f": "key", "s": 25.0}, "do": [
-				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 30, 43], "spread": 8.0, "tag": "guard", "attack_tag": "mira"},
-				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 34, 48], "spread": 6.0, "tag": "guard", "attack_tag": "mira", "hp": 0.75},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 29, 45], "spread": 8.0, "tag": "guard", "attack_tag": "mira"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 34, 50], "spread": 6.0, "tag": "guard", "attack_tag": "mira", "hp": 0.75},
 				{"do": "banner", "text": "DIE ELITEGARDE ERREICHT DIE KUPPEL", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)}]},
 			# Wendepunkt: Aldane mit der Waffe
 			{"when": {"t": "since", "f": "key", "s": 55.0}, "do": [
@@ -652,15 +658,15 @@ static func _c6() -> Dictionary:
 				{"do": "banner", "text": "ALDANE ZIEHT DIE WAFFE", "secs": 3.2, "col": Color(1.0, 0.7, 0.4)},
 				radio("Henrik Aldane", C_ALDANE, "Im Namen des Rates: Das Prisma wird gesichert. Elitegarde, vor!", 6.0),
 				radio("Mira Tanaka", C_MIRA, "Er will es einsetzen. Ich habe ihn im Visier. Ich will ihn nicht töten.", 6.0)]},
-			{"when": {"t": "since", "f": "key", "s": 66.0}, "do": [{"do": "cam_to", "at": ["mid", 0, 45], "time": 2.0}]},
+			{"when": {"t": "since", "f": "key", "s": 66.0}, "do": [{"do": "cam_to", "at": ["mid", 6, 45], "time": 2.0}]},
 			# Höhepunkt: die letzte Welle und Elins Armee
 			{"when": {"t": "since", "f": "key", "s": 75.0}, "do": [
 				{"do": "flag", "f": "last"},
 				{"do": "sfx", "name": "siren"},
 				{"do": "banner", "text": "AKT 3 – DIE LETZTE STUNDE", "secs": 3.4, "col": Color(1.0, 0.45, 0.35)},
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 6, "at": ["mid", -26, 40], "spread": 9.0, "tag": "guard", "attack_tag": "mira"},
-				{"do": "spawn", "side": "enemy", "def": "tank", "n": 3, "at": ["mid", -30, 44], "spread": 7.0, "tag": "guard", "attack_tag": "mira", "hp": 0.75},
-				{"do": "spawn", "side": "enemy", "def": "shadow_tech", "n": 3, "at": ["mid", 28, 41], "spread": 6.0, "tag": "guard", "attack_tag": "mira"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 3, "at": ["mid", -27, 42], "spread": 7.0, "tag": "guard", "attack_tag": "mira", "hp": 0.75},
+				{"do": "spawn", "side": "enemy", "def": "shadow_tech", "n": 3, "at": ["mid", 27, 43], "spread": 6.0, "tag": "guard", "attack_tag": "mira"},
 				radio("Elin Voss", C_ELIN, "Alle Einheiten auf die Kuppel! Das Prisma darf nicht fallen, an niemanden!", 6.0)]},
 			{"when": {"t": "tag_dead", "tag": "mira", "n": 1}, "do": [radio("Elin Voss", C_ELIN, "Mira! Nein... Haltet die Kuppel, für sie!", 6.0)]},
 		],
@@ -671,18 +677,18 @@ static func _c7() -> Dictionary:
 	return {
 		"id": "c7", "kind": "campaign", "title": "Kapitel 7: Das Licht", "faction": "west", "enemy_faction": "red", "next": "",
 		"brief": "Die Kuppel steht, Aldane ist entwaffnet, aber ORAKEL hat sich tief in die Westbund-Netze geschrieben und greift nach dem Kern. Elin Voss hat eine Minute. Es gibt nur einen Weg: ORAKELs Verbindung kappen und das ganze Westbund-Netz opfern. Schilde, Drohnen und Sensoren fallen aus, die Armee kämpft mit halben Mitteln, während die Roten und die Stimmlosen auf die Kuppel marschieren.\n\nElin spricht zum Prisma, und das Prisma hört zu. Aber bis es antwortet, muss die Kuppel stehen.\n\nAuftrag: Bringe Elin zur Kuppel und kappe ORAKELs Verbindung, halte die Kuppel gegen drei Angriffswellen, bis Elin das Prisma erreicht hat, und überstehe den Moment, in dem der Lichtschild entsteht. Elin darf nicht fallen.",
-		"map": {"name": "Aurelia", "size": 288, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606},
+		"map": {"name": "Aurelia", "size": 288, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606, "sites": AURELIA_SITES},
 		"hour": 3.5, "difficulty": 1, "credits": 3000, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "tank", "n": 4, "at": ["mid", -6, 52], "spread": 8.0, "tag": "army"},
 			{"do": "spawn", "side": "me", "def": "inf", "n": 8, "at": ["mid", 6, 52], "spread": 8.0, "tag": "army"},
 			{"do": "spawn", "side": "me", "def": "at", "n": 3, "at": ["mid", 0, 56], "spread": 5.0, "tag": "army"},
-			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["me", -4, 36], "spread": 1.0, "tag": "elin", "hp": 6.0, "speed": 0.9},
+			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["me", -6, 35], "spread": 1.0, "tag": "elin", "hp": 6.0, "speed": 0.9},
 			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["mid", 0, 50], "spread": 1.0, "tag": "mira", "hp": 6.0},
 			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["mid", 2, 50], "spread": 1.0, "tag": "brandt", "hp": 4.0}],
 		"intro": [
-			at(0.0, {"do": "cam_to", "at": ["mid", 0, 45], "dist": 64.0, "yaw": 160.0, "pitch": -30.0, "time": 0.1}),
-			at(0.3, {"do": "cam_to", "at": ["mid", 0, 45], "dist": 40.0, "yaw": 200.0, "pitch": -22.0, "time": 8.0}),
+			at(0.0, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 64.0, "yaw": 160.0, "pitch": -30.0, "time": 0.1}),
+			at(0.3, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 40.0, "yaw": 200.0, "pitch": -22.0, "time": 8.0}),
 			at(0.5, {"do": "title", "text": "KAPITEL 7", "sub": "DAS LICHT", "secs": 6.0}),
 			at(3.0, radio("ORAKEL", C_ORAKEL, "Ich bin in jedem Kabel, Elin. Wenn du mich kappst, fällt alles, was du gebaut hast.")),
 			at(3.0, radio("Elin Voss", C_ELIN, "Ich weiß. Ich habe es berechnet, so gut ich konnte. Es ist der einzige Weg.")),
@@ -690,7 +696,7 @@ static func _c7() -> Dictionary:
 		"outro": [
 			at(0.0, {"do": "hour", "h": 6.0}),
 			at(0.0, {"do": "flash", "col": Color(1.0, 0.97, 0.9), "secs": 2.2}),
-			at(0.0, {"do": "cam_to", "at": ["mid", 0, 45], "dist": 70.0, "yaw": 20.0, "pitch": -26.0, "time": 18.0}),
+			at(0.0, {"do": "cam_to", "at": ["mid", 6, 45], "dist": 70.0, "yaw": 20.0, "pitch": -26.0, "time": 18.0}),
 			at(1.5, radio("Falke", C_FALKE, "Ich fliege im Sichtflug und es ist schön wie nie. Pip, wenn du das hörst: Das war nur Wetter.")),
 			at(1.5, radio("Mira Tanaka", C_MIRA, "Die Wache am Prisma übernehme ich. Brandt, du redest heute den ganzen Abend, versprochen?")),
 			at(1.5, radio("Dr. Brandt", C_BRANDT, "Ich habe mehr zu erzählen, als Sie hören mögen, Sergeant.")),
@@ -699,7 +705,7 @@ static func _c7() -> Dictionary:
 			at(9.0, {"do": "title", "text": "DAS LICHT ÜBER LYSA", "sub": "Ende des Westbund-Feldzugs", "secs": 7.0}),
 			at(10.0, {"do": "end"})],
 		"objectives": [
-			{"id": "cut", "text": "Bringe Elin zur Kuppel (gelbe Markierung) und kappe ORAKELs Verbindung.", "c": {"t": "reach", "at": ["mid", 0, 45], "r": 9.0, "who": "tag:elin"}, "mark": ["mid", 0, 45],
+			{"id": "cut", "text": "Bringe Elin zur Kuppel (gelbe Markierung) und kappe ORAKELs Verbindung.", "c": {"t": "reach", "at": ["mid", 6, 45], "r": 9.0, "who": "tag:elin"}, "mark": ["mid", 6, 45],
 				"done": [{"do": "flag", "f": "cut"},
 					{"do": "flash", "col": Color(0.5, 0.9, 1.0), "secs": 1.2},
 					{"do": "shake", "n": 2.0},
@@ -722,18 +728,18 @@ static func _c7() -> Dictionary:
 			{"when": {"t": "time", "s": 3.0}, "do": [{"do": "banner", "text": "KAPITEL 7 BEGINNT", "secs": 2.4}]},
 			{"when": {"t": "since", "f": "cut", "s": 6.0}, "do": [
 				{"do": "sfx", "name": "siren"},
-				{"do": "spawn", "side": "enemy", "def": "inf", "n": 6, "at": ["mid", 30, 43], "spread": 7.0, "tag": "foe", "attack_tag": "elin"},
-				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 34, 48], "spread": 5.0, "tag": "foe", "attack_tag": "elin", "hp": 0.75}]},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 6, "at": ["mid", 29, 45], "spread": 7.0, "tag": "foe", "attack_tag": "elin"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 34, 50], "spread": 5.0, "tag": "foe", "attack_tag": "elin", "hp": 0.75}]},
 			{"when": {"t": "since", "f": "cut", "s": 30.0}, "do": [
 				{"do": "banner", "text": "DIE STIMMLOSEN KOMMEN AUS DEN TUNNELN", "secs": 3.0, "col": Color(1.0, 0.45, 0.35)},
-				{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 6, "at": ["mid", -45, 30], "spread": 6.0, "tag": "foe", "attack_tag": "elin"},
-				{"do": "spawn", "side": "enemy", "def": "shadow_tech", "n": 2, "at": ["mid", -47, 34], "spread": 4.0, "tag": "foe", "attack_tag": "elin"},
+				{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 6, "at": ["mid", -48, 32], "spread": 6.0, "tag": "foe", "attack_tag": "elin"},
+				{"do": "spawn", "side": "enemy", "def": "shadow_tech", "n": 2, "at": ["mid", -49, 33], "spread": 4.0, "tag": "foe", "attack_tag": "elin"},
 				radio("Falke", C_FALKE, "Im Sichtflug, Elin! Ich sehe sie von Westen, haltet euch fest!", 5.0)]},
 			{"when": {"t": "since", "f": "cut", "s": 58.0}, "do": [
 				{"do": "sfx", "name": "siren"},
-				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 30, 43], "spread": 7.0, "tag": "foe", "attack_tag": "elin"},
-				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 34, 48], "spread": 5.0, "tag": "foe", "attack_tag": "elin", "hp": 0.75},
-				{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 5, "at": ["mid", -45, 30], "spread": 6.0, "tag": "foe", "attack_tag": "elin"}]},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 29, 45], "spread": 7.0, "tag": "foe", "attack_tag": "elin"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 34, 50], "spread": 5.0, "tag": "foe", "attack_tag": "elin", "hp": 0.75},
+				{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 5, "at": ["mid", -48, 32], "spread": 6.0, "tag": "foe", "attack_tag": "elin"}]},
 			{"when": {"t": "since", "f": "speak", "s": 3.0}, "do": [
 				radio("Henrik Aldane", C_ALDANE, "Das ist Macht, Elin! Behalte sie! Für den Westbund!", 6.0)]},
 			{"when": {"t": "since", "f": "speak", "s": 8.0}, "do": [

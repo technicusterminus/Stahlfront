@@ -1,7 +1,7 @@
 extends Node
 ## Einstieg: baut Welt, Licht, Gelände, Kamera, Oberfläche und startet Gefechte.
 ## Testschalter (nach "--"): --autostart --demo --faction=red --enemies=2 --difficulty=2
-##   --seed=N --speed=N --quit=SEK --shot=PFAD --shotdelay=SEK --camat=X,Z
+##   --seed=N --speed=N --quit=SEK --shot=PFAD --shotdelay=SEK --camat=X,Z --revealall
 
 const AIScript = preload("res://scripts/ai.gd")
 const CameraScript = preload("res://scripts/camera_rts.gd")
@@ -113,6 +113,7 @@ func _build_world(sp: Dictionary) -> void:
 	world.add_child(terrain)
 	Game.terrain = terrain
 	terrain.generate(sp, starts_all, pts)
+	Game.sites = load("res://scripts/settlement.gd").build(world, terrain, sp, starts_all)
 	Game.init_grid()
 	Game.units_root = Node3D.new()
 	Game.units_root.name = "Units"
@@ -249,6 +250,8 @@ func start_match(cfg: Dictionary) -> void:
 			_build_world(want)
 	if cfg.has("hour"):
 		Game.daynight.configure(float(cfg["hour"]), float(cfg.get("daycycle", 0.0)))
+	if args.has("hour") and args.has("mission"):
+		Game.daynight.configure(float(args["hour"]), 0.0)
 	Game.spectator = cfg["spectate"]
 	Game.difficulty = cfg["difficulty"]
 	Game.human = 0
@@ -303,6 +306,8 @@ func start_match(cfg: Dictionary) -> void:
 		add_child(runner)
 		runner.setup(load("res://scripts/missions.gd").by_id(String(cfg["mission"])), self)
 	Game.running = true
+	if args.has("revealall"):
+		Game.explore(Vector3(0, 0, 0), 400.0)
 	Game.update_fog()
 	Game.hud.on_match_started()
 	if runner != null:

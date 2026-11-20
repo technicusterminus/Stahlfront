@@ -9,6 +9,7 @@ var mission = null
 var pending_mission := ""
 var pending_menu := false
 var mission_faction := "west"
+var sites := {}   # benannte Orte der Karte (Name -> Weltposition), siehe settlement.gd
 
 const CELL := 2.0
 var GRID := 120        # Zellen je Seite (Weltgröße / CELL)
