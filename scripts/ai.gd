@@ -435,6 +435,9 @@ func _powers() -> void:
 func _power_locked_by_grace(pw: Dictionary) -> bool:
 	if Game.difficulty >= 2 or NON_OFFENSIVE_POWERS.has(pw["id"]):
 		return false
+	# Die Sperre schützt nur den Einstieg eines menschlichen Spielers; KI gegen KI (Zuschauermodus, Balance-Messungen) bleibt unverändert.
+	if Game.spectator or not Game.enemies(pid, Game.human):
+		return false
 	return Game.time - _t_start < OFFENSIVE_POWER_GRACE_S
 
 ## Ziel mit vielen Feinden auf einem Haufen (Einheiten oder Gebäude).

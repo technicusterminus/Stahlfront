@@ -66,7 +66,7 @@ oder das Projekt im Godot-Editor öffnen und F5 drücken. Das Startmenü bietet:
 
 ## Spielprinzip
 
-Die KI setzt auf Leicht und Mittel offensive Generalsfähigkeiten (Sperrfeuer, Luftschlag, Gift, Fallschirmjäger) erst 180 Sekunden nach Gefechtsbeginn ein, damit der erste Wirtschaftsaufbau nicht sofort beschossen wird; auf Schwer gilt keine Sperre. Beim ersten Bauschritt markiert das Spiel Baudrohne und Nachschubdepot über der Szene.
+Gegen einen menschlichen Spieler setzt die KI auf Leicht und Mittel offensive Generalsfähigkeiten (Sperrfeuer, Luftschlag, Gift, Fallschirmjäger) erst 180 Sekunden nach Gefechtsbeginn ein, damit der erste Wirtschaftsaufbau nicht sofort beschossen wird; auf Schwer sowie in KI gegen KI (Zuschauermodus, Balance-Messungen) gilt keine Sperre. Beim ersten Bauschritt markiert das Spiel Baudrohne und Nachschubdepot über der Szene.
 
 Du startest mit einem Hauptquartier, 5.000 Credits und einem Bautrupp. Die Schattenfront beginnt mit zwei Arbeitern. Die Kommandoleiste zeigt während des Einstiegs den nächsten Bauschritt für deine Fraktion. Der Hinweis bleibt auch bei ausgewählten Einheiten sichtbar und endet mit der ersten fertigen Fahrzeugfabrik.
 
