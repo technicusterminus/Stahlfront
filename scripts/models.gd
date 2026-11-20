@@ -421,7 +421,7 @@ static func _imported_finish(material: BaseMaterial3D, mesh_name: StringName, co
 		simple.albedo_color = col.lerp(Color(0.45, 0.45, 0.42), 0.25)
 		return simple
 	if _soldier:
-		if surface in ["Overall", "Gear", "Pack", "Cloth", "Scarf", "HiViz", "Lace", "Boots"]:
+		if surface in ["Overall", "Gear", "Pack", "Cloth", "Scarf", "HiViz", "Lace", "Boots", "Gloves"]:
 			return _detail_finish(material, "fabric")
 		if surface == "Armor" or surface == "HardHat":
 			return _detail_finish(material, "metal")
