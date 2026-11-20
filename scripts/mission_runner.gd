@@ -88,6 +88,8 @@ func begin() -> void:
 			print("CHECK %s Niederlage = %s" % [m["id"], str(_cond(l["c"]))])
 		for ev in m.get("events", []):
 			print("CHECK %s Ereignis = %s" % [m["id"], str(_cond(ev["when"]))])
+	if main.args.has("missioncheck"):
+		_audit_land(m, [])
 	if main.args.has("missionauto"):
 		if main.args.has("cine"):
 			_play_cine(m.get("intro", []), _begin_play)
@@ -98,6 +100,37 @@ func begin() -> void:
 	_show_briefing()
 
 # ---------------------------------------------------------------- Hilfen
+
+## Kartenprüfung: findet alle Ortsangaben ["me"|"en"|"mid", x, z] der Mission, die im Wasser oder auf zu steilem Grund liegen,
+## und schlägt den nächsten trockenen Punkt vor. Die Karte muss zur Handlung passen: Ziele, Spawns und Kamerapunkte gehören an Land.
+func _audit_land(node, path: Array) -> void:
+	if node is Dictionary:
+		for k in node.keys():
+			_audit_land(node[k], path + [str(k)])
+	elif node is Array:
+		if node.size() == 3 and node[0] is String and ["me", "en", "mid"].has(node[0]) and (node[1] is float or node[1] is int) and (node[2] is float or node[2] is int):
+			if not _dry(_anchor(node[0]) + Vector3(float(node[1]), 0, float(node[2]))):
+				var base := _anchor(node[0])
+				var best = null
+				var bd := 1e9
+				var r := 2.0
+				while r <= 60.0 and best == null:
+					for i in 24:
+						var a := TAU * float(i) / 24.0
+						var q := base + Vector3(float(node[1]) + cos(a) * r, 0, float(node[2]) + sin(a) * r)
+						if _dry(q) and r < bd:
+							bd = r
+							best = [node[0], int(round(float(node[1]) + cos(a) * r)), int(round(float(node[2]) + sin(a) * r))]
+					r += 2.0
+				print("WASSER %s %s: %s liegt im Wasser, naechstes Land: %s" % [m["id"], "/".join(path), str(node), str(best)])
+		else:
+			for i in node.size():
+				_audit_land(node[i], path + [str(i)])
+
+func _dry(p: Vector3) -> bool:
+	return Game.terrain.height_at(p.x, p.z) > Terrain_WATER_Y + 0.5
+
+const Terrain_WATER_Y := -0.6
 
 func _faction(side: String) -> String:
 	return Game.players[0 if side == "me" else 1]["faction"]
@@ -414,6 +447,30 @@ func _autoplay() -> void:
 						u.global_position = u.global_position.move_toward(goal, 14.0)   # Testhilfe: Vorankommen sichern
 				for u in _alive("escort"):
 					u.cmd_move(goal + Vector3(randf_range(-5, 5), 0, randf_range(-5, 5)), true)
+				break
+	elif m["id"] == "r3":
+		for u in _alive("funke") + _alive("mischa") + _alive("rescued"):
+			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht
+		var stops3 = [["march", ["mid", -26, 26]], ["tunnel", ["mid", -10, 10]], ["dig", ["mid", -10, 10]], ["carry", ["mid", 0, 0]]]
+		if int(t) % 4 == 0 and _play_step != int(t):
+			_play_step = int(t)
+			for st in stops3:
+				if done.has(st[0]):
+					continue
+				var goal = _pos(st[1])
+				var movers = _alive("convoy") + _alive("army")
+				if st[0] != "march":
+					movers = _alive("army")
+				for u in movers:
+					u.cmd_move(goal + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)), u.def["role"] == "combat")
+				if st[0] == "march" or st[0] == "carry":
+					for u in _alive("rescued") + _alive("mischa"):
+						u.cmd_move(goal + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)))
+				if st[0] != "dig":
+					for u in _alive("funke"):
+						u.cmd_move(goal)
+						if Game.flat_dist(u.position, goal) > 30.0 and int(t) % 8 == 0:
+							u.global_position = u.global_position.move_toward(goal, 14.0)   # Testhilfe: Vorankommen sichern
 				break
 	elif m["id"] == "c7":
 		for u in _alive("elin") + _alive("mira") + _alive("brandt"):

@@ -244,10 +244,13 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 				for ox in 3:
 					sm += heights[(cz * 2 + oz) * N + cx * 2 + ox]
 			deep[cz * G + cx] = 1 if sm / 9.0 < WATER_Y - 0.3 else 0
-	var sstack: Array = [Vector2i(G / 2, G / 2)]
-	if deep[(G / 2) * G + G / 2] == 0:
+	var sstack: Array = []
+	var mid_deep: bool = deep[(G / 2) * G + G / 2] == 1
+	if not mid_deep and float(_ctx.get("dry", 0.0)) <= 0.0 and float(_ctx.get("cw", 0.0)) <= 0.0:
 		return false
-	sea[(G / 2) * G + G / 2] = 1
+	if mid_deep:
+		sstack.append(Vector2i(G / 2, G / 2))
+		sea[(G / 2) * G + G / 2] = 1
 	for s in starts:
 		var sc0 = _cell_of(bay_center(s))
 		if deep[sc0.y * G + sc0.x] == 1 and sea[sc0.y * G + sc0.x] == 0:

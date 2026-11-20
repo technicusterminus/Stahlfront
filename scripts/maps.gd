@@ -8,12 +8,15 @@ extends RefCounted
 ##   forest     Waldanteil 0 … 1
 ##   layout     Gewässerform: 0 Kreuz, 1 Windungen, 2 getrennte Seen, 3 Uferkanal
 ##   seed       Zufallszahl der Karte
+##   dry_core   Radius (m) um die Kartenmitte, der trocken bleibt (Pässe, Hochebenen im Zentrum); 0 = aus
+##   causeway   halbe Breite (m) eines Damms/einer Brücke quer über den Mittelsee; 0 = aus
+##   causeway_deg  Richtung des Damms in Grad (0 = entlang der x-Achse)
 
 const SIZE_MIN := 160
 const SIZE_MAX := 336
 
 static func default_spec() -> Dictionary:
-	return {"name": "Standardkarte", "size": 240, "water": 0.5, "islands": 0.3, "resources": 0.5, "hills": 0.5, "forest": 0.5, "layout": 0, "seed": 7}
+	return {"name": "Standardkarte", "size": 240, "water": 0.5, "islands": 0.3, "resources": 0.5, "hills": 0.5, "forest": 0.5, "layout": 0, "seed": 7, "dry_core": 0.0, "causeway": 0.0, "causeway_deg": 0.0}
 
 const LAYOUT_NAMES := ["Kreuzsee", "Windungen", "Getrennte Seen", "Uferkanal"]
 const ARCH := [
@@ -59,6 +62,9 @@ static func clean(sp: Dictionary) -> Dictionary:
 	for k in ["water", "islands", "resources", "hills", "forest"]:
 		d[k] = clamp(float(d[k]), 0.0, 1.0)
 	d["layout"] = clampi(int(d["layout"]), 0, 3)
+	d["dry_core"] = clamp(float(d["dry_core"]), 0.0, 80.0)
+	d["causeway"] = clamp(float(d["causeway"]), 0.0, 20.0)
+	d["causeway_deg"] = float(d["causeway_deg"])
 	d["seed"] = int(d["seed"])
 	return d
 
@@ -76,7 +82,9 @@ static func sea_ctx(sp: Dictionary, starts: Array) -> Dictionary:
 	var k = float(sp["size"]) / 240.0
 	var water: float = sp["water"]
 	var ctx = {"R": sea_radius(sp), "chw": lerp(3.2, 6.5, water) * (0.8 + 0.2 * k), "bayr": lerp(6.0, 9.0, water) * (0.5 + 0.5 * k),
-		"layout": int(sp.get("layout", 0)), "segs": [], "bays": []}
+		"layout": int(sp.get("layout", 0)), "segs": [], "bays": [],
+		"dry": float(sp.get("dry_core", 0.0)) * k, "cw": float(sp.get("causeway", 0.0)),
+		"axis": Vector2(cos(deg_to_rad(float(sp.get("causeway_deg", 0.0)))), sin(deg_to_rad(float(sp.get("causeway_deg", 0.0)))))}
 	var order = [0, 2, 1, 3]
 	for i in starts.size():
 		var b = bay_center(starts[i])
@@ -101,6 +109,13 @@ static func sea_dist(p: Vector2, ctx: Dictionary) -> float:
 		best = min(best, p.distance_to(b) - ctx["bayr"])
 	for s in ctx["segs"]:
 		best = min(best, _seg_d(p, s[0], s[1]) - ctx["chw"])
+	# Trockener Kern (Pass, Plateau) und Damm quer über den See: überstimmen das Wasser
+	if ctx["dry"] > 0.0:
+		best = max(best, (ctx["dry"] - p.length()) + 6.0)
+	if ctx["cw"] > 0.0:
+		var ax: Vector2 = ctx["axis"]
+		if absf(p.dot(ax)) < ctx["R"] + 14.0:
+			best = max(best, (ctx["cw"] - absf(p.x * ax.y - p.y * ax.x)) + 6.0)
 	return best
 static func sea_radius(sp: Dictionary) -> float:
 	return lerp(7.0, 30.0, float(sp["water"])) * float(sp["size"]) / 240.0
