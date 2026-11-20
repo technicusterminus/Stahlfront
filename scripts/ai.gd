@@ -236,6 +236,8 @@ func _production() -> void:
 			if Game.missing_prereq(ud, pid) != "":
 				continue
 			var wgt = 3.0
+			if ud["carrier"] and _credits() < 5000.0:
+				continue   # der Träger frisst Wirtschaft: nur mit gut gefüllter Kasse
 			if ud["naval"]:
 				# Flotte begrenzen: teure Schiffe zählen doppelt, höchstens sechs Schiffe
 				if _fleet().size() >= 6:

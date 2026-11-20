@@ -2,3 +2,5 @@
 export/
 shots/
 *.blend1
+tools/audio/raw/
+tools/audio/voice_run.log

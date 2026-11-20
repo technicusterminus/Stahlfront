@@ -217,6 +217,13 @@ Beim Platzieren eines Gebäudes zeigt ein Phantom, ob der Platz gültig ist; Shi
 
 ---
 
+## Ton
+
+- **Einheitenstimmen:** Beim Auswählen, Marschbefehl, Angriffsbefehl, Bauen und Nachschubholen spricht eine Einheit eine Funkzeile, je Fraktion mit eigener Stimme und eigenem Ton (Westbund kühl und präzise, Rote Allianz tief und streng mit Funkverzerrung, Schattenfront rau und lässig). Luft- und Seeeinheiten haben eigene Marschzeilen.
+- **Gebäudegeräusche:** Klick auf ein eigenes Gebäude spielt einen Klang je Rolle (Hauptquartier, Kraftwerk, Nachschub, Kaserne, Fabrik, Flugfeld, Werft, Abwehr, Forschung, Superwaffe). Dazu Platzieren und „Einheit fertig“.
+- **Bedienung:** F8 schaltet den Ton ein und aus.
+- **Erzeugung:** `tools/audio/make_voice_openrouter.py` holt die Sprachzeilen über OpenRouter (Modell `openai/gpt-audio-mini`, Schlüssel aus `OPENROUTER_API_KEY`), `tools/audio/process_voice.py` schneidet zu und legt den Funkfilter darüber, `tools/audio/make_sfx.py` synthetisiert die Geräusche. Test: `--audiotest`.
+
 ## Story
 
 Drei Erzählungen derselben Ereignisse – in jeder gewinnt die erzählende Fraktion, jede hat eigene Helden und besondere Charaktere.
@@ -354,7 +361,7 @@ powershell -File tools/balance_test.ps1 -Godot <pfad\zu\godot_console.exe> -Seed
 - **Balance:** In KI-Messungen war die Schattenfront auffällig oft früh unterlegen; wird untersucht.
 - **Helden:** Die Story-Helden sind noch keine spielbaren Einheiten.
 - **Missionen und Kampagne:** noch keine.
-- **Ton und Musik:** nicht vorhanden.
+- **Musik:** nicht vorhanden. Stimmen und Geräusche gibt es (siehe Abschnitt Ton).
 - **Mehrspieler:** nicht vorhanden.
 - **Plattformen:** nur unter Windows 11 getestet.
 

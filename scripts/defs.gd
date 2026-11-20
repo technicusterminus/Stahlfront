@@ -112,12 +112,12 @@ func _west() -> void:
 	U("west_dozer", {"name": "Baudrohne", "cost": 800, "time": 8.0, "hp": 260.0, "speed": 9.0, "role": "dozer", "model": "builddrone", "built_at": "hq", "sight": 16.0, "armor": "air", "flying": true, "desc": "Fliegende Baudrohne: baut und repariert über jedes Gelände hinweg."})
 	U("west_drone", {"name": "Spähdrohne", "cost": 300, "time": 5.0, "hp": 120.0, "speed": 15.0, "armor": "air", "flying": true, "model": "drone", "built_at": "factory", "sight": 34.0, "desc": "Unbewaffneter Aufklärer mit riesiger Sichtweite."})
 	U("west_harv", {"name": "Logistik-Lkw", "cost": 600, "time": 8.0, "hp": 380.0, "speed": 7.5, "role": "harvester", "model": "truck", "built_at": "supply", "cargo": 300, "desc": "Holt Nachschub aus Depots."})
-	U("west_inf", {"name": "Marinesoldat", "cost": 150, "time": 4.0, "hp": 120.0, "speed": 4.6, "armor": "inf", "model": "inf", "built_at": "barracks",
+	U("west_inf", {"name": "Marinesoldat", "cost": 140, "time": 3.5, "hp": 135.0, "speed": 4.6, "armor": "inf", "model": "inf", "built_at": "barracks",
 		"weapon": W("bullet", 10.0, 14.0, 0.5), "desc": "Gut gegen Infanterie."})
 	U("west_at", {"name": "Panzerjäger", "cost": 300, "time": 6.0, "hp": 110.0, "speed": 4.3, "armor": "inf", "model": "inf_at", "built_at": "barracks",
 		"weapon": W("rocket", 42.0, 17.0, 2.2, {"air": true}), "desc": "Raketen gegen Fahrzeuge und Luft."})
-	U("west_tank", {"name": "Falke-Kampfpanzer", "cost": 850, "time": 10.0, "hp": 610.0, "speed": 6.6, "armor": "heavy", "model": "tank", "built_at": "factory",
-		"weapon": W("shell", 62.0, 18.0, 2.0, {"splash": 1.5}), "prereq": [], "desc": "Rückgrat der Panzertruppe."})
+	U("west_tank", {"name": "Falke-Kampfpanzer", "cost": 780, "time": 9.0, "hp": 690.0, "speed": 6.6, "armor": "heavy", "model": "tank", "built_at": "factory",
+		"weapon": W("shell", 66.0, 18.0, 1.9, {"splash": 1.5}), "prereq": [], "desc": "Rückgrat der Panzertruppe."})
 	U("west_aa", {"name": "Hornet-Flakwagen", "cost": 700, "time": 8.0, "hp": 300.0, "speed": 8.8, "model": "aa", "built_at": "factory",
 		"weapon": W("flak", 14.0, 22.0, 0.25, {"air": true}), "desc": "Zerlegt Luftziele und Infanterie."})
 	U("west_arty", {"name": "Lanzen-Raketenwerfer", "cost": 1200, "time": 14.0, "hp": 260.0, "speed": 5.6, "model": "rocketlauncher", "built_at": "factory",
@@ -180,7 +180,7 @@ func _red() -> void:
 	U("red_speedboat", {"name": "Raketen-Schnellboot", "cost": 600, "time": 7.0, "hp": 230.0, "speed": 14.5, "armor": "light", "model": "speedboat", "naval": true, "built_at": "dock", "sight": 24.0,
 		"weapon": W("rocket", 38.0, 22.0, 1.7, {"splash": 1.4, "burst": 2}), "desc": "Flaches Schnellboot mit Torpedorohren und Raketenpaar. Sehr schnell, aber zerbrechlich: jagt Schiffe und Küstenfahrzeuge."})
 	U("red_submarine", {"name": "Oktober-U-Boot", "cost": 1400, "time": 14.0, "hp": 520.0, "speed": 7.5, "armor": "heavy", "model": "submarine", "naval": true, "submerged": true, "built_at": "dock", "sight": 22.0, "scale": 1.0, "prereq": ["tech"],
-		"weapon": W("torpedo", 120.0, 34.0, 4.0, {"splash": 3.0, "burst": 1}), "desc": "Getauchtes Torpedoboot. Unsichtbar, solange kein Gegner näher als 10 m ist; beim Schuss taucht es kurz auf. Zerlegt Schiffe und Werften."})
+		"weapon": W("torpedo", 95.0, 32.0, 4.5, {"splash": 3.0, "burst": 1}), "desc": "Getauchtes Torpedoboot. Unsichtbar, solange kein Gegner näher als 10 m ist; beim Schuss taucht es kurz auf. Zerlegt Schiffe und Werften."})
 	U("red_battleship", {"name": "Oktober-Schlachtkreuzer", "cost": 2200, "time": 22.0, "hp": 1900.0, "speed": 5.0, "armor": "heavy", "model": "battleship", "naval": true, "built_at": "dock", "sight": 28.0, "scale": 1.3,
 		"weapon": W("artillery", 95.0, 56.0, 4.5, {"splash": 5.5, "burst": 2, "min_range": 14.0}), "prereq": ["tech"], "desc": "Schwimmende Festung mit Doppelgeschützen. Zerlegt Gebäude aus großer Distanz."})
 	B("red_dock", {"name": "Schiffswerft", "cost": 1300, "time": 18.0, "hp": 1700.0, "size": 4, "power": -2, "produces": ["red_gunboat", "red_speedboat", "red_submarine", "red_battleship"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Kriegsschiffe."})
@@ -224,7 +224,7 @@ func _shadow() -> void:
 	U("shadow_jetski", {"name": "Jetski-Räuber", "cost": 250, "time": 4.0, "hp": 110.0, "speed": 16.5, "armor": "light", "model": "jetski", "naval": true, "built_at": "dock", "sight": 22.0,
 		"weapon": W("bullet", 8.0, 14.0, 0.25, {"air": true}), "desc": "Geschrotteter Wasserroller mit MG. Winzig, billig und rasend schnell: Schwärme zerlegen Nachschub und Bautrupps am Ufer."})
 	U("shadow_minisub", {"name": "Schmuggler-Tauchboot", "cost": 650, "time": 8.0, "hp": 190.0, "speed": 8.5, "armor": "light", "model": "minisub", "naval": true, "submerged": true, "built_at": "dock", "sight": 20.0,
-		"weapon": W("torpedo", 70.0, 26.0, 3.0, {"splash": 2.0}), "desc": "Zusammengeschweißtes Halbtauchboot mit Haftminen-Torpedo. Billig, getarnt, tödlich für unaufmerksame Schiffe."})
+		"weapon": W("torpedo", 55.0, 24.0, 3.5, {"splash": 2.0}), "desc": "Zusammengeschweißtes Halbtauchboot mit Haftminen-Torpedo. Billig, getarnt, tödlich für unaufmerksame Schiffe."})
 	U("shadow_frigate", {"name": "Piraten-Fregatte", "cost": 1500, "time": 15.0, "hp": 900.0, "speed": 6.5, "armor": "heavy", "model": "frigate", "naval": true, "built_at": "dock", "sight": 26.0, "scale": 1.1,
 		"weapon": W("rocket", 46.0, 30.0, 2.6, {"splash": 2.5, "burst": 4}), "prereq": ["tech"], "desc": "Zusammengeschweißte Raketenfregatte. Feuert Salven auf alles, was sich am Ufer bewegt."})
 	B("shadow_dock", {"name": "Schmugglerhafen", "cost": 1200, "time": 16.0, "hp": 1300.0, "size": 4, "produces": ["shadow_skiff", "shadow_jetski", "shadow_minisub", "shadow_frigate"], "prereq": ["factory"], "desc": "Muss am Ufer stehen. Baut Schiffe aus Schrott und Beutegut."})

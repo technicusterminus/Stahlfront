@@ -87,6 +87,23 @@ func set_selection(arr: Array) -> void:
 			if not o.is_depot:
 				o.set_selected(true)
 	selection_changed.emit()
+	_select_sound()
+
+func _select_sound() -> void:
+	if Game.spectator or selection.is_empty():
+		return
+	var us = selected_units()
+	if not us.is_empty():
+		Audio.voice(us[randi() % us.size()], "select")
+	else:
+		var b = single_building()
+		if b != null:
+			Audio.building_click(b)
+
+## Einheitenstimme für einen Befehl: eine zufällige der betroffenen Einheiten spricht.
+func _say(us: Array, kind: String) -> void:
+	if not us.is_empty():
+		Audio.voice(us[randi() % us.size()], kind)
 
 func clean_selection() -> void:
 	var changed = false
@@ -207,6 +224,8 @@ func _try_place(keep: bool) -> void:
 	for dz in dozers:
 		dz.cmd_build(b)
 	FX.marker(b.position, Color(0.4, 1, 0.5))
+	Audio.sfx("place")
+	_say(dozers, "build")
 	Game.notify("Bau von %s begonnen. Rechtsklick auf die Baustelle mit Bauarbeitern setzt fort; Abbrechen erstattet alles." % d["name"], Color(0.7, 0.9, 1.0))
 	if not keep:
 		cancel_mode()
@@ -371,6 +390,7 @@ func command_at(g: Vector3, obj, attack: bool) -> void:
 			else:
 				u.cmd_move(obj.position)
 		FX.marker(obj.position, Color(1, 0.3, 0.25))
+		_say(us, "attack")
 		return
 	if obj != null and is_instance_valid(obj) and obj.is_depot:
 		var others: Array = []
@@ -380,6 +400,7 @@ func command_at(g: Vector3, obj, attack: bool) -> void:
 			else:
 				others.append(u)
 		FX.marker(obj.position, Color(1, 0.85, 0.3))
+		_say(us, "harvest")
 		if not others.is_empty():
 			_formation_move(others, obj.position + Vector3(0, 0, 6), false)
 		return
@@ -394,11 +415,13 @@ func command_at(g: Vector3, obj, attack: bool) -> void:
 			else:
 				rest.append(u)
 		FX.marker(obj.position, Color(0.4, 1, 0.5))
+		_say(us, "build" if rest.size() < us.size() else "move")
 		if not rest.is_empty():
 			_formation_move(rest, g, attack)
 		return
 	_formation_move(us, g, attack)
 	FX.marker(g, Color(1, 0.4, 0.3) if attack else Color(0.4, 1, 0.5))
+	_say(us, "attack" if attack else "move")
 
 func _formation_move(us: Array, g: Vector3, attack: bool) -> void:
 	var n = us.size()
@@ -433,6 +456,9 @@ func _key(k: InputEventKey) -> void:
 			cancel_mode()
 		elif Game.hud != null:
 			Game.hud.toggle_pause()
+		return
+	if code == KEY_F8:
+		Audio.toggle()
 		return
 	if Game.spectator and code != KEY_SPACE and code != KEY_F1:
 		return

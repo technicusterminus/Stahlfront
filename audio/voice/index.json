@@ -1,0 +1,29 @@
+{
+ "red": {
+  "air_move": 3,
+  "attack": 5,
+  "build": 3,
+  "harvest": 3,
+  "move": 5,
+  "naval_move": 3,
+  "select": 5
+ },
+ "shadow": {
+  "air_move": 3,
+  "attack": 5,
+  "build": 3,
+  "harvest": 3,
+  "move": 5,
+  "naval_move": 3,
+  "select": 5
+ },
+ "west": {
+  "air_move": 3,
+  "attack": 5,
+  "build": 3,
+  "harvest": 3,
+  "move": 5,
+  "naval_move": 3,
+  "select": 5
+ }
+}

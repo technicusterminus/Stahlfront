@@ -305,6 +305,41 @@ func start_match(cfg: Dictionary) -> void:
 		var bc0: Vector2 = Game.terrain.bay_center(Vector2(b0.x, b0.z))
 		cam.look_at_pos(Vector3(bc0.x, 0, bc0.y))
 		cam.dist_target = float(args.get("camdist", "40"))
+	if args.has("audiotest"):
+		# Prüft, ob alle Stimmen und Geräusche geladen werden können, und spielt je eine Probe ab
+		var missing := 0
+		var total := 0
+		for f in ["west", "red", "shadow"]:
+			for kind in ["select", "move", "attack", "air_move", "naval_move", "build", "harvest"]:
+				var cnt := int(Audio._index.get(f, {}).get(kind, 0))
+				if cnt == 0:
+					missing += 1
+				for i in cnt:
+					total += 1
+					if Audio._stream("res://audio/voice/%s/%s_%d.wav" % [f, kind, i]) == null:
+						missing += 1
+		for nm in ["ui_click", "place", "ready", "building_hq", "building_power", "building_supply", "building_barracks", "building_factory", "building_airfield", "building_dock", "building_defense", "building_tech", "building_super"]:
+			total += 1
+			if Audio._stream("res://audio/sfx/%s.wav" % nm) == null:
+				missing += 1
+		print("AUDIOTEST geladen=%d fehlend=%d" % [total - missing, missing])
+		await _wait(1.0)
+		var played := 0
+		for u in Game.units:
+			if u.alive and not u.flying and not u.naval:
+				Audio._last_voice = -10.0
+				Audio.voice(u, "select")
+				Audio._last_voice = -10.0
+				Audio.voice(u, "move")
+				break
+		for b in Game.buildings:
+			if b.alive and b.def["role"] == "hq":
+				Audio.building_click(b)
+				break
+		for pl in Audio._pool:
+			if pl.playing:
+				played += 1
+		print("AUDIOTEST laufende Spieler=%d" % played)
 	if args.has("workershow"):
 		# Nahaufnahme der Arbeiterfiguren: stehend und in Schrittstellung, je Fraktion
 		var D = load("res://scripts/arch_detail.gd")
