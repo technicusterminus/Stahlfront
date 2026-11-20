@@ -435,7 +435,7 @@ func _autoplay() -> void:
 			for u in _alive("drone"):
 				Game.apply_damage(u, 99999.0, "rocket", 1, null)   # Testhilfe: Drohne gilt als abgeschossen
 			_play_step = 2
-	elif m["id"] == "r1":
+	elif m["id"] == "r1" or m["id"] == "c1":
 		if _play_step == 0 and t > 2.0:
 			for r in ["supply", "power", "barracks", "factory"]:
 				_spawn_building({"side": "me", "role": r, "near": ["me", 12, 12]})
