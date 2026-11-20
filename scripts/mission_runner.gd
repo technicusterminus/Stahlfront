@@ -398,6 +398,23 @@ func _autoplay() -> void:
 					for i in 2:
 						b.queue_unit(_def_id("me", "tank"))
 			_play_step += 1
+	elif m["id"] == "r2":
+		for u in _alive("nastja"):
+			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht
+		var stops = [["post1", ["mid", -24, 14]], ["post2", ["mid", 8, -18]], ["post3", ["mid", 34, -34]], ["home", ["me", 0, 18]]]
+		if int(t) % 4 == 0 and _play_step != int(t):
+			_play_step = int(t)
+			for st in stops:
+				if done.has(st[0]):
+					continue
+				var goal = _pos(st[1])
+				for u in _alive("nastja"):
+					u.cmd_move(goal)
+					if Game.flat_dist(u.position, goal) > 30.0 and int(t) % 8 == 0:
+						u.global_position = u.global_position.move_toward(goal, 14.0)   # Testhilfe: Vorankommen sichern
+				for u in _alive("escort"):
+					u.cmd_move(goal + Vector3(randf_range(-5, 5), 0, randf_range(-5, 5)), true)
+				break
 	elif m["id"] == "c7":
 		for u in _alive("elin") + _alive("mira") + _alive("brandt"):
 			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht

@@ -37,7 +37,7 @@ static func at(t: float, a: Dictionary) -> Dictionary:
 	return d
 
 static func list() -> Array:
-	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4(), _c5(), _c6(), _c7(), _r1()]
+	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4(), _c5(), _c6(), _c7(), _r1(), _r2()]
 
 static func by_id(id: String) -> Dictionary:
 	for m in list():
@@ -747,7 +747,7 @@ static func _c7() -> Dictionary:
 
 static func _r1() -> Dictionary:
 	return {
-		"id": "r1", "kind": "campaign", "title": "Kapitel 1: Die Halle in Kessel-Ost", "faction": "red", "enemy_faction": "shadow", "next": "",
+		"id": "r1", "kind": "campaign", "title": "Kapitel 1: Die Halle in Kessel-Ost", "faction": "red", "enemy_faction": "shadow", "next": "r2",
 		"brief": "Jahr fünfzehn nach dem Blackout. Marschall Ilja Wolkow, „der Bär“, steht in der Halle, in der alles begann. Damals war er Vorarbeiter, und keine der zweihundert Maschinen lief mehr. Heute ist die Halle das Herz von Kessel-Ost, und der Rat der Genossen verlangt einen Marsch zum Prisma.\n\nZuerst aber muss Kessel-Ost aus eigener Kraft stehen: Nachschub, Strom, Kaserne, Fabrik. Wo der Westbund rechnet, arbeitet die Allianz, und je mehr Hände zusammenstehen, desto stärker ist jede Einheit (Hordenbonus). Aus den Bergen werden Raubzüge der Schattenfront kommen, die nehmen, was nicht bewacht wird.\n\nAuftrag: Baue Nachschub, Kraftwerk, Kaserne und Fabrik, stelle zehn Kampfeinheiten auf und halte Kessel-Ost, bis die Uhr 8:00 zeigt.",
 		"map": {"name": "Kessel-Ost", "size": 240, "water": 0.2, "islands": 0.0, "resources": 0.7, "hills": 0.3, "forest": 0.3, "layout": 1, "seed": 5201},
 		"hour": 6.0, "difficulty": 1, "credits": 4500, "ai": "off",
@@ -831,4 +831,73 @@ static func _r1() -> Dictionary:
 				{"do": "banner", "text": "DER MORGEN GRAUT ÜBER KESSEL-OST", "secs": 3.0, "col": Color(1.0, 0.9, 0.6)}]},
 		],
 		"lose": [],
+	}
+
+static func _r2() -> Dictionary:
+	return {
+		"id": "r2", "kind": "campaign", "title": "Kapitel 2: Das Signal", "faction": "red", "enemy_faction": "west", "next": "",
+		"brief": "Nachts, wenn niemand sonst zuhört, fängt Oberstleutnant Nastja Petrowa über die alten Schienen ein Signal auf: ein Puls, regelmäßig wie ein Herz. Der Rat sagt, der Westbund habe das Prisma geweckt. Nastja sagt nichts und hört weiter. Und darunter liegt ein zweites, leiseres Signal, verschlüsselt und kalt, das mit dem Puls tanzt.\n\nSie braucht drei Messungen an den alten Schienenmasten, um die Muster zu notieren. Westbund-Patrouillen sichern die Gegend, und der Rat darf von dieser Reise nichts erfahren.\n\nAuftrag: Bringe Nastja nacheinander zu den drei Messpunkten (gelbe Markierung) und halte jeweils eine Weile die Stellung, bis die Messung steht. Danach zurück nach Kessel-Ost. Nastja darf nicht fallen.",
+		"map": {"name": "Die alten Schienen", "size": 240, "water": 0.2, "islands": 0.0, "resources": 0.4, "hills": 0.3, "forest": 0.35, "layout": 1, "seed": 5202},
+		"hour": 23.0, "difficulty": 1, "credits": 1500, "ai": "off", "sequential": true,
+		"setup": [
+			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["me", 0, 18], "spread": 1.0, "tag": "nastja", "hp": 5.0, "speed": 0.95},
+			{"do": "spawn", "side": "me", "def": "inf", "n": 5, "at": ["me", 2, 22], "spread": 4.0, "tag": "escort"},
+			{"do": "spawn", "side": "me", "def": "tank", "n": 2, "at": ["me", -4, 24], "spread": 4.0, "tag": "escort"}],
+		"intro": [
+			at(0.0, {"do": "cam_to", "at": ["me", 0, 18], "dist": 90.0, "yaw": 30.0, "pitch": -32.0, "time": 0.1}),
+			at(0.3, {"do": "cam_to", "at": ["me", 0, 18], "dist": 40.0, "yaw": -20.0, "pitch": -38.0, "time": 9.0}),
+			at(0.5, {"do": "title", "text": "KAPITEL 2", "sub": "DAS SIGNAL", "secs": 6.0}),
+			at(3.0, radio("Nastja Petrowa", C_NASTJA, "Jede Frequenz, die der Kessel noch kennt, läuft durch meine Kopfhörer. Und seit drei Nächten läuft darunter etwas, das da nicht hingehört.")),
+			at(3.0, radio("Ilja Wolkow", C_WOLKOW, "Der Rat darf nichts davon wissen, Nastja. Hör nach, aber leise.")),
+			at(6.0, {"do": "end"})],
+		"outro": [
+			at(0.0, {"do": "cam_to", "at": ["me", 0, 18], "dist": 60.0, "yaw": 100.0, "pitch": -28.0, "time": 12.0}),
+			at(1.0, radio("Nastja Petrowa", C_NASTJA, "Hier sind meine Notizen, Marschall. Der Puls kommt aus der Tiefe. Und die zweite Frequenz kommt aus dem Westen.")),
+			at(1.0, radio("Ilja Wolkow", C_WOLKOW, "Behalte das für dich, bis wir mehr wissen.")),
+			at(1.0, radio("Nastja Petrowa", C_NASTJA, "Zum ersten Mal seit zwanzig Jahren glaube ich, dass er mir etwas verschweigt.")),
+			at(5.0, {"do": "title", "text": "DAS SIGNAL IST NOTIERT", "sub": "Der Marschall schweigt", "secs": 6.0}),
+			at(6.0, {"do": "end"})],
+		"objectives": [
+			{"id": "post1", "text": "Bringe Nastja zum ersten Messpunkt (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", -24, 14], "r": 9.0, "who": "tag:nastja"}, "mark": ["mid", -24, 14],
+				"done": [{"do": "flag", "f": "p1"},
+					{"do": "banner", "text": "MESSPUNKT 1 – DER PULS", "secs": 3.2, "col": Color(0.6, 0.85, 1.0)},
+					{"do": "sfx", "name": "stinger"},
+					radio("Nastja Petrowa", C_NASTJA, "Da ist er. Regelmäßig wie ein Herz. Ich brauche zwölf Sekunden Ruhe.", 6.0)]},
+			{"id": "hold1", "text": "Halte die Stellung, bis die Messung steht.", "c": {"t": "since", "f": "p1", "s": 12.0}},
+			{"id": "post2", "text": "Weiter zum zweiten Messpunkt (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", 8, -18], "r": 9.0, "who": "tag:nastja"}, "mark": ["mid", 8, -18],
+				"done": [{"do": "flag", "f": "p2"},
+					{"do": "banner", "text": "MESSPUNKT 2 – WESTBUND-PATROUILLE", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)},
+					{"do": "sfx", "name": "siren"},
+					radio("Nastja Petrowa", C_NASTJA, "Patrouille von Westen! Haltet sie mir vom Leib, ich muss noch lauschen.", 6.0)]},
+			{"id": "hold2", "text": "Halte die Stellung gegen die Patrouille, bis die Messung steht.", "c": {"t": "since", "f": "p2", "s": 18.0}},
+			{"id": "post3", "text": "Zum dritten Messpunkt, dem Mast an der Ostbahn (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", 34, -34], "r": 9.0, "who": "tag:nastja"}, "mark": ["mid", 34, -34],
+				"done": [{"do": "flag", "f": "p3"},
+					{"do": "banner", "text": "MESSPUNKT 3 – DIE ZWEITE FREQUENZ", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
+					{"do": "sfx", "name": "stinger"},
+					{"do": "flash", "col": Color(0.5, 0.9, 1.0), "secs": 0.8},
+					radio("Unbekannte Stimme", C_ORAKEL, "Zeitfenster bestätigt. Konvoi im Pass in drei Tagen. Wahrscheinlichkeit der Zuordnung: 96 Prozent.", 8.0),
+					radio("Nastja Petrowa", C_NASTJA, "Das ist keine Funkdisziplin. Das ist Rechnung. Und sie kennt unseren Konvoi.", 7.0)]},
+			{"id": "hold3", "text": "Halte die Stellung, bis die Aufzeichnung steht.", "c": {"t": "since", "f": "p3", "s": 20.0}},
+			{"id": "home", "text": "Bringe Nastja zurück nach Kessel-Ost (gelbe Markierung).", "c": {"t": "reach", "at": ["me", 0, 18], "r": 12.0, "who": "tag:nastja"}, "mark": ["me", 0, 18]},
+		],
+		"events": [
+			{"when": {"t": "time", "s": 3.0}, "do": [{"do": "banner", "text": "KAPITEL 2 BEGINNT", "secs": 2.4}]},
+			# Patrouille am ersten Messpunkt: nur ein Späher
+			{"when": {"t": "since", "f": "p1", "s": 6.0}, "do": [
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 3, "at": ["mid", -34, 26], "spread": 5.0, "attack_tag": "nastja"}]},
+			# Zweiter Punkt: schwerere Patrouille
+			{"when": {"t": "since", "f": "p2", "s": 3.0}, "do": [
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 22, -4], "spread": 6.0, "attack_tag": "nastja"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 1, "at": ["mid", 24, -2], "spread": 3.0, "attack_tag": "nastja", "hp": 0.7}]},
+			# Dritter Punkt: Alarm, die Frequenz wird gestört
+			{"when": {"t": "since", "f": "p3", "s": 8.0}, "do": [
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "DIE FREQUENZ WIRD GESTÖRT", "secs": 3.0, "col": Color(1.0, 0.45, 0.35)},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 46, -22], "spread": 6.0, "attack_tag": "nastja"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 48, -24], "spread": 4.0, "attack_tag": "nastja", "hp": 0.7}]},
+			{"when": {"t": "since", "f": "p3", "s": 14.0}, "do": [
+				radio("Ilja Wolkow", C_WOLKOW, "Nastja, kommen! Ich habe Bewegung auf der Ostbahn. Komm nach Hause, solange du kannst.", 6.0)]},
+			{"when": {"t": "tag_dead", "tag": "nastja", "n": 1}, "do": [radio("Ilja Wolkow", C_WOLKOW, "Nastja! Antworte, Nastja!", 5.0)]},
+		],
+		"lose": [{"c": {"t": "tag_dead", "tag": "nastja", "n": 1}, "text": "Nastja Petrowa ist gefallen."}],
 	}
