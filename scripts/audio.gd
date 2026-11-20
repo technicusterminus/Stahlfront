@@ -12,6 +12,7 @@ var _index := {}
 var _last_voice := -10.0
 var _last_pick := {}
 var _last_sfx := {}
+var _line_player: AudioStreamPlayer
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -20,6 +21,9 @@ func _ready() -> void:
 		p.bus = "Master"
 		add_child(p)
 		_pool.append(p)
+	_line_player = AudioStreamPlayer.new()
+	_line_player.bus = "Master"
+	add_child(_line_player)
 	var path = "res://audio/voice/index.json"
 	if FileAccess.file_exists(path):
 		var parsed = JSON.parse_string(FileAccess.get_file_as_string(path))
@@ -90,6 +94,22 @@ func voice(u, kind: String) -> void:
 	_last_pick[key] = i
 	_last_voice = now
 	_play(_stream("res://audio/voice/%s/%s_%d.wav" % [fac, k, i]), voice_db)
+
+## Gesprochene Funkzeile einer Mission (Datei nach dem Hash des Textes); liefert die Länge in Sekunden, 0 wenn keine Aufnahme existiert.
+func line(text: String) -> float:
+	if not enabled:
+		return 0.0
+	var st = _stream("res://audio/lines/%s.wav" % text.md5_text().substr(0, 10))
+	if st == null:
+		return 0.0
+	_line_player.stream = st
+	_line_player.volume_db = voice_db + 2.0
+	_line_player.play()
+	return st.get_length()
+
+func stop_line() -> void:
+	if _line_player != null:
+		_line_player.stop()
 
 func toggle() -> void:
 	enabled = not enabled

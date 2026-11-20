@@ -28,6 +28,24 @@ var _radio_text: Label
 var _radio_queue: Array = []
 var _radio_left := 0.0
 var _briefing: Control = null
+# Filmsequenzen (Intro, Outro): Zeitleiste aus Aktionen mit "t", Letterbox, Kamerafahrt, Titel
+var _cine := false
+var _cine_steps: Array = []
+var _cine_t := 0.0
+var _cine_i := 0
+var _cine_cb: Callable = Callable()
+var _cine_final: Dictionary = {}
+var _cine_tweens: Array = []
+var _bar_top: ColorRect
+var _bar_bot: ColorRect
+var _skip_hint: Label
+var _title_box: VBoxContainer
+var _title_a: Label
+var _title_b: Label
+var _banner_l: Label
+var _flash: ColorRect
+var _cam_edge := true
+var _cine_end_pending := false
 
 func setup(mission: Dictionary, main_node) -> void:
 	m = mission
@@ -56,6 +74,7 @@ func begin() -> void:
 	t0 = Game.time
 	print("MISSION %s: Start (%s)" % [m["id"], m["title"]])
 	kills0 = int(Game.players[0]["kills"])
+	print("MISSION %s: Start %s Gegner %s Abstand %d" % [m["id"], str(Game.players[0]["start"]), str(Game.players[1]["start"]), int(Game.flat_dist(Game.players[0]["start"], Game.players[1]["start"]))])
 	if main.args.has("missioncheck"):
 		# Prüft, dass alle Bedingungen auswertbar sind (auch spätere), und gibt die Werte aus
 		for o in _objs:
@@ -70,8 +89,11 @@ func begin() -> void:
 		for ev in m.get("events", []):
 			print("CHECK %s Ereignis = %s" % [m["id"], str(_cond(ev["when"]))])
 	if main.args.has("missionauto"):
-		started = true
-		_refresh_objectives()
+		if main.args.has("cine"):
+			_play_cine(m.get("intro", []), _begin_play)
+		else:
+			started = true
+			_refresh_objectives()
 		return
 	_show_briefing()
 
@@ -206,6 +228,34 @@ func _do(a: Dictionary) -> void:
 		"convoy":
 			for u in _alive(a["tag"]):
 				u.cmd_move(_pos(a["to"]) + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)))
+		"cam_to":
+			_cam_to(a)
+		"title":
+			_title(String(a.get("text", "")), String(a.get("sub", "")), float(a.get("secs", 4.5)))
+		"banner":
+			_banner(String(a.get("text", "")), float(a.get("secs", 3.2)), a.get("col", Color(1.0, 0.85, 0.4)))
+		"shake":
+			Game.cam.shake(float(a.get("n", 1.4)), Game.cam.position)
+		"flash":
+			_flash_screen(a.get("col", Color(1, 1, 1)), float(a.get("secs", 0.7)))
+		"sfx":
+			Audio.sfx(String(a["name"]), float(a.get("db", 0.0)))
+		"hour":
+			Game.daynight.configure(float(a["h"]), 0.0)
+		"explode":
+			var ep: Vector3 = _target_pos(a)
+			FX.explosion(ep, float(a.get("size", 2.0)))
+			Audio.sfx("explosion", float(a.get("db", 0.0)))
+			Game.cam.shake(float(a.get("n", 1.2)), ep)
+		"end":
+			_cine_end_pending = true
+		"kill":
+			var left: int = int(a.get("n", 1))
+			for u in _alive(a["tag"]):
+				if left <= 0:
+					break
+				Game.apply_damage(u, 99999.0, "rocket", 1, null)
+				left -= 1
 		"win":
 			_finish(true, String(a.get("text", "")))
 		"lose":
@@ -225,6 +275,18 @@ func _spawn_units(a: Dictionary) -> void:
 		var u = Game.spawn_unit(id, owner, Game.cell_center(c))
 		u.heading = 0.0
 		made.append(u)
+		if a.has("speed"):
+			u.def = u.def.duplicate()
+			u.def["speed"] = float(u.def["speed"]) * float(a["speed"])
+		if a.has("hp"):
+			u.max_hp = float(u.max_hp) * float(a["hp"])
+			u.hp = u.max_hp
+		if a.has("dmg") and u.weapon != null:
+			u.weapon = u.weapon.duplicate()
+			u.weapon["dmg"] = float(u.weapon["dmg"]) * float(a["dmg"])
+		if a.get("truce", false):
+			u.set_meta("truce", true)
+			u.weapon = null
 		if a.has("tag"):
 			tags[a["tag"]] = tags.get(a["tag"], []) + [u]
 			tag_total[a["tag"]] = int(tag_total.get(a["tag"], 0)) + 1
@@ -264,6 +326,7 @@ func _spawn_building(a: Dictionary) -> void:
 
 ## Testspieler (--missionplay): spielt Tutorial 1 und 3 automatisch durch, um die Zielbedingungen zu prüfen.
 var _play_step := 0
+var _dbg_i := -1
 func _autoplay() -> void:
 	var t = Game.time - t0
 	var dz = _mine(func(u): return u.def["role"] == "dozer")
@@ -284,6 +347,36 @@ func _autoplay() -> void:
 					for i in 3:
 						b.queue_unit(_def_id("me", "inf"))
 			_play_step = 4
+	elif m["id"] == "c2":
+		var wg = _alive("wing")
+		var legs = [[1.0, "mid", -34.0, 6.0], [25.0, "mid", 18.0, -30.0], [55.0, "en", -4.0, 4.0], [66.0, "me", 0.0, 10.0]]
+		if _play_step < legs.size() and t > float(legs[_play_step][0]):
+			print("AUTO c2 Etappe %d t=%d: Flieger %d" % [_play_step, int(t), wg.size()])
+			for u in wg:
+				u.cmd_move(_pos([legs[_play_step][1], legs[_play_step][2], legs[_play_step][3]]))
+			_play_step += 1
+	elif m["id"] == "c3":
+		if _play_step == 0 and t > 1.0:
+			for u in _mine(func(u): return u.def["role"] != "dozer"):
+				u.cmd_move(_pos(["mid", 0, 0]) + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)), u.def["role"] == "combat")
+			_play_step = 1
+		elif _play_step == 1 and t > 150.0:
+			for u in _alive("drone"):
+				Game.apply_damage(u, 99999.0, "rocket", 1, null)   # Testhilfe: Drohne gilt als abgeschossen
+			_play_step = 2
+	elif m["id"] == "c4":
+		var gs = _mine(func(u): return u.def["role"] == "combat" and not u.flying)
+		if t > 200.0 and done.has("cross"):
+			for cu in _alive("counter"):
+				Game.apply_damage(cu, 99999.0, "rocket", 1, null)   # Testhilfe: Gegenangriff gilt als abgewehrt
+		var marks = [[1.0, -22.0, 0.0], [45.0, 0.0, 0.0], [90.0, 26.0, 0.0], [140.0, 38.0, 10.0], [200.0, 8.0, -4.0], [260.0, -4.0, -4.0], [320.0, 26.0, 0.0], [380.0, 38.0, 12.0], [440.0, 30.0, 6.0], [520.0, 36.0, 12.0]]
+		if _play_step < marks.size() and t > float(marks[_play_step][0]):
+			for bu in _alive("bridge"):
+				print("  Rest: %s bei %s (Abstand zur Mitte %d), naval=%s" % [bu.def["id"], str(bu.position), int(Game.flat_dist(bu.position, _anchor("mid"))), str(bu.naval)])
+			print("AUTO c4 Schritt %d t=%d: Brueckenverteidiger %d, eigene Bodeneinheiten %d, Gegner gesamt %d" % [_play_step, int(t), _alive("bridge").size(), gs.size(), Game.units.filter(func(u): return u.owner_id == 1 and u.alive).size()])
+			for u in gs:
+				u.cmd_move(_pos(["mid", marks[_play_step][1], marks[_play_step][2]]) + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
+			_play_step += 1
 	elif m["id"] == "t3":
 		var us = _mine(func(u): return u.def["role"] == "combat")
 		if _play_step == 0 and t > 1.0:
@@ -300,9 +393,16 @@ func _autoplay() -> void:
 			_play_step = 3
 
 func _process(delta: float) -> void:
+	if main != null and main.args.has("missiondebug") and int(Game.time * 2.0) != _dbg_i and started and not finished and m["id"] == "c2":
+		_dbg_i = int(Game.time * 2.0)
+		for u in tags.get("wing", []):
+			print("  FLIEGER %s alive=%s hp=%s pos=%s" % [str(u.def["id"]), str(u.alive) if is_instance_valid(u) else "ungueltig", str(int(u.hp)) if is_instance_valid(u) else "-", str(u.position) if is_instance_valid(u) else "-"])
 	if main != null and main.args.has("missionplay") and started and not finished:
 		_autoplay()
 	_radio_tick(delta)
+	if _cine:
+		_cine_tick(delta)
+		return
 	if not started or finished or not Game.running:
 		return
 	_check_t -= delta
@@ -375,7 +475,10 @@ func _finish(won: bool, text: String) -> void:
 	if won:
 		Missions.mark_done(m["id"])
 	Game.game_over = true
-	_show_end(won, text)
+	if won and m.has("outro"):
+		_play_cine(m["outro"], func(): _show_end(won, text))
+	else:
+		_show_end(won, text)
 	if main != null and main.args.has("missionchain") and won and String(m.get("next", "")) != "":
 		await get_tree().create_timer(1.0).timeout
 		_go(String(m["next"]))
@@ -434,10 +537,65 @@ func _build_ui() -> void:
 	rv.add_child(_radio_text)
 	pc.visible = false
 	_obj_box.get_parent().visible = false
+	_flash = ColorRect.new()
+	_flash.color = Color(1, 1, 1, 0)
+	_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_layer.add_child(_flash)
+	# Letterbox: Balken oben und unten, über die Ränder (offset) ein- und ausgefahren
+	_bar_top = ColorRect.new()
+	_bar_top.color = Color(0, 0, 0, 1)
+	_bar_top.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_bar_top.offset_bottom = 0.0
+	_bar_top.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_layer.add_child(_bar_top)
+	_bar_bot = ColorRect.new()
+	_bar_bot.color = Color(0, 0, 0, 1)
+	_bar_bot.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	_bar_bot.offset_top = 0.0
+	_bar_bot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_layer.add_child(_bar_bot)
+	_skip_hint = _lbl("Leertaste: Szene überspringen", 13, Color(0.7, 0.78, 0.88))
+	_skip_hint.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_skip_hint.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_skip_hint.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_skip_hint.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_skip_hint.offset_right = -24.0
+	_skip_hint.offset_bottom = -22.0
+	_skip_hint.visible = false
+	_layer.add_child(_skip_hint)
+	var title_center = CenterContainer.new()
+	title_center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	title_center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_layer.add_child(title_center)
+	_title_box = VBoxContainer.new()
+	_title_box.custom_minimum_size = Vector2(900, 0)
+	_title_box.modulate.a = 0.0
+	_title_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	title_center.add_child(_title_box)
+	_title_a = _lbl("", 56, Color(1, 1, 1))
+	_title_a.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_title_a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_box.add_child(_title_a)
+	_title_b = _lbl("", 21, Color(0.7, 0.85, 1.0))
+	_title_b.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_title_b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_box.add_child(_title_b)
+	var banner_margin = MarginContainer.new()
+	banner_margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	banner_margin.add_theme_constant_override("margin_top", 170)
+	banner_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_layer.add_child(banner_margin)
+	_banner_l = _lbl("", 36, Color(1.0, 0.85, 0.4))
+	_banner_l.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_banner_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_banner_l.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_banner_l.modulate.a = 0.0
+	banner_margin.add_child(_banner_l)
 
 func _refresh_objectives() -> void:
 	var panel: Control = _obj_box.get_parent()
-	panel.visible = started and not finished
+	panel.visible = started and not finished and not _cine
 	var i = 0
 	for c in _obj_box.get_children():
 		c.queue_free()
@@ -462,13 +620,17 @@ func _radio_tick(delta: float) -> void:
 		_radio_left -= delta
 		if _radio_left <= 0.0:
 			_radio_panel.visible = false
-	if _radio_left <= 0.0 and not _radio_queue.is_empty() and started:
+	if _radio_left <= 0.0 and not _radio_queue.is_empty() and (started or _cine):
 		var r: Dictionary = _radio_queue.pop_front()
 		_radio_who.text = String(r["who"]).to_upper() + "  ·  Funk"
 		_radio_who.add_theme_color_override("font_color", r["col"])
 		_radio_text.text = String(r["text"])
 		var secs: float = float(r["secs"])
 		_radio_left = secs if secs > 0.0 else clamp(3.0 + String(r["text"]).length() / 16.0, 4.0, 11.0)
+		var spoken: float = Audio.line(String(r["text"]))
+		if spoken > 0.0:
+			_radio_left = spoken + 0.9
+			print("MISSION %s: gesprochen %.1f s | %s" % [m["id"], spoken, String(r["text"]).substr(0, 50)])
 		_radio_panel.visible = true
 		Audio.sfx("ui_click", 0.0, 1.3)
 
@@ -510,7 +672,12 @@ func _start_mission() -> void:
 		_briefing.queue_free()
 		_briefing = null
 	get_tree().paused = false
+	_play_cine(m.get("intro", []), _begin_play)
+
+func _begin_play() -> void:
 	started = true
+	t0 = Game.time
+	kills0 = int(Game.players[0]["kills"])
 	Audio.sfx("place")
 	_refresh_objectives()
 
@@ -543,6 +710,129 @@ func _show_end(won: bool, text: String) -> void:
 	row.add_child(_btn("Wiederholen", func(): _go(m["id"])))
 	row.add_child(_btn("Kampagnenmenü", func(): _go("")))
 	get_tree().paused = false
+
+# ---------------------------------------------------------------- Filmsequenzen und Effekte
+
+func _play_cine(steps: Array, on_done: Callable) -> void:
+	# Tests (--missionauto) überspringen Filme, außer mit --cine
+	if steps.is_empty() or (main != null and main.args.has("missionauto") and not main.args.has("cine")):
+		on_done.call()
+		return
+	_cine = true
+	_cine_steps = steps
+	_cine_t = 0.0
+	_cine_i = 0
+	_cine_cb = on_done
+	_cine_final = {}
+	_cam_edge = Game.cam.edge_scroll
+	Game.cam.edge_scroll = false
+	Game.cam.set_process_unhandled_input(false)
+	Game.hud.set_game_ui(false)
+	_skip_hint.visible = true
+	_refresh_objectives()
+	var tw = create_tween().set_parallel(true)
+	tw.tween_property(_bar_top, "offset_bottom", 96.0, 0.8)
+	tw.tween_property(_bar_bot, "offset_top", -96.0, 0.8)
+
+func _process_bars() -> void:
+	pass
+
+func _cine_tick(delta: float) -> void:
+	_process_bars()
+	if _cine_end_pending and _radio_queue.is_empty() and _radio_left <= 0.0:
+		_cine_end_pending = false
+		_end_cine()
+		return
+	_cine_t += delta
+	while _cine_i < _cine_steps.size() and float(_cine_steps[_cine_i]["t"]) <= _cine_t:
+		_do(_cine_steps[_cine_i])
+		_cine_i += 1
+		if not _cine:
+			return
+
+func _end_cine() -> void:
+	if not _cine:
+		return
+	_cine = false
+	for tw in _cine_tweens:
+		if tw != null and tw.is_valid():
+			tw.kill()
+	_cine_tweens.clear()
+	if _cine_final.has("pos"):
+		Game.cam.look_at_pos(_cine_final["pos"])
+		Game.cam.yaw = _cine_final["yaw"]
+		Game.cam.dist_target = _cine_final["dist"]
+		Game.cam.pitch = _cine_final["pitch"]
+	_radio_queue.clear()
+	_radio_left = 0.0
+	_cine_end_pending = false
+	Audio.stop_line()
+	_radio_panel.visible = false
+	_title_box.modulate.a = 0.0
+	Game.cam.edge_scroll = _cam_edge
+	Game.cam.set_process_unhandled_input(true)
+	Game.hud.set_game_ui(true)
+	_skip_hint.visible = false
+	var tw2 = create_tween().set_parallel(true)
+	tw2.tween_property(_bar_top, "offset_bottom", 0.0, 0.6)
+	tw2.tween_property(_bar_bot, "offset_top", 0.0, 0.6)
+	var cb = _cine_cb
+	_cine_cb = Callable()
+	if cb.is_valid():
+		cb.call()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _cine and event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode in [KEY_SPACE, KEY_ESCAPE, KEY_ENTER]:
+			get_viewport().set_input_as_handled()
+			_end_cine()
+
+func _target_pos(a: Dictionary) -> Vector3:
+	if a.has("tag"):
+		var us = _alive(a["tag"])
+		if not us.is_empty():
+			return us[0].position
+		return Game.cam.position
+	return _pos(a["at"])
+
+func _cam_to(a: Dictionary) -> void:
+	var p: Vector3 = _target_pos(a)
+	var secs: float = float(a.get("time", 3.0))
+	var yaw: float = deg_to_rad(float(a.get("yaw", rad_to_deg(Game.cam.yaw))))
+	var pitch: float = deg_to_rad(float(a.get("pitch", rad_to_deg(Game.cam.pitch))))
+	var dist: float = float(a.get("dist", Game.cam.dist_target))
+	var tw = create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(Game.cam, "position:x", p.x, secs)
+	tw.tween_property(Game.cam, "position:z", p.z, secs)
+	tw.tween_property(Game.cam, "yaw", yaw, secs)
+	tw.tween_property(Game.cam, "pitch", pitch, secs)
+	tw.tween_property(Game.cam, "dist_target", dist, secs)
+	_cine_tweens.append(tw)
+	_cine_final = {"pos": p, "yaw": yaw, "pitch": pitch, "dist": dist}
+
+func _title(text: String, sub: String, secs: float) -> void:
+	_title_a.text = text
+	_title_b.text = sub
+	var tw = create_tween()
+	tw.tween_property(_title_box, "modulate:a", 1.0, 0.9)
+	tw.tween_interval(max(0.5, secs - 1.8))
+	tw.tween_property(_title_box, "modulate:a", 0.0, 0.9)
+	_cine_tweens.append(tw)
+	Audio.sfx("stinger", -2.0)
+
+func _banner(text: String, secs: float, col: Color) -> void:
+	_banner_l.text = text
+	_banner_l.add_theme_color_override("font_color", col)
+	var tw = create_tween()
+	tw.tween_property(_banner_l, "modulate:a", 1.0, 0.35)
+	tw.tween_interval(max(0.3, secs - 0.9))
+	tw.tween_property(_banner_l, "modulate:a", 0.0, 0.55)
+	Audio.sfx("stinger", -6.0, 1.4)
+
+func _flash_screen(col: Color, secs: float) -> void:
+	_flash.color = Color(col.r, col.g, col.b, 0.85)
+	var tw = create_tween()
+	tw.tween_property(_flash, "color:a", 0.0, secs)
 
 func _btn(text: String, cb: Callable, big := false) -> Button:
 	var b = Button.new()

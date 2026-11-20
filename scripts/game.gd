@@ -560,6 +560,8 @@ func find_target(pid: int, pos: Vector3, r: float, air: bool, ground: bool, min_
 			continue
 		if u.stealthed and not u.detectable_from(pos):
 			continue
+		if u.has_meta("truce"):
+			continue   # Waffenstillstand (Missionen): wird nur per ausdrücklichem Befehl angegriffen
 		var d = flat_dist(pos, u.position) - u.radius
 		if d > r or d < min_r:
 			continue

@@ -161,3 +161,16 @@ alarm = env(sweep(600, 920, 0.28, 0.5, saw=0.3), 0.01, 0.28)
 alarm2 = env(sweep(920, 600, 0.28, 0.5, saw=0.3), 0.01, 0.28)
 drone = env(mix(sine(42, 1.3, 0.9), sine(63, 1.3, 0.5), lowpass(noise(1.3, 0.3), 200)), 0.1, 1.2, hold=0.4)
 save("building_super", mix(drone, alarm, alarm2, alarm, alarm2, offsets=[0, 0.05, 0.33, 0.61, 0.89]))
+
+# Sirene: auf- und abschwellender Zweiklang
+sirene = []
+for k in range(3):
+    sirene.append(env(sweep(520, 880, 0.55, 0.6, saw=0.35), 0.03, 0.55))
+    sirene.append(env(sweep(880, 520, 0.55, 0.6, saw=0.35), 0.01, 0.55))
+save("siren", mix(*sirene, offsets=[0, 0.55, 1.1, 1.65, 2.2, 2.75]))
+# Orchesterschlag: tiefer Akkord mit Nachhall, für Titel und Wendepunkte
+chord = mix(sine(55, 1.6, 0.9), sine(82.4, 1.6, 0.6), sine(110, 1.6, 0.5), sine(164.8, 1.6, 0.35), sweep(220, 440, 1.3, 0.2, saw=0.4))
+save("stinger", mix(env(lowpass(chord, 1400), 0.02, 1.5), thud(48, 1.0, 1.0), env(lowpass(noise(0.6, 0.5), 900), 0.005, 0.5)))
+# Explosion: dumpfer Schlag, Rauschen, grollendes Nachbeben
+boom = mix(thud(42, 0.9, 1.0), env(lowpass(noise(0.9, 1.0), 1400), 0.002, 0.8), env(lowpass(noise(1.6, 0.5), 300), 0.05, 1.4), offsets=[0, 0, 0.12])
+save("explosion", clip(boom, 1.4))

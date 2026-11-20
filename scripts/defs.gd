@@ -112,12 +112,12 @@ func _west() -> void:
 	U("west_dozer", {"name": "Baudrohne", "cost": 800, "time": 8.0, "hp": 260.0, "speed": 9.0, "role": "dozer", "model": "builddrone", "built_at": "hq", "sight": 16.0, "armor": "air", "flying": true, "desc": "Fliegende Baudrohne: baut und repariert über jedes Gelände hinweg."})
 	U("west_drone", {"name": "Spähdrohne", "cost": 300, "time": 5.0, "hp": 120.0, "speed": 15.0, "armor": "air", "flying": true, "model": "drone", "built_at": "factory", "sight": 34.0, "desc": "Unbewaffneter Aufklärer mit riesiger Sichtweite."})
 	U("west_harv", {"name": "Logistik-Lkw", "cost": 600, "time": 8.0, "hp": 380.0, "speed": 7.5, "role": "harvester", "model": "truck", "built_at": "supply", "cargo": 300, "desc": "Holt Nachschub aus Depots."})
-	U("west_inf", {"name": "Marinesoldat", "cost": 140, "time": 3.5, "hp": 135.0, "speed": 4.6, "armor": "inf", "model": "inf", "built_at": "barracks",
+	U("west_inf", {"name": "Marinesoldat", "cost": 145, "time": 3.8, "hp": 128.0, "speed": 4.6, "armor": "inf", "model": "inf", "built_at": "barracks",
 		"weapon": W("bullet", 10.0, 14.0, 0.5), "desc": "Gut gegen Infanterie."})
 	U("west_at", {"name": "Panzerjäger", "cost": 300, "time": 6.0, "hp": 110.0, "speed": 4.3, "armor": "inf", "model": "inf_at", "built_at": "barracks",
 		"weapon": W("rocket", 42.0, 17.0, 2.2, {"air": true}), "desc": "Raketen gegen Fahrzeuge und Luft."})
-	U("west_tank", {"name": "Falke-Kampfpanzer", "cost": 780, "time": 9.0, "hp": 690.0, "speed": 6.6, "armor": "heavy", "model": "tank", "built_at": "factory",
-		"weapon": W("shell", 66.0, 18.0, 1.9, {"splash": 1.5}), "prereq": [], "desc": "Rückgrat der Panzertruppe."})
+	U("west_tank", {"name": "Falke-Kampfpanzer", "cost": 815, "time": 9.5, "hp": 650.0, "speed": 6.6, "armor": "heavy", "model": "tank", "built_at": "factory",
+		"weapon": W("shell", 64.0, 18.0, 1.95, {"splash": 1.5}), "prereq": [], "desc": "Rückgrat der Panzertruppe."})
 	U("west_aa", {"name": "Hornet-Flakwagen", "cost": 700, "time": 8.0, "hp": 300.0, "speed": 8.8, "model": "aa", "built_at": "factory",
 		"weapon": W("flak", 14.0, 22.0, 0.25, {"air": true}), "desc": "Zerlegt Luftziele und Infanterie."})
 	U("west_arty", {"name": "Lanzen-Raketenwerfer", "cost": 1200, "time": 14.0, "hp": 260.0, "speed": 5.6, "model": "rocketlauncher", "built_at": "factory",

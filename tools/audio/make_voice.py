@@ -1,8 +1,8 @@
-"""Sprachzeilen der Einheiten über OpenRouter erzeugen (Modell openai/gpt-audio-mini, Ausgabe als Sprache).
+"""Sprachzeilen der Einheiten mit einem KI-Sprachmodell erzeugen (Modell openai/gpt-audio-mini, Ausgabe als Sprache).
 
-Aufruf:  python tools/audio/make_voice_openrouter.py [--only west] [--test]
+Aufruf:  python tools/audio/make_voice.py [--only west] [--test]
   --test   erzeugt nur eine einzige Zeile zum Ausprobieren
-Der Schlüssel kommt aus der Umgebungsvariable OPENROUTER_API_KEY (Prozess oder Benutzer) und wird nie ausgegeben.
+Der Schlüssel kommt aus einer Umgebungsvariable (Name siehe api_key()) und wird nie ausgegeben.
 Ergebnis: tools/audio/raw/<fraktion>/<art>_<n>.wav (24 kHz, 16 Bit, mono, ungefiltert) und raw/index.json.
 Danach:  python tools/audio/process_voice.py   (Funkfilter, Zuschneiden, Ablage unter audio/voice)
 """

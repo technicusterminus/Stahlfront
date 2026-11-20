@@ -13,11 +13,11 @@
 - Bei Fahrzeugen, Luftfahrzeugen und Schiffen bleiben gebackene Texturen auf dem Originallack erhalten. Lackierte Oberflächen sind zurückhaltender eingefärbt, Kurvenbewegungen flüssiger und Heckwellen vom Tempo abhängig.
 - Gebäude erhalten differenzierte Oberflächen und Zugangsbereiche. In Fabriken und Werften schließt der Greifer an der Kiste, hebt sie, setzt sie an der zweiten Station ab und fährt leer zurück. Rollen, Winde und einzelne Kettenglieder bewegen sich mit. An Nachschubzentren fährt ein Lastschlitten, und am Flugfeld arbeiten Windsack und Lauflichter. Lüfter laufen bei Strommangel aus. Betriebsanzeigen und Fabrikschranken reagieren auf Produktion und Auslieferung.
 
-### OpenRouter-Oberflächen
+### Oberflächen-Entwürfe
 
-Die OpenRouter-Entwurfsblätter legen Materialwahl und Formensprache für Gebäude, Fahrzeuge und Fußtruppen fest. Vier Materialvorlagen liefern Metall, Beton, Gewebe und Holz. Das Blender-Skript `tools/blender/make_surface_detail.py` gleicht Beleuchtungsverläufe aus und erzeugt kachelbare Detail-, Rauheits- und Reliefkarten. Godot mischt sie über die vorhandenen Materialien. Stahlfront verwendet beim Spielen lokale Texturen und läuft offline.
+Die Entwurfsblätter legen Materialwahl und Formensprache für Gebäude, Fahrzeuge und Fußtruppen fest. Vier Materialvorlagen liefern Metall, Beton, Gewebe und Holz. Das Blender-Skript `tools/blender/make_surface_detail.py` gleicht Beleuchtungsverläufe aus und erzeugt kachelbare Detail-, Rauheits- und Reliefkarten. Godot mischt sie über die vorhandenen Materialien. Stahlfront verwendet beim Spielen lokale Texturen und läuft offline.
 
-Die Prompts und das Modell stehen in `tools/openrouter_art_pass.json`. Die vier Materialvorlagen und ihre API-Abrechnung liegen unter `models/source/openrouter/`. Die Laufzeitkarten lassen sich mit `blender -b -P tools/blender/make_surface_detail.py -- models/source/openrouter models/surfaces` erneut erzeugen. Für einen direkten Vergleich lässt sich der Durchgang mit `--plain-surfaces` ausblenden.
+Die Entwurfsdaten (Prompts, Modell, die vier Materialvorlagen) liegen unter `tools/` und `models/source/`. Die Laufzeitkarten lassen sich mit `make_surface_detail.py` erneut erzeugen (Aufruf im Kopfkommentar des Skripts). Für einen direkten Vergleich lässt sich der Durchgang mit `--plain-surfaces` ausblenden.
 
 ---
 
@@ -222,16 +222,18 @@ Beim Platzieren eines Gebäudes zeigt ein Phantom, ob der Platz gültig ist; Shi
 Im Hauptmenü öffnet **Kampagne und Tutorial …** die Missionsliste. Jede Mission beginnt mit einer Einsatzbesprechung, zeigt links oben die Ziele (abgehakt, sobald erfüllt) und meldet sich per Funk mit Sprechern. Fortschritt wird unter `user://campaign.json` gespeichert; Kampagnenkapitel schalten nacheinander frei, Tutorials sind immer offen.
 
 - **Tutorials** (mit der im Hauptmenü gewählten Fraktion, ohne Gegner-KI): 1 Erste Schritte (Auswählen, Bewegen, Nachschub, Strom, Kaserne, Truppe), 2 Wirtschaft und Fabrik, 3 Gefechtsbefehle (Rahmen, Gruppen, Angriffsmarsch), 4 Luft, See und Fähigkeiten.
-- **Kampagne „Das Licht über Lysa“ (Westbund)**, bisher drei Kapitel nach der Erzählung: 1 Port Meridian (Basis aufbauen, Raubzüge der Schattenfront abwehren, zehn Minuten halten), 2 Der Falke fliegt (Messpunkte mit Jägern und Drohne überfliegen, Flugabwehr umgehen), 3 Der Pass (Konvoi mit sechs Lkw eskortieren, zwei Hinterhalte überstehen).
+- **Kampagne „Das Licht über Lysa“ (Westbund)**, bisher vier Kapitel nach der Erzählung: 1 Port Meridian (Basis aufbauen, Raubzüge der Schattenfront abwehren, zehn Minuten halten), 2 Der Falke fliegt (Messpunkte mit Jägern und Drohne überfliegen, Flugabwehr umgehen), 3 Der Pass (Konvoi mit sechs Lkw eskortieren, zwei Hinterhalte überstehen, eine Drohne ohne Kennsignal abschießen), 4 Die Brücke über Lysa (Brücke erobern, Elins Begegnung mit Lena, Falke wird abgeschossen, Gegenangriff abwehren).
 - **Missionen schreiben:** `scripts/missions.gd` beschreibt jede Mission als Daten (Karte, Start, Ziele, Ereignisse, Funksprüche, Niederlage); `scripts/mission_runner.gd` führt sie aus. Neue Bedingungen und Aktionen stehen in `_cond` und `_do`.
-- **Test:** `--mission=<id>` startet eine Mission direkt (`t1`–`t4`, `c1`–`c3`), `--missionauto` überspringt die Besprechung, `--missioncheck` wertet alle Bedingungen aus, `--missionplay` spielt Tutorial 1 und 3 automatisch durch, `--missionchain` startet danach die Folgemission, `--campaignmenu` zeigt die Liste.
+- **Spannungsbogen und Inszenierung:** Die Kampagnenkapitel haben ein filmisches Intro und Outro (Letterbox, Kamerafahrt, Titelkarte, Funksprüche; mit Leertaste überspringbar) und gliedern sich in Akte mit Bannern: Aufbau, Wendepunkt, Höhepunkt, Auflösung. Skript-Ereignisse sind unter anderem Alarmsirenen, Kamerafahrten zum Geschehen, Blackout mit Tageszeitwechsel, Artillerieeinschläge, Verstärkung, Abschüsse und Fluchtbewegungen. Entscheidungen zählen: In Kapitel 4 bleibt Lena nur am Leben, wenn du sie nicht ausdrücklich angreifst.
+- **Gesprochene Funksprüche:** Jede Funkzeile der Missionen ist vertont, mit eigener Stimme und Gefühlslage je Sprecher. `tools/audio/make_lines.py` liest die Funksprüche aus `scripts/missions.gd`, erzeugt fehlende oder geänderte Zeilen und legt sie unter `audio/lines/` ab (Dateiname = Hash des Textes). Wer einen Text ändert, startet das Skript erneut.
+- **Test:** `--mission=<id>` startet eine Mission direkt (`t1`–`t4`, `c1`–`c3`), `--missionauto` überspringt die Besprechung, `--missioncheck` wertet alle Bedingungen aus, `--missionplay` spielt Tutorial 1 und 3 automatisch durch, `--missionchain` startet danach die Folgemission, `--cine` zeigt Intro und Outro auch mit `--missionauto`, `--campaignmenu` zeigt die Liste.
 
 ## Ton
 
 - **Einheitenstimmen:** Beim Auswählen, Marschbefehl, Angriffsbefehl, Bauen und Nachschubholen spricht eine Einheit eine Funkzeile, je Fraktion mit eigener Stimme und eigenem Ton (Westbund kühl und präzise, Rote Allianz tief und streng mit Funkverzerrung, Schattenfront rau und lässig). Luft- und Seeeinheiten haben eigene Marschzeilen.
 - **Gebäudegeräusche:** Klick auf ein eigenes Gebäude spielt einen Klang je Rolle (Hauptquartier, Kraftwerk, Nachschub, Kaserne, Fabrik, Flugfeld, Werft, Abwehr, Forschung, Superwaffe). Dazu Platzieren und „Einheit fertig“.
 - **Bedienung:** F8 schaltet den Ton ein und aus.
-- **Erzeugung:** `tools/audio/make_voice_openrouter.py` holt die Sprachzeilen über OpenRouter (Modell `openai/gpt-audio-mini`, Schlüssel aus `OPENROUTER_API_KEY`), `tools/audio/process_voice.py` schneidet zu und legt den Funkfilter darüber, `tools/audio/make_sfx.py` synthetisiert die Geräusche. Test: `--audiotest`.
+- **Erzeugung:** `tools/audio/make_voice.py` erzeugt die Sprachzeilen mit einem KI-Sprachmodell (Schlüssel aus einer Umgebungsvariable, siehe Kopfkommentar), `tools/audio/process_voice.py` schneidet zu und legt den Funkfilter darüber, `tools/audio/make_sfx.py` synthetisiert die Geräusche. Test: `--audiotest`.
 
 ## Story
 
@@ -369,7 +371,7 @@ powershell -File tools/balance_test.ps1 -Godot <pfad\zu\godot_console.exe> -Seed
 
 - **Balance:** In KI-Messungen war die Schattenfront auffällig oft früh unterlegen; wird untersucht.
 - **Helden:** Die Story-Helden sind noch keine spielbaren Einheiten.
-- **Kampagne:** drei Kapitel des Westbunds sind spielbar; die übrigen Kapitel, die Rote Allianz und die Schattenfront fehlen noch.
+- **Kampagne:** vier Kapitel des Westbunds sind spielbar; die übrigen Kapitel, die Rote Allianz und die Schattenfront fehlen noch.
 - **Musik:** nicht vorhanden. Stimmen und Geräusche gibt es (siehe Abschnitt Ton).
 - **Mehrspieler:** nicht vorhanden.
 - **Plattformen:** nur unter Windows 11 getestet.

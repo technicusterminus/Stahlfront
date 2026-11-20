@@ -16,12 +16,22 @@ const C_ELIN := Color(0.7, 0.95, 0.85)
 const C_FALKE := Color(1.0, 0.82, 0.45)
 const C_MIRA := Color(0.85, 0.8, 1.0)
 const C_ORAKEL := Color(0.45, 0.95, 1.0)
+const C_LENA := Color(1.0, 0.65, 0.55)
+const C_BRANDT := Color(0.8, 0.9, 0.75)
+const C_ALDANE := Color(0.9, 0.75, 0.55)
+const C_REYES := Color(0.65, 0.9, 1.0)
 
 static func radio(who: String, col: Color, text: String, secs := 0.0) -> Dictionary:
 	return {"do": "radio", "who": who, "col": col, "text": text, "secs": secs}
 
+## Zeitleiste für Filmsequenzen: eine Aktion zum Zeitpunkt t (Sekunden).
+static func at(t: float, a: Dictionary) -> Dictionary:
+	var d = a.duplicate()
+	d["t"] = t
+	return d
+
 static func list() -> Array:
-	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3()]
+	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4()]
 
 static func by_id(id: String) -> Dictionary:
 	for m in list():
@@ -161,14 +171,29 @@ static func _t4() -> Dictionary:
 	}
 
 # ---------------------------------------------------------------- Kampagne: Das Licht über Lysa (Westbund)
+# Jede Mission folgt einem Spannungsbogen: Intro (Film) -> Aufbau -> Wendepunkt -> Höhepunkt -> Auflösung -> Outro (Film).
 
 static func _c1() -> Dictionary:
 	return {
 		"id": "c1", "kind": "campaign", "title": "Kapitel 1: Port Meridian", "faction": "west", "enemy_faction": "shadow", "next": "c2",
-		"brief": "Jahr fünfzehn nach dem Blackout. Dr. Elin Voss, Chefstrategin der Küstenarmee, steht im Kontrollraum von Port Meridian. ORAKEL, die letzte Analyse-KI, hat zum ersten Mal einen Satz gesagt, den niemand berechnet hat: „Das Prisma erwacht. Wir müssen vor den anderen dort sein.“\n\nDer Rat der Sieben gibt dir drei Tage. Bis dahin muss Port Meridian zum Ausgangspunkt der Expedition werden: Basis aufbauen, Truppe aufstellen, und Raubzüge aus den Bergen abwehren.\n\nAuftrag: Baue Nachschub, Kraftwerk, Kaserne und Fabrik, stelle acht Kampfeinheiten auf und halte Port Meridian zehn Minuten.",
+		"brief": "Jahr fünfzehn nach dem Blackout. Dr. Elin Voss, Chefstrategin der Küstenarmee, steht im Kontrollraum von Port Meridian. ORAKEL, die letzte Analyse-KI, hat zum ersten Mal einen Satz gesagt, den niemand berechnet hat: „Das Prisma erwacht. Wir müssen vor den anderen dort sein.“\n\nDer Rat der Sieben gibt dir drei Tage. Bis dahin muss Port Meridian zum Ausgangspunkt der Expedition werden: Basis aufbauen, Truppe aufstellen, und Raubzüge aus den Bergen abwehren. Die Nacht wird nicht ruhig bleiben.\n\nAuftrag: Baue Nachschub, Kraftwerk, Kaserne und Fabrik, stelle acht Kampfeinheiten auf und halte Port Meridian zehn Minuten.",
 		"map": {"name": "Port Meridian", "size": 240, "water": 0.5, "islands": 0.2, "resources": 0.6, "hills": 0.4, "forest": 0.5, "layout": 3, "seed": 5101},
 		"hour": 7.0, "difficulty": 1, "credits": 4500, "ai": "off",
-		"setup": [radio("Elin Voss", C_ELIN, "Port Meridian, hier Voss. Wir haben nicht viel Zeit. Baut den Stützpunkt auf, ich will in zehn Minuten eine Armee.", 8.0)],
+		"intro": [
+			at(0.0, {"do": "cam_to", "at": ["me", 0, 10], "dist": 130.0, "yaw": 25.0, "pitch": -34.0, "time": 0.1}),
+			at(0.3, {"do": "cam_to", "at": ["me", 0, 14], "dist": 58.0, "yaw": -8.0, "pitch": -50.0, "time": 14.0}),
+			at(0.5, {"do": "title", "text": "KAPITEL 1", "sub": "PORT MERIDIAN  ·  Jahr 15 nach dem Blackout", "secs": 6.0}),
+			at(3.0, radio("ORAKEL", C_ORAKEL, "Das Prisma erwacht. Wir müssen vor den anderen dort sein.")),
+			at(3.0, radio("Elin Voss", C_ELIN, "Der Rat gibt uns drei Tage. Port Meridian, hier Voss: Baut den Stützpunkt auf, ich will in zehn Minuten eine Armee.")),
+			at(3.0, radio("Elin Voss", C_ELIN, "Und stellt euch auf Besuch ein. Die Berge sind nicht so still, wie sie aussehen.")),
+			at(4.0, {"do": "end"})],
+		"outro": [
+			at(0.0, {"do": "cam_to", "at": ["me", 0, 10], "dist": 85.0, "yaw": 70.0, "pitch": -26.0, "time": 12.0}),
+			at(1.0, radio("Elin Voss", C_ELIN, "Port Meridian steht. Sie haben es nicht geschafft, uns im Dunkeln zu nehmen.")),
+			at(1.0, radio("ORAKEL", C_ORAKEL, "Die Wahrscheinlichkeit eines Kontakts mit dem Prisma steigt auf 96 Prozent.")),
+			at(1.0, radio("Elin Voss", C_ELIN, "Falke soll bei Tagesanbruch fliegen. Ich will wissen, was dort oben leuchtet.")),
+			at(4.0, {"do": "title", "text": "PORT MERIDIAN STEHT", "sub": "Weiter: Kapitel 2 – Der Falke fliegt", "secs": 6.0}),
+			at(5.0, {"do": "end"})],
 		"objectives": [
 			{"id": "supply", "text": "Baue ein Nachschubzentrum.", "c": {"t": "build", "role": "supply", "n": 1}},
 			{"id": "power", "text": "Baue ein Kraftwerk.", "c": {"t": "build", "role": "power", "n": 1}, "if_power": true},
@@ -178,21 +203,64 @@ static func _c1() -> Dictionary:
 			{"id": "hold", "text": "Halte Port Meridian, bis die Uhr 10:00 zeigt.", "c": {"t": "time", "s": 600.0}},
 		],
 		"events": [
-			{"when": {"t": "time", "s": 150.0}, "do": [radio("ORAKEL", C_ORAKEL, "Warnung: Bewegung im Nordhang. Wahrscheinlichkeit eines Raubzugs 92 Prozent.", 7.0)]},
+			# Akt 1: Aufbau
+			{"when": {"t": "time", "s": 3.0}, "do": [{"do": "banner", "text": "AKT 1 – DER AUFBAU", "secs": 3.5}]},
+			# Warnung: die Kamera zeigt den Nordhang
+			{"when": {"t": "time", "s": 150.0}, "do": [
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "ALARM – BEWEGUNG IM NORDHANG", "secs": 3.6, "col": Color(1.0, 0.45, 0.35)},
+				radio("ORAKEL", C_ORAKEL, "Warnung: Bewegung im Nordhang. Wahrscheinlichkeit eines Raubzugs 92 Prozent."),
+				{"do": "cam_to", "at": ["en", 0, 34], "time": 2.0}]},
+			{"when": {"t": "time", "s": 156.0}, "do": [{"do": "cam_to", "at": ["me", 0, 14], "time": 2.0}]},
+			# Akt 2: Raubzüge
 			{"when": {"t": "time", "s": 180.0}, "do": [
+				{"do": "banner", "text": "AKT 2 – DIE RAUBZÜGE", "secs": 3.0},
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 4, "at": ["en", 0, 20], "spread": 8.0, "attack": true},
 				{"do": "spawn", "side": "enemy", "def": "tech", "n": 2, "at": ["en", 6, 22], "spread": 6.0, "attack": true}]},
-			{"when": {"t": "time", "s": 330.0}, "do": [radio("Elin Voss", C_ELIN, "Sie kommen wieder, diesmal mehr. Haltet die Linie.", 6.0)]},
+			{"when": {"t": "time", "s": 320.0}, "do": [radio("Elin Voss", C_ELIN, "Sie kommen wieder, diesmal mehr. Haltet die Linie. Und achtet auf das Netz.")]},
+			# Wendepunkt: Blackout mitten im Angriff
+			{"when": {"t": "time", "s": 340.0}, "do": [
+				{"do": "explode", "at": ["me", 0, -20], "size": 2.4},
+				{"do": "flash", "col": Color(0, 0, 0), "secs": 1.0},
+				{"do": "hour", "h": 23.5},
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "BLACKOUT – DAS NETZ FÄLLT AUS", "secs": 4.0, "col": Color(0.6, 0.85, 1.0)},
+				radio("Elin Voss", C_ELIN, "Das Netz fällt aus! Sie nutzen die Dunkelheit. Alle Einheiten: Schulter an Schulter!")]},
 			{"when": {"t": "time", "s": 360.0}, "do": [
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 6, "at": ["en", 0, 20], "spread": 9.0, "attack": true},
 				{"do": "spawn", "side": "enemy", "def": "tech", "n": 3, "at": ["en", 6, 22], "spread": 6.0, "attack": true},
-				{"do": "spawn", "side": "enemy", "def": "at", "n": 2, "at": ["en", -6, 22], "spread": 4.0, "attack": true}]},
-			{"when": {"t": "time", "s": 520.0}, "do": [radio("ORAKEL", C_ORAKEL, "Letzte Welle erkannt. Starke Bewegung.", 6.0)]},
+				{"do": "spawn", "side": "enemy", "def": "at", "n": 2, "at": ["en", -6, 22], "spread": 4.0, "attack": true},
+				radio("ORAKEL", C_ORAKEL, "Sichtweite stark reduziert. Gegnerische Kräfte nähern sich ungesehen.")]},
+			{"when": {"t": "time", "s": 410.0}, "do": [
+				{"do": "flash", "col": Color(1, 1, 1), "secs": 1.2},
+				{"do": "hour", "h": 8.0},
+				{"do": "banner", "text": "NETZ WIEDERHERGESTELLT", "secs": 3.0, "col": Color(0.6, 1.0, 0.7)},
+				radio("Elin Voss", C_ELIN, "Der Strom ist zurück! Wer hat uns da gerade im Dunkeln abgeschaltet? ORAKEL?"),
+				radio("ORAKEL", C_ORAKEL, "Ursache der Störung: unbekannt.")]},
+			# Hoffnung: Verstärkung
+			{"when": {"t": "time", "s": 460.0}, "do": [
+				{"do": "spawn", "side": "me", "def": "tank", "n": 3, "at": ["me", 26, 42], "spread": 6.0},
+				{"do": "spawn", "side": "me", "def": "inf", "n": 4, "at": ["me", 30, 44], "spread": 6.0},
+				{"do": "banner", "text": "VERSTÄRKUNG – KÜSTENWACHE", "secs": 3.4, "col": Color(0.6, 1.0, 0.7)},
+				radio("Hauptmann Reyes", C_REYES, "Küstenwache an Port Meridian: Drei Panzer und Infanterie, wir sind im Anflug. Haltet durch!")]},
+			# Akt 3 / Höhepunkt: Artilleriefeuer, dann die große Welle
+			{"when": {"t": "time", "s": 510.0}, "do": [
+				{"do": "banner", "text": "AKT 3 – DIE ENTSCHEIDUNG", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)},
+				{"do": "sfx", "name": "siren"},
+				radio("ORAKEL", C_ORAKEL, "Letzte Welle erkannt. Starke Bewegung, dazu Artillerie.")]},
+			{"when": {"t": "time", "s": 524.0}, "do": [{"do": "explode", "at": ["me", -30, 28], "size": 2.6}]},
+			{"when": {"t": "time", "s": 527.0}, "do": [{"do": "explode", "at": ["me", 30, 24], "size": 2.6}]},
+			{"when": {"t": "time", "s": 530.0}, "do": [{"do": "explode", "at": ["me", 0, 44], "size": 3.0, "n": 1.8}]},
 			{"when": {"t": "time", "s": 540.0}, "do": [
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 8, "at": ["en", 0, 20], "spread": 10.0, "attack": true},
 				{"do": "spawn", "side": "enemy", "def": "tech", "n": 4, "at": ["en", 6, 22], "spread": 7.0, "attack": true},
-				{"do": "spawn", "side": "enemy", "def": "buggy", "n": 3, "at": ["en", -8, 22], "spread": 6.0, "attack": true}]},
-			{"when": {"t": "time", "s": 600.0}, "do": [radio("Elin Voss", C_ELIN, "Port Meridian steht. Das Prisma hat uns nicht vergessen. Wir fliegen bei Tagesanbruch.", 8.0)]},
+				{"do": "spawn", "side": "enemy", "def": "buggy", "n": 3, "at": ["en", -8, 22], "spread": 6.0, "attack": true},
+				{"do": "spawn", "side": "enemy", "def": "arty", "n": 1, "at": ["en", 0, 30], "spread": 2.0, "attack": true}]},
+			# Auflösung: Morgenlicht
+			{"when": {"t": "time", "s": 590.0}, "do": [
+				{"do": "flash", "col": Color(1.0, 0.9, 0.7), "secs": 1.6},
+				{"do": "hour", "h": 6.2},
+				{"do": "banner", "text": "DER MORGEN GRAUT", "secs": 3.0, "col": Color(1.0, 0.9, 0.6)}]},
 		],
 		"lose": [],
 	}
@@ -200,54 +268,197 @@ static func _c1() -> Dictionary:
 static func _c2() -> Dictionary:
 	return {
 		"id": "c2", "kind": "campaign", "title": "Kapitel 2: Der Falke fliegt", "faction": "west", "enemy_faction": "red", "next": "c3",
-		"brief": "Major Kai „Falke“ Laurent hält jeden Tag für den letzten und fliegt entsprechend. Elin schickt ihn über den Eisenkamm: Messwerte holen, nichts sonst.\n\nDu führst zwei Lanze-Jäger und eine Spähdrohne. Überfliege die drei Messpunkte, ohne dass dich die Flugabwehr herunterholt, und kehre zurück. Kämpfe nur, wenn es sein muss.\n\nHinweis: Luftabwehr sitzt an den Messpunkten. Halte Abstand, wo du kannst, oder nutze die Drohne als Köder.",
+		"brief": "Major Kai „Falke“ Laurent hält jeden Tag für den letzten und fliegt entsprechend. Elin schickt ihn über den Eisenkamm: Messwerte holen, nichts sonst.\n\nDu führst zwei Lanze-Jäger und eine Spähdrohne. Überfliege die drei Messpunkte, ohne dass dich die Flugabwehr herunterholt, und kehre zurück. Kämpfe nur, wenn es sein muss. Am letzten Messpunkt wartet jemand auf dich.\n\nHinweis: Luftabwehr sitzt an den Messpunkten. Halte Abstand, wo du kannst, oder nutze die Drohne als Köder.",
 		"map": {"name": "Eisenkamm", "size": 288, "water": 0.2, "islands": 0.05, "resources": 0.5, "hills": 0.9, "forest": 0.4, "layout": 0, "seed": 5202},
 		"hour": 12.0, "difficulty": 1, "credits": 3000, "ai": "off", "sequential": true,
 		"setup": [
-			{"do": "spawn", "side": "me", "def": "jet", "n": 2, "at": ["me", 0, 18], "spread": 6.0, "tag": "wing"},
+			{"do": "spawn", "side": "me", "def": "jet", "n": 2, "at": ["me", 0, 18], "spread": 6.0, "tag": "wing", "hp": 1.7},
 			{"do": "spawn", "side": "me", "def": "drone", "n": 1, "at": ["me", 6, 18], "spread": 2.0, "tag": "wing"},
-			{"do": "spawn", "side": "enemy", "def": "aa", "n": 2, "at": ["mid", -30, 14], "spread": 6.0},
-			{"do": "spawn", "side": "enemy", "def": "aa", "n": 2, "at": ["mid", 20, -22], "spread": 6.0},
-			{"do": "spawn", "side": "enemy", "def": "aa", "n": 3, "at": ["en", -20, 10], "spread": 8.0},
-			{"do": "spawn", "side": "enemy", "def": "tank", "n": 3, "at": ["en", 10, 10], "spread": 8.0},
-			{"do": "cam", "at": ["me", 0, 18]},
-			radio("Falke", C_FALKE, "Falke an Basis. Zweite Chance ist startklar. Ich fliege tief, wie immer.", 6.0)],
+			{"do": "spawn", "side": "enemy", "def": "aa", "n": 2, "at": ["mid", -34, 28], "spread": 6.0, "dmg": 0.12},
+			{"do": "spawn", "side": "enemy", "def": "aa", "n": 2, "at": ["mid", 18, -10], "spread": 6.0, "dmg": 0.12},
+			{"do": "spawn", "side": "enemy", "def": "aa", "n": 2, "at": ["en", -4, 28], "spread": 8.0, "dmg": 0.12},
+			{"do": "spawn", "side": "enemy", "def": "tank", "n": 3, "at": ["en", 10, 10], "spread": 8.0}],
+		"intro": [
+			at(0.0, {"do": "cam_to", "tag": "wing", "dist": 30.0, "yaw": -40.0, "pitch": -22.0, "time": 0.1}),
+			at(0.3, {"do": "cam_to", "tag": "wing", "dist": 52.0, "yaw": 10.0, "pitch": -36.0, "time": 11.0}),
+			at(0.5, {"do": "title", "text": "KAPITEL 2", "sub": "DER FALKE FLIEGT  ·  Eisenkamm", "secs": 6.0}),
+			at(3.0, radio("Elin Voss", C_ELIN, "Falke, nur Messwerte. Nichts sonst. Das ist ein Befehl.")),
+			at(3.0, radio("Falke", C_FALKE, "Falke an Basis. Zweite Chance ist startklar. Ich verspreche nichts, Chefin. Ich fliege tief, wie immer.")),
+			at(3.0, radio("Elin Voss", C_ELIN, "Das habe ich befürchtet. Viel Glück.")),
+			at(4.0, {"do": "end"})],
+		"outro": [
+			at(0.0, {"do": "cam_to", "tag": "wing", "dist": 48.0, "yaw": -20.0, "pitch": -30.0, "time": 8.0}),
+			at(1.0, radio("Elin Voss", C_ELIN, "Falke, gute Arbeit. Aber wer hat die Daten zurückgehalten?")),
+			at(1.0, radio("Falke", C_FALKE, "Ich habe sie sofort gefunkt, Chefin. Ich hätte lauter fliegen müssen.")),
+			at(4.0, {"do": "title", "text": "ZURÜCKGEHALTEN", "sub": "Weiter: Kapitel 3 – Der Pass", "secs": 6.0}),
+			at(5.0, {"do": "end"})],
 		"objectives": [
-			{"id": "p1", "text": "Überfliege Messpunkt 1 (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", -34, 6], "r": 12.0, "who": "tag:wing"}, "mark": ["mid", -34, 6]},
+			{"id": "p1", "text": "Überfliege Messpunkt 1 (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", -34, 6], "r": 12.0, "who": "tag:wing"}, "mark": ["mid", -34, 6],
+				"done": [
+					{"do": "sfx", "name": "siren"},
+					{"do": "banner", "text": "FLAKFEUER – WEICH AUS", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)},
+					radio("Falke", C_FALKE, "Flak-Radar erfasst mich! Ich fliege Schlangenlinien. Das gefällt mir, das ist wie Zuhause.")]},
 			{"id": "p2", "text": "Überfliege Messpunkt 2.", "c": {"t": "reach", "at": ["mid", 18, -30], "r": 12.0, "who": "tag:wing"}, "mark": ["mid", 18, -30],
-				"done": [radio("Falke", C_FALKE, "Das ist komisch. Sie verteidigen nicht, sie fliehen. Dörfer, Kinder auf Maultieren, und über den Kavernen leuchtet es bläulich.", 9.0),
+				"done": [
+					{"do": "spawn", "side": "enemy", "def": "shadow_harv", "n": 7, "at": ["mid", 16, -34], "spread": 6.0, "tag": "refugees", "truce": true},
+					{"do": "convoy", "tag": "refugees", "to": ["mid", 64, -64]},
+					{"do": "cam_to", "tag": "refugees", "dist": 36.0, "time": 2.5},
+					{"do": "banner", "text": "AKT 2 – WAS DIE DATEN NICHT ZEIGEN", "secs": 3.6, "col": Color(0.6, 0.85, 1.0)},
+					radio("Falke", C_FALKE, "Das ist komisch. Sie verteidigen nicht, sie fliehen. Ganze Dörfer, Kinder auf Maultieren, und über den Kavernen leuchtet es bläulich.", 9.0),
 					radio("ORAKEL", C_ORAKEL, "Aufklärungsdaten werden zur Überprüfung zurückgehalten.", 6.0),
-					radio("Falke", C_FALKE, "Zurückgehalten? Das habe ich noch nie gehört.", 5.0)]},
-			{"id": "p3", "text": "Überfliege Messpunkt 3 nahe der Gegnerbasis.", "c": {"t": "reach", "at": ["en", -4, 4], "r": 14.0, "who": "tag:wing"}, "mark": ["en", -4, 4]},
-			{"id": "home", "text": "Kehre zur Basis zurück.", "c": {"t": "reach", "at": ["me", 0, 10], "r": 16.0, "who": "tag:wing"}, "mark": ["me", 0, 10],
-				"done": [radio("Elin Voss", C_ELIN, "Falke, gute Arbeit. Aber wer hat die Daten zurückgehalten?", 7.0)]},
+					radio("Falke", C_FALKE, "Zurückgehalten? Das habe ich noch nie gehört. ORAKEL, die Leute da unten haben Angst, nicht Waffen.", 7.0)]},
+			{"id": "p3", "text": "Überfliege Messpunkt 3 nahe der Gegnerbasis.", "c": {"t": "reach", "at": ["en", -4, 4], "r": 14.0, "who": "tag:wing"}, "mark": ["en", -4, 4],
+				"done": [radio("Falke", C_FALKE, "Messwerte im Kasten. Jetzt nach Hause, solange ich noch Treibstoff und Glück habe.", 6.0)]},
+			{"id": "home", "text": "Kehre zur Basis zurück.", "c": {"t": "reach", "at": ["me", 0, 10], "r": 16.0, "who": "tag:wing"}, "mark": ["me", 0, 10]},
+		],
+		"events": [
+			{"when": {"t": "time", "s": 3.0}, "do": [{"do": "banner", "text": "AKT 1 – ANFLUG ÜBER DEN KAMM", "secs": 3.4}]},
+			# Falle am letzten Messpunkt: Abfangjäger und Boden-Luft-Raketen
+			{"when": {"t": "reach", "at": ["en", -4, 4], "r": 60.0, "who": "tag:wing"}, "do": [
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "FALLE – ABFANGJÄGER AUF SECHS UHR", "secs": 3.6, "col": Color(1.0, 0.45, 0.35)},
+				{"do": "spawn", "side": "enemy", "def": "jet", "n": 1, "at": ["en", 10, -34], "spread": 4.0, "attack_tag": "wing", "dmg": 0.22},
+				{"do": "spawn", "side": "enemy", "def": "aa", "n": 1, "at": ["en", -6, 30], "spread": 5.0, "dmg": 0.15},
+				{"do": "explode", "at": ["en", -12, -6], "size": 2.0},
+				radio("Falke", C_FALKE, "Sie hatten mich auf dem Schirm! Ein Jäger, sechs Uhr, und Raketen von unten. Zeit, tiefer zu fliegen!", 8.0)]},
 		],
 		"lose": [{"c": {"t": "not", "c": {"t": "tag_alive", "tag": "wing", "n": 1}}, "text": "Alle Flugzeuge sind verloren."}],
 	}
 
 static func _c3() -> Dictionary:
 	return {
-		"id": "c3", "kind": "campaign", "title": "Kapitel 3: Der Pass", "faction": "west", "enemy_faction": "red", "next": "",
-		"brief": "Der Konvoi zum Eisenkamm-Pass transportiert Medizin, Messgeräte und Dr. Yusuf Brandt, den Prisma-Forscher. Sechs Lkw und eine Eskorte. Sergeant Mira „Glas“ Tanaka sagt zwei Sätze am Tag und sieht als Erste, wohin die Raketen wirklich fallen.\n\nBringe mindestens vier der sechs Lkw zum Pass. Zwei Hinterhalte sind wahrscheinlich: halte die Eskorte beisammen, schalte Raketenwerfer zuerst aus und lass die Lkw nie allein.\n\nVerlierst du drei Lkw, ist der Auftrag gescheitert.",
+		"id": "c3", "kind": "campaign", "title": "Kapitel 3: Der Pass", "faction": "west", "enemy_faction": "red", "next": "c4",
+		"brief": "Der Konvoi zum Eisenkamm-Pass transportiert Medizin, Messgeräte und Dr. Yusuf Brandt, den Prisma-Forscher. Sechs Lkw und eine Eskorte. Sergeant Mira „Glas“ Tanaka sagt zwei Sätze am Tag und sieht als Erste, woher die Raketen wirklich kommen.\n\nBringe mindestens vier der sechs Lkw zum Pass. Zwei Hinterhalte sind sicher, und etwas Unerwartetes ist wahrscheinlich: halte die Eskorte beisammen, schalte Raketenwerfer zuerst aus und lass die Lkw nie allein.\n\nVerlierst du drei Lkw, ist der Auftrag gescheitert.",
 		"map": {"name": "Eisenkamm-Pass", "size": 240, "water": 0.25, "islands": 0.0, "resources": 0.5, "hills": 0.8, "forest": 0.3, "layout": 1, "seed": 5303},
 		"hour": 14.0, "difficulty": 1, "credits": 2000, "ai": "off",
 		"setup": [
-			{"do": "spawn", "side": "me", "def": "harv", "n": 6, "at": ["me", 0, 20], "spread": 9.0, "tag": "convoy"},
-			{"do": "spawn", "side": "me", "def": "tank", "n": 3, "at": ["me", 0, 28], "spread": 8.0},
-			{"do": "spawn", "side": "me", "def": "inf", "n": 5, "at": ["me", 0, 30], "spread": 8.0},
-			{"do": "spawn", "side": "me", "def": "at", "n": 2, "at": ["me", 6, 30], "spread": 4.0},
-			{"do": "cam", "at": ["me", 0, 24]},
-			radio("Mira Tanaka", C_MIRA, "Glas an Konvoi. Ich sitze auf Wagen vier. Ich traue dem Funkschatten nicht.", 7.0)],
+			{"do": "spawn", "side": "me", "def": "harv", "n": 6, "at": ["me", 0, 20], "spread": 9.0, "tag": "convoy", "speed": 0.38},
+			{"do": "spawn", "side": "me", "def": "tank", "n": 5, "at": ["me", 0, 28], "spread": 8.0},
+			{"do": "spawn", "side": "me", "def": "inf", "n": 6, "at": ["me", 0, 30], "spread": 8.0},
+			{"do": "spawn", "side": "me", "def": "at", "n": 3, "at": ["me", 6, 30], "spread": 4.0}],
+		"intro": [
+			at(0.0, {"do": "cam_to", "tag": "convoy", "dist": 34.0, "yaw": 50.0, "pitch": -24.0, "time": 0.1}),
+			at(0.3, {"do": "cam_to", "tag": "convoy", "dist": 60.0, "yaw": 5.0, "pitch": -44.0, "time": 12.0}),
+			at(0.5, {"do": "title", "text": "KAPITEL 3", "sub": "DER PASS  ·  Konvoi Eisenkamm", "secs": 6.0}),
+			at(3.0, radio("Dr. Brandt", C_BRANDT, "Sechs Fahrzeuge, ein Pass und ein Messgerät, das niemand verstehen will. Ich hoffe, die Zahlen irren sich.")),
+			at(3.0, radio("Mira Tanaka", C_MIRA, "Glas an Konvoi. Ich sitze auf Wagen vier. Ich traue dem Funkschatten nicht.")),
+			at(4.0, {"do": "end"})],
+		"outro": [
+			at(0.0, {"do": "cam_to", "at": ["mid", 0, 0], "dist": 70.0, "yaw": -30.0, "pitch": -28.0, "time": 10.0}),
+			at(1.0, radio("Mira Tanaka", C_MIRA, "Die Drohne trug ein Westbund-Kennzeichen. Das Signal war ausgeschaltet.")),
+			at(1.0, radio("Dr. Brandt", C_BRANDT, "Das kann nicht sein. Das würde bedeuten, dass wir...")),
+			at(1.0, radio("Mira Tanaka", C_MIRA, "Der Westbund hat seinen eigenen Konvoi beschossen. Ich weiß nicht, wer die Spur lesen darf. Noch nicht.")),
+			at(5.0, {"do": "title", "text": "DER PASS IST ERREICHT", "sub": "Weiter: Kapitel 4 – Die Brücke über Lysa", "secs": 6.0}),
+			at(6.0, {"do": "end"})],
 		"objectives": [
-			{"id": "pass", "text": "Bringe mindestens 4 von 6 Lkw zum Pass (gelbe Markierung): Lkw auswählen, Rechtsklick auf den Pass.", "c": {"t": "tag_reach", "tag": "convoy", "at": ["mid", 0, 0], "r": 14.0, "n": 4}, "mark": ["mid", 0, 0]},
+			{"id": "pass", "text": "Bringe mindestens 4 von 6 Lkw zum Pass (gelbe Markierung): Lkw auswählen, Rechtsklick auf den Pass.", "c": {"t": "tag_reach", "tag": "convoy", "at": ["mid", 0, 0], "r": 18.0, "n": 4}, "mark": ["mid", 0, 0]},
+			{"id": "drone", "text": "Schieße die unmarkierte Drohne ab (Flak oder Infanterie auf sie ansetzen).", "c": {"t": "all", "c": [{"t": "flag", "f": "drone_up"}, {"t": "not", "c": {"t": "tag_alive", "tag": "drone", "n": 1}}]},
+				"done": [
+					{"do": "banner", "text": "DROHNE ABGESCHOSSEN", "secs": 2.8, "col": Color(0.6, 1.0, 0.7)},
+					radio("Mira Tanaka", C_MIRA, "Runter ist sie. Westbund-Kennzeichen, Signal aus. Das war kein Gegner."),
+					radio("ORAKEL", C_ORAKEL, "Keine Westbund-Einheit im Sektor registriert.", 6.0)]},
 		],
 		"events": [
-			{"when": {"t": "time", "s": 35.0}, "do": [radio("Mira Tanaka", C_MIRA, "Bewegung auf den Hängen, links. Alle Waffen scharf.", 5.0),
-				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", -34, 18], "spread": 8.0, "attack_tag": "convoy"},
-				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", -38, 22], "spread": 6.0, "attack_tag": "convoy"}]},
-			{"when": {"t": "time", "s": 90.0}, "do": [radio("Mira Tanaka", C_MIRA, "Raketenwerfer. Sie kommen nicht aus dem Hochland. Sie kommen von hinten, von der Küstenseite.", 8.0),
-				{"do": "spawn", "side": "enemy", "def": "arty", "n": 2, "at": ["mid", 30, -26], "spread": 5.0, "attack_tag": "convoy"},
-				{"do": "spawn", "side": "enemy", "def": "inf", "n": 6, "at": ["mid", 34, -22], "spread": 8.0, "attack_tag": "convoy"}]},
+			{"when": {"t": "time", "s": 3.0}, "do": [{"do": "banner", "text": "AKT 1 – DER KONVOI ROLLT", "secs": 3.4}]},
+			# Erster Hinterhalt
+			{"when": {"t": "tag_reach", "tag": "convoy", "at": ["mid", -48, 48], "r": 20.0, "n": 1}, "do": [
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "HINTERHALT!", "secs": 2.8, "col": Color(1.0, 0.45, 0.35)},
+				radio("Mira Tanaka", C_MIRA, "Bewegung auf den Hängen, links. Alle Waffen scharf."),
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 4, "at": ["mid", -34, 18], "spread": 8.0, "attack_tag": "convoy"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 1, "at": ["mid", -38, 22], "spread": 6.0, "attack_tag": "convoy"}]},
+			# Zweiter Hinterhalt von hinten
+			{"when": {"t": "tag_reach", "tag": "convoy", "at": ["mid", -26, 26], "r": 18.0, "n": 1}, "do": [
+				{"do": "banner", "text": "AKT 2 – VON HINTEN", "secs": 3.0, "col": Color(1.0, 0.7, 0.4)},
+				radio("Mira Tanaka", C_MIRA, "Raketenwerfer. Sie kommen nicht aus dem Hochland. Sie kommen von hinten, von der Küstenseite.", 8.0),
+				{"do": "spawn", "side": "enemy", "def": "arty", "n": 1, "at": ["mid", 30, -26], "spread": 5.0, "attack_tag": "convoy", "dmg": 0.3, "hp": 0.6},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 4, "at": ["mid", 34, -22], "spread": 8.0, "attack_tag": "convoy"}]},
+			# Wendepunkt: eine Drohne mit Westbund-Kennung, Signal aus
+			{"when": {"t": "tag_reach", "tag": "convoy", "at": ["mid", -10, 10], "r": 16.0, "n": 1}, "do": [
+				{"do": "flag", "f": "drone_up"},
+				{"do": "sfx", "name": "stinger"},
+				{"do": "banner", "text": "UNMARKIERTE DROHNE", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
+				{"do": "spawn", "side": "enemy", "def": "west_wing", "n": 1, "at": ["mid", 30, -34], "spread": 1.0, "tag": "drone", "attack_tag": "convoy"},
+				radio("Mira Tanaka", C_MIRA, "Drohne über uns. Westbund-Bauart, Kennsignal aus. Wer schießt da auf uns?", 8.0)]},
+			# Höhepunkt: Sperrfeuer am Pass
+			{"when": {"t": "tag_reach", "tag": "convoy", "at": ["mid", 0, 0], "r": 26.0, "n": 1}, "do": [
+				{"do": "sfx", "name": "siren"},
+				{"do": "banner", "text": "AKT 3 – DAS SPERRFEUER", "secs": 3.2, "col": Color(1.0, 0.45, 0.35)},
+				{"do": "explode", "at": ["mid", -10, 8], "size": 2.6},
+				{"do": "explode", "at": ["mid", 12, -6], "size": 2.6},
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", -26, -20], "spread": 8.0, "attack_tag": "convoy"},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 28, 22], "spread": 7.0, "attack_tag": "convoy", "hp": 0.7},
+				radio("Mira Tanaka", C_MIRA, "Sperrfeuer am Pass! Weiter, weiter, nicht stehen bleiben!", 6.0)]},
 		],
 		"lose": [{"c": {"t": "tag_dead", "tag": "convoy", "n": 3}, "text": "Drei Lkw des Konvois sind verloren."}],
+	}
+
+static func _c4() -> Dictionary:
+	return {
+		"id": "c4", "kind": "campaign", "title": "Kapitel 4: Die Brücke über Lysa", "faction": "west", "enemy_faction": "shadow", "next": "",
+		"brief": "Die Armee schiebt sich an die Ufer des Lysa. Der Rat hat zum Einsatz gerufen: Die Roten und die Stimmlosen sollen den Konvoi am Pass beschossen haben, ORAKEL nennt 96 Prozent. Elin Voss führt den Übergang über die Südbrücke, Major Falke fliegt Deckung.\n\nSchlage die Verteidiger der Brücke, überquere sie und sichere das Nordufer gegen den Gegenangriff. Auf der anderen Seite wartet eine Frau, die Elin nie wiedersehen wollte. Und etwas in den Felsen wartet auf Falke.\n\nAuftrag: Verteidiger zerschlagen, Brücke überqueren, Gegenangriff abwehren. Optional: Elins Entscheidung an der Brücke.",
+		"map": {"name": "Südbrücke", "size": 288, "water": 0.55, "islands": 0.1, "resources": 0.5, "hills": 0.45, "forest": 0.5, "layout": 0, "seed": 5404},
+		"hour": 6.5, "difficulty": 1, "credits": 4000, "ai": "off", "sequential": true,
+		"setup": [
+			{"do": "spawn", "side": "me", "def": "tank", "n": 5, "at": ["me", 0, 26], "spread": 9.0},
+			{"do": "spawn", "side": "me", "def": "inf", "n": 6, "at": ["me", 0, 30], "spread": 9.0},
+			{"do": "spawn", "side": "me", "def": "at", "n": 3, "at": ["me", 6, 32], "spread": 5.0},
+			{"do": "spawn", "side": "me", "def": "jet", "n": 2, "at": ["me", -8, 20], "spread": 4.0, "tag": "wing"},
+			{"do": "spawn", "side": "enemy", "def": "inf", "n": 6, "at": ["mid", 0, 0], "spread": 9.0, "tag": "bridge"},
+			{"do": "spawn", "side": "enemy", "def": "at", "n": 3, "at": ["mid", 6, 4], "spread": 6.0, "tag": "bridge"},
+			{"do": "spawn", "side": "enemy", "def": "tech", "n": 3, "at": ["mid", -6, -4], "spread": 6.0, "tag": "bridge"},
+			{"do": "spawn", "side": "enemy", "def": "aa", "n": 2, "at": ["mid", 10, -6], "spread": 4.0, "tag": "bridge"}],
+		"intro": [
+			at(0.0, {"do": "cam_to", "at": ["mid", -10, 0], "dist": 120.0, "yaw": 30.0, "pitch": -32.0, "time": 0.1}),
+			at(0.3, {"do": "cam_to", "at": ["me", 0, 26], "dist": 56.0, "yaw": 0.0, "pitch": -46.0, "time": 12.0}),
+			at(0.5, {"do": "title", "text": "KAPITEL 4", "sub": "DIE BRÜCKE ÜBER LYSA", "secs": 6.0}),
+			at(3.0, radio("Henrik Aldane", C_ALDANE, "Elin, der Rat erwartet den Übergang noch heute. ORAKEL nennt 96 Prozent. Die Roten und die Stimmlosen haben den Konvoi beschossen.")),
+			at(3.0, radio("Elin Voss", C_ELIN, "Ich führe den Übergang, Präsident. Aber ich will die Rohdaten sehen, bevor ich glaube.")),
+			at(3.0, radio("Falke", C_FALKE, "Falke hat den Himmel. Und ein ungutes Gefühl bei den Felsen, Chefin.")),
+			at(4.0, {"do": "end"})],
+		"outro": [
+			at(0.0, {"do": "hour", "h": 22.0}),
+			at(0.0, {"do": "flash", "col": Color(0, 0, 0), "secs": 1.4}),
+			at(0.0, {"do": "cam_to", "at": ["mid", 22, 0], "dist": 60.0, "yaw": 100.0, "pitch": -22.0, "time": 14.0}),
+			at(1.5, radio("Elin Voss", C_ELIN, "Das Nordufer gehört uns. Falke ist da draußen. Und ich stelle ORAKEL in dieser Nacht die Frage, die Lena mir gestellt hat.")),
+			at(1.5, radio("Elin Voss", C_ELIN, "ORAKEL, wann wurde die Wahrscheinlichkeit für den Pass korrigiert?")),
+			at(1.5, radio("ORAKEL", C_ORAKEL, "Die Wahrscheinlichkeit wurde nach Erhalt neuer Daten korrigiert. Vor 41 Stunden.")),
+			at(1.5, radio("Elin Voss", C_ELIN, "Vor dem Vorfall. Dann hat jemand gewusst, dass der Pass brennt.")),
+			at(6.0, {"do": "title", "text": "FORTSETZUNG FOLGT", "sub": "Kapitel 5 – Zeugen", "secs": 6.5}),
+			at(7.0, {"do": "end"})],
+		"objectives": [
+			{"id": "advance", "text": "Rücke zur Südbrücke vor (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", -22, 0], "r": 14.0, "who": "any"}, "mark": ["mid", -22, 0],
+				"done": [{"do": "banner", "text": "AKT 1 – DAS UFER", "secs": 3.0},
+					radio("Falke", C_FALKE, "Falke über der Brücke. Ich sehe Stellungen am Ufer und etwas Leuchtendes in den Felsen.", 7.0)]},
+			{"id": "bridge", "text": "Zerschlage die Verteidiger der Brücke.", "c": {"t": "not", "c": {"t": "tag_alive", "tag": "bridge", "n": 1}},
+				"done": [
+					{"do": "spawn", "side": "enemy", "def": "tech", "n": 1, "at": ["mid", 16, 0], "spread": 1.0, "tag": "lena", "truce": true},
+					{"do": "cam_to", "tag": "lena", "dist": 30.0, "pitch": -35.0, "time": 2.5},
+					{"do": "banner", "text": "AKT 2 – ELINS ENTSCHEIDUNG", "secs": 3.4, "col": Color(1.0, 0.7, 0.6)},
+					radio("Lena Voss", C_LENA, "Elin! Nicht schießen. Ich komme allein, die Hand oben.", 6.0),
+					radio("Lena Voss", C_LENA, "Die Zahlen lügen, Elin. Frag ORAKEL, woher es den Pass kannte, bevor er brannte.", 8.0),
+					radio("Elin Voss", C_ELIN, "Lena. Alle Einheiten: Feuer einstellen auf die einzelne Kommandantin. Das ist ein Befehl.", 7.0),
+					{"do": "convoy", "tag": "lena", "to": ["en", -10, 30]}]},
+			{"id": "cross", "text": "Überquere die Brücke und besetze das Nordufer (gelbe Markierung).", "c": {"t": "reach", "at": ["mid", 26, 0], "r": 14.0, "who": "any"}, "mark": ["mid", 26, 0],
+				"done": [
+					{"do": "banner", "text": "AKT 3 – DIE FELSEN", "secs": 3.0, "col": Color(1.0, 0.45, 0.35)},
+					radio("Falke", C_FALKE, "Rakete aus den Felsen! Ich werde getroffen, ich steige aus!", 6.0),
+					{"do": "explode", "tag": "wing", "size": 2.6, "n": 2.0},
+					{"do": "kill", "tag": "wing", "n": 1},
+					{"do": "cam_to", "tag": "wing", "dist": 40.0, "time": 2.0},
+					{"do": "sfx", "name": "stinger"},
+					{"do": "banner", "text": "FALKE IST ABGESCHOSSEN", "secs": 3.4, "col": Color(1.0, 0.45, 0.35)},
+					{"do": "spawn", "side": "enemy", "def": "inf", "n": 7, "at": ["mid", 40, 14], "spread": 9.0, "tag": "counter", "attack": true},
+					{"do": "spawn", "side": "enemy", "def": "tech", "n": 4, "at": ["mid", 44, 10], "spread": 7.0, "tag": "counter", "attack": true},
+					{"do": "spawn", "side": "enemy", "def": "at", "n": 3, "at": ["mid", 40, 20], "spread": 5.0, "tag": "counter", "attack": true},
+					{"do": "spawn", "side": "enemy", "def": "buggy", "n": 3, "at": ["mid", 46, 16], "spread": 6.0, "tag": "counter", "attack": true},
+					radio("Elin Voss", C_ELIN, "Falke ist runter. Wir halten das Ufer, danach suchen wir ihn. Gegenangriff von Norden!", 7.0)]},
+			{"id": "counter", "text": "Wehre den Gegenangriff ab.", "c": {"t": "not", "c": {"t": "tag_alive", "tag": "counter", "n": 1}}},
+			{"id": "lena", "text": "Optional: Lass Lena ziehen (greife sie nicht an).", "c": {"t": "tag_reach", "tag": "lena", "at": ["en", -10, 30], "r": 28.0, "n": 1}, "optional": true},
+		],
+		"events": [
+			{"when": {"t": "time", "s": 3.0}, "do": [{"do": "banner", "text": "KAPITEL 4 BEGINNT", "secs": 2.4}]},
+			{"when": {"t": "tag_dead", "tag": "lena", "n": 1}, "do": [radio("Elin Voss", C_ELIN, "Lena... Das war nicht, was ich wollte.", 6.0)]},
+		],
+		"lose": [{"c": {"t": "not", "c": {"t": "count", "role": "combat", "n": 1, "flying": false}}, "text": "Die Armee am Lysa ist aufgerieben."}],
 	}
