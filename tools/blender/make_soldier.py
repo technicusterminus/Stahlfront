@@ -72,7 +72,7 @@ def _limb_kind(a, b):
             return prof
     return None
 
-def build_body(mat_uniform, mat_skin, mat_boot):
+def build_body(mat_uniform, mat_boot):
     verts = []
     radii = []
     index = {}
@@ -124,16 +124,13 @@ def build_body(mat_uniform, mat_skin, mat_boot):
     sub.render_levels = 1
     bpy.ops.object.modifier_apply(modifier="Skin")
     bpy.ops.object.modifier_apply(modifier="Sub")
-    # Materialzonen: Kopf/Hals = Haut, Füße = Stiefel, Rest = Uniform
+    # Kopf und Hals haben eigene Meshes. Der Körper trägt Uniform und Stiefel.
     ob.data.materials.append(mat_uniform)
-    ob.data.materials.append(mat_skin)
     ob.data.materials.append(mat_boot)
     for p in ob.data.polygons:
         c = p.center
-        if c.z > 1.495 and abs(c.x) < 0.075:
+        if c.z < 0.26:
             p.material_index = 1
-        elif c.z < 0.26:
-            p.material_index = 2
         p.use_smooth = True
     return ob
 
@@ -273,20 +270,22 @@ def hand_parts(side, M, objs):
     yaw = math.atan2(-d.x, d.y)
     bone = "hand." + side
     palm_c = hd + Vector((d.x, d.y, 0)) * 0.015
-    objs.append((prim("cube", "Palm", tuple(palm_c), (0.082, 0.085, 0.034), M["skin"], rot=(0, 0, yaw), bevel=0.01), bone))
+    glove = M["glove"]
+    objs.append((prim("cube", "Palm", tuple(palm_c), (0.082, 0.085, 0.034), glove, rot=(0, 0, yaw), bevel=0.01), bone))
+    armor = palm_c + _rz(yaw, Vector((0.0, 0.017, 0.018)))
+    objs.append((prim("cube", "KnucklePad", armor, (0.062, 0.033, 0.014), M["gear"], rot=(0, 0, yaw), bevel=0.006), bone))
     lx = _rz(yaw, Vector((1, 0, 0)))
     inward = Vector((-1 if side == "L" else 1, 0, 0))
     tsign = 1 if lx.dot(inward) > 0 else -1
     lens = (0.04, 0.045, 0.042, 0.034)
     for i, x in enumerate((-0.03, -0.01, 0.01, 0.03)):
         base = palm_c + _rz(yaw, Vector((x, 0.043, 0.0)))
-        pos, ang = _chain(base, 0.0, yaw, lens[i] * 0.55, 0.35, 0.016, M["skin"], "Finger", objs, bone)
-        pos, ang = _chain(pos, ang, yaw, lens[i] * 0.5, 0.7, 0.014, M["skin"], "Finger", objs, bone)
-        objs.append((prim("cube", "Nail", tuple(pos + Vector((0, 0, 0.007))), (0.011, 0.014, 0.004), M["nail"], rot=(-ang, 0, yaw), bevel=0.001), bone))
+        pos, ang = _chain(base, 0.0, yaw, lens[i] * 0.55, 0.35, 0.016, glove, "Finger", objs, bone)
+        _chain(pos, ang, yaw, lens[i] * 0.5, 0.7, 0.014, glove, "Finger", objs, bone)
     tb = palm_c + _rz(yaw, Vector((tsign * 0.04, 0.0, 0.004)))
-    pos, ang = _chain(tb, -0.2, yaw + tsign * -0.5, 0.034, 0.3, 0.017, M["skin"], "Thumb", objs, bone)
-    _chain(pos, ang, yaw + tsign * -0.5, 0.028, 0.5, 0.015, M["skin"], "Thumb", objs, bone)
-    objs.append((prim("sphere", "Cuff", tuple(wr + (hd - wr) * -0.1), (0.1, 0.1, 0.1), M["team"] if M.get("cuff") is None else M["cuff"]), "forearm." + side))
+    pos, ang = _chain(tb, -0.2, yaw + tsign * -0.5, 0.034, 0.3, 0.017, glove, "Thumb", objs, bone)
+    _chain(pos, ang, yaw + tsign * -0.5, 0.028, 0.5, 0.015, glove, "Thumb", objs, bone)
+    objs.append((prim("sphere", "Cuff", wr, (0.105, 0.105, 0.08), M.get("cuff", glove), rot=(hd - wr).to_track_quat("Z", "Y").to_euler()), "forearm." + side))
 
 def boot_parts(side, M, objs):
     """Stiefel: Sohle, Absatz, Kappe, Schaft mit Zunge, Schnürung und Hosensaum."""
@@ -380,15 +379,21 @@ def make_head(name, scale, mat_skin, mat_lip, keep=None, smooth=0):
 
 def gear(faction, variant, rig, M):
     objs = []
+    masked = faction == "shadow"
     # Kopfbedeckung
-    if variant == "worker" and faction == "shadow":
-        # Kopftuch statt Helm, Schutzbrille auf der Stirn, Tuch vor dem Mund
-        objs.append((prim("sphere", "Headscarf", (0, 0.01, 1.8), (0.265, 0.28, 0.15), M["cloth"]), "head"))
-        objs.append((prim("cube", "Knot", (0.0, 0.14, 1.76), (0.07, 0.05, 0.08), M["cloth"], bevel=0.015), "head"))
-        objs.append((prim("cube", "GoggleBand", (0, -0.0, 1.775), (0.255, 0.25, 0.026), M["gear"]), "head"))
-        for sx in (-0.05, 0.05):
-            objs.append((prim("cyl", "Goggle", (sx, -0.125, 1.775), (0.07, 0.07, 0.03), M["visor"], rot=(math.pi / 2, 0, 0), v=12), "head"))
-        objs.append((prim("cube", "Mask", (0, -0.075, 1.575), (0.2, 0.1, 0.06), M["scarf"], bevel=0.02), "head"))
+    if masked:
+        objs.append((prim("sphere", "Headscarf", (0, 0.016, 1.779), (0.262, 0.274, 0.176), M["cloth"]), "head"))
+        for z, tilt in ((1.758, 0.11), (1.788, -0.11)):
+            objs.append((prim("sphere", "HeadscarfFold", (0, 0.013, z), (0.264, 0.276, 0.078), M["cloth"], rot=(0, tilt, 0)), "head"))
+        objs.append((prim("sphere", "Knot", (0.067, 0.13, 1.742), (0.107, 0.069, 0.068), M["cloth"]), "head"))
+        objs.append((prim("sphere", "ScarfTail", (0.118, 0.097, 1.655), (0.055, 0.082, 0.19), M["scarf"], rot=(0.16, -0.36, 0)), "head"))
+        for z, depth, tilt in ((1.563, 0.203, 0.15), (1.601, 0.224, -0.12), (1.629, 0.246, 0.095)):
+            objs.append((prim("sphere", "FaceWrap", (0, -0.023, z), (0.214, depth, 0.09), M["scarf"], rot=(0, tilt, 0)), "head"))
+        if variant == "worker":
+            objs.append((prim("sphere", "GoggleStrap", (0, 0.01, 1.704), (0.245, 0.245, 0.034), M["gear"]), "head"))
+            for sx in (-0.052, 0.052):
+                objs.append((prim("cube", "GoggleFrame", (sx, -0.113, 1.7), (0.101, 0.051, 0.074), M["gear"], bevel=0.02), "head"))
+                objs.append((prim("cube", "GoggleLens", (sx, -0.141, 1.7), (0.077, 0.015, 0.047), M["visor"], bevel=0.006), "head"))
     elif variant == "worker":
         h = prim("sphere", "Helmet", (0, 0.0, 1.79), (0.255, 0.275, 0.15), M["hard"])
         objs.append((h, "head"))
@@ -401,20 +406,22 @@ def gear(faction, variant, rig, M):
         objs.append((h, "head"))
         visor = [(-0.103, 1.748), (0, 1.756), (0.103, 1.748), (0.083, 1.689),
                  (0.028, 1.682), (0, 1.693), (-0.028, 1.682), (-0.083, 1.689)]
-        objs.append((plate("Visor", visor, -0.155, 0.052, M["visor"], 0.006), "head"))
+        gasket = [(x * 1.14, 1.72 + (z - 1.72) * 1.28) for x, z in visor]
+        objs.append((plate("VisorGasket", gasket, -0.156, 0.063, M["gear"], 0.009), "head"))
+        objs.append((plate("Visor", visor, -0.167, 0.027, M["visor"], 0.005), "head"))
+        chin = [(-0.094, 1.696), (-0.04, 1.684), (0, 1.697), (0.04, 1.684), (0.094, 1.696),
+                (0.085, 1.624), (0.043, 1.585), (-0.043, 1.585), (-0.085, 1.624)]
+        objs.append((plate("JawGuard", chin, -0.167, 0.061, M["armor"], 0.011), "head"))
+        objs.append((prim("cube", "JawVent", (0, -0.168, 1.633), (0.062, 0.012, 0.013), M["visor"], bevel=0.004), "head"))
         for side in (-1, 1):
-            objs.append((prim("cube", "HelmetRail", (side * 0.107, 0.018, 1.716), (0.036, 0.12, 0.062), M["gear"], bevel=0.01), "head"))
+            objs.append((prim("sphere", "HelmetEarCup", (side * 0.11, 0.005, 1.715), (0.045, 0.106, 0.089), M["armor"]), "head"))
+            objs.append((prim("cube", "HelmetRail", (side * 0.122, 0.008, 1.721), (0.022, 0.08, 0.03), M["gear"], bevel=0.009), "head"))
     elif faction == "red":
         objs.append((prim("sphere", "Helmet", (0, 0.017, 1.775), (0.263, 0.274, 0.198), M["armor"]), "head"))
         objs.append((prim("sphere", "HelmetRim", (0, 0.018, 1.745), (0.274, 0.286, 0.051), M["gear"]), "head"))
         objs.append((prim("cube", "HelmetMark", (0, -0.12, 1.779), (0.065, 0.017, 0.022), M["mark"], bevel=0.004), "head"))
         objs.append((prim("cyl", "Collar", (0, 0.0, 1.5), (0.22, 0.2, 0.08), M["team"], v=14), "chest"))
-    else:
-        objs.append((prim("sphere", "Turban", (0, 0.01, 1.8), (0.265, 0.27, 0.155), M["cloth"]), "head"))
-        objs.append((prim("cube", "Scarf", (0, -0.06, 1.545), (0.2, 0.12, 0.07), M["scarf"], bevel=0.02), "head"))
-        objs.append((prim("cube", "Bandolier", (0, -0.13, 1.3), (0.06, 0.04, 0.42), M["gear"], rot=(0, 0.6, 0)), "chest"))
     # Gesicht: modellierter Kopf mit Augen, Brauen, Ohren; Haar und Bart als Schalen
-    hide_hair = variant == "worker" and faction == "shadow"
     iris = {"west": "iris_blue", "red": "iris_grey", "shadow": "iris_brown"}[faction]
     objs.append((prim("sphere", "Neck", (0, 0.014, 1.553), (0.115, 0.116, 0.147), M["skin"]), "neck"))
     objs.append((make_head("Head", 1.0, M["skin"], None), "head"))
@@ -429,19 +436,15 @@ def gear(faction, variant, rig, M):
         objs.append((prim("sphere", "Ear", (sx * 2.5, 0.012, 1.682), (0.016, 0.034, 0.05), M["skin"]), "head"))
         objs.append((prim("sphere", "EarInner", (sx * 2.38, 0.008, 1.682), (0.008, 0.02, 0.032), M["skin_dark"]), "head"))
     objs.append((prim("sphere", "AdamsApple", (0, -0.045, 1.52), (0.022, 0.024, 0.026), M["skin"]), "head"))
-    if not hide_hair:
+    if not masked:
         if faction == "west":
             # kurzer Seitenscheitel: Schale über Stirn, Scheitel und Hinterkopf
             hair = make_head("Hair", 1.045, M["hair"], None, keep=lambda x, y, z: z > 0.5 or (y > -0.05 and z > -0.25) or (abs(x) > 0.7 and z > 0.15), smooth=1)
-        elif faction == "red":
-            hair = make_head("Hair", 1.025, M["hair"], None, keep=lambda x, y, z: z > 0.6 or (y > 0.0 and z > -0.2), smooth=1)
         else:
-            hair = make_head("Hair", 1.07, M["hair"], None, keep=lambda x, y, z: z > 0.45 or (y > -0.1 and z > -0.45) or (abs(x) > 0.75 and z > -0.1), smooth=1)
+            hair = make_head("Hair", 1.025, M["hair"], None, keep=lambda x, y, z: z > 0.6 or (y > 0.0 and z > -0.2), smooth=1)
         objs.append((hair, "head"))
-    if faction == "red" and variant != "worker" or (faction == "red" and variant == "worker"):
+    if faction == "red":
         objs.append((make_head("Stubble", 1.012, M["hair"], None, keep=lambda x, y, z: z < -0.4 and z > -0.9 and y < 0.0 and (abs(x) > 0.18 or z < -0.62 or z > -0.42), smooth=1), "head"))
-    if faction == "shadow":
-        objs.append((make_head("Beard", 1.04, M["hair"], None, keep=lambda x, y, z: z < -0.15 and z > -0.95 and y < 0.2 and not ((x / 0.3) ** 2 + ((z + 0.505) / 0.12) ** 2 < 1.0 and y < -0.3), smooth=1), "head"))
     # Reißverschluss mit Zipper, Werkzeuggürtel (Arbeiter)
     if variant == "worker":
         objs.append((prim("cube", "Zip", (0, -0.151, 1.28), (0.009, 0.006, 0.247), M["gear"]), "chest"))
@@ -453,7 +456,9 @@ def gear(faction, variant, rig, M):
     objs.append((prim("cyl", "Belt", (0, 0, 0.98), (0.36, 0.3, 0.07), M["gear"], v=16), "spine"))
     objs.append((prim("cube", "Buckle", (0, -0.15, 0.98), (0.06, 0.02, 0.05), M["metal"]), "spine"))
     for side, x in (("L", 0.11), ("R", -0.11)):
-        objs.append((prim("sphere", "Knee" + side, (x, -0.07, 0.52), (0.13, 0.08, 0.13), M["gear"]), "shin." + side))
+        shin = "shin." + side
+        objs.append((prim("sphere", "KneePadding", (x, -0.069, 0.519), (0.149, 0.109, 0.16), M["gear"]), shin))
+        objs.append((prim("cube", "KneeShell", (x, -0.114, 0.513), (0.101, 0.04, 0.114), M["armor"], bevel=0.018), shin))
     # Weste/Rucksack
     if variant != "worker":
         chest = [(-0.09, 1.47), (0.09, 1.47), (0.181, 1.375), (0.152, 1.225),
@@ -461,14 +466,33 @@ def gear(faction, variant, rig, M):
         if faction == "shadow":
             chest = [(-0.082, 1.443), (0.132, 1.386), (0.14, 1.253), (0.095, 1.196),
                      (-0.1, 1.196), (-0.165, 1.272), (-0.16, 1.408)]
-        objs.append((plate("ChestPanel", chest, -0.211, 0.082, M["armor"], 0.014), "chest"))
+        objs.append((plate("VestBacking", chest, -0.184, 0.08, M["gear"], 0.018), "chest"))
+        if faction == "west":
+            for sign in (-1, 1):
+                panel = [(sign * x, z) for x, z in (
+                    (0.008, 1.425), (0.069, 1.451), (0.16, 1.371), (0.129, 1.277), (0.009, 1.258),
+                )]
+                objs.append((plate("ChestShell", panel, -0.225, 0.074, M["armor"], 0.012), "chest"))
+            for z in (1.228, 1.257):
+                layer = [(-0.122, z + 0.022), (0.122, z + 0.022), (0.098, z - 0.016), (-0.098, z - 0.016)]
+                objs.append((plate("AbdominalLame", layer, -0.221, 0.059, M["armor"], 0.007), "chest"))
+        elif faction == "red":
+            for x in (-0.098, 0, 0.098):
+                objs.append((prim("cube", "VestPadding", (x, -0.16, 1.329), (0.092, 0.098, 0.207), M["pack"], rot=(0, x, x * 2.0), bevel=0.026), "chest"))
+            for z in (1.285, 1.354):
+                objs.append((prim("cube", "VestWebbing", (0, -0.213, z), (0.267, 0.024, 0.026), M["gear"], bevel=0.006), "chest"))
+        else:
+            objs.append((plate("ChestPanel", chest, -0.21, 0.06, M["armor"], 0.014), "chest"))
+            objs.append((prim("cube", "Sling", (0, -0.22, 1.314), (0.043, 0.027, 0.347), M["pack"], rot=(0, 0.57, 0), bevel=0.007), "chest"))
+            objs.append((prim("cube", "SlingBuckle", (0.033, -0.239, 1.37), (0.054, 0.02, 0.038), M["metal"], rot=(0, 0.57, 0), bevel=0.005), "chest"))
         for side, sign in (("L", 1), ("R", -1)):
             elbow = Vector(J["elbow." + side][0])
             shoulder = Vector(J["shoulder." + side][0])
             upper_arm = shoulder.lerp(elbow, 0.22) + Vector((sign * 0.033, -0.005, 0.025))
             patch = M["mark"] if faction != "shadow" or side == "R" else M["gear"]
-            objs.append((prim("cube", "ShoulderPanel", upper_arm, (0.117, 0.153, 0.14), M["armor"], rot=(0, -sign * 0.28, 0), bevel=0.023), "upperarm." + side))
-            objs.append((prim("cube", "ShoulderMark", upper_arm + Vector((sign * 0.034, 0, 0.043)), (0.063, 0.108, 0.045), patch, rot=(0, -sign * 0.28, 0), bevel=0.011), "upperarm." + side))
+            shoulder_mat = M["pack"] if faction == "red" else M["armor"]
+            objs.append((prim("cube", "ShoulderPanel", upper_arm, (0.127, 0.168, 0.143), shoulder_mat, rot=(0, -sign * 0.32, 0), bevel=0.031), "upperarm." + side))
+            objs.append((prim("cube", "ShoulderMark", upper_arm + Vector((sign * 0.04, -0.071, 0.025)), (0.05, 0.037, 0.038), patch, rot=(0, -sign * 0.32, 0), bevel=0.009), "upperarm." + side))
             if faction == "west":
                 wrist = Vector(J["wrist." + side][0])
                 forearm = elbow.lerp(wrist, 0.48) + Vector((sign * 0.041, 0, 0.01))
@@ -478,10 +502,14 @@ def gear(faction, variant, rig, M):
         objs.append((prim("cube", "Pack", (0, 0.167, 1.305), pack_size, M["pack"], bevel=0.027), "chest"))
         for sx in (-0.11, 0.11):
             objs.append((prim("cube", "UtilityPouch", (sx, -0.156, 1.158), (0.087, 0.072, 0.084), M["gear"], bevel=0.012), "chest"))
+            objs.append((prim("cube", "PouchFlap", (sx, -0.184, 1.184), (0.09, 0.028, 0.034), M["pack"], bevel=0.007), "chest"))
     else:
         for sx in (-0.095, 0.095):
             objs.append((prim("cube", "WorkVestPanel", (sx, -0.123, 1.335), (0.113, 0.085, 0.273), M["hiviz"], bevel=0.025), "chest"))
             objs.append((prim("cube", "ReflectiveBand", (sx, -0.165, 1.275), (0.107, 0.013, 0.032), M["reflective"], bevel=0.004), "chest"))
+        if faction == "shadow":
+            objs.append((prim("cube", "WorkHarness", (-0.133, -0.137, 1.38), (0.056, 0.032, 0.245), M["pack"], rot=(0, -0.21, 0), bevel=0.007), "chest"))
+            objs.append((prim("cube", "HarnessBuckle", (-0.134, -0.163, 1.419), (0.052, 0.019, 0.037), M["gear"], bevel=0.006), "chest"))
         objs.append((prim("cube", "WorkVestBack", (0, 0.115, 1.33), (0.32, 0.091, 0.239), M["hiviz"], bevel=0.027), "chest"))
         objs.append((prim("cube", "BackMark", (0, 0.164, 1.39), (0.106, 0.01, 0.043), M["mark"], bevel=0.004), "chest"))
     # Waffe in den Händen
@@ -502,7 +530,7 @@ def gear(faction, variant, rig, M):
     for side in ("L", "R"):
         boot_parts(side, M, objs)
         hand_parts(side, M, objs)
-    # Kleidungsdetails: Kragen, Taschen, Gürtelschlaufen, Nähte, Uhr
+    # Kleidungsdetails: Kragen, Taschen und Gürtelschlaufen
     objs.append((prim("cyl", "Collar2", (0, 0.0, 1.52), (0.17, 0.16, 0.05), M["team"], v=14), "chest"))
     for sx in (-0.095, 0.095):
         if variant == "worker":
@@ -514,9 +542,6 @@ def gear(faction, variant, rig, M):
     for k in range(8):
         a = math.tau * k / 8.0 + 0.2
         objs.append((prim("cube", "BeltLoop", (math.cos(a) * 0.178, math.sin(a) * 0.15, 0.985), (0.02, 0.015, 0.06), M["team"], rot=(0, 0, a + math.pi / 2), bevel=0.003), "spine"))
-    wl = Vector(J["wrist.L"][0])
-    objs.append((prim("cyl", "WatchStrap", tuple(wl + Vector((-0.002, 0.02, 0.0))), (0.12, 0.12, 0.03), M["gear"], v=10), "forearm.L"))
-    objs.append((prim("cyl", "WatchFace", tuple(wl + Vector((0.0, 0.02, 0.05))), (0.05, 0.05, 0.012), M["metal"], v=12), "forearm.L"))
     join_gear(rig, objs)
 
 # ------------------------------------------------------------------ Animationen
@@ -663,7 +688,7 @@ def build(faction, variant):
         "visor": material("Visor", (0.035, 0.045, 0.053), 0.12, 0.27),
         "gold": material("Gold", (0.95, 0.75, 0.2), 0.9, 0.3),
         "cloth": material("Cloth", (0.55, 0.47, 0.33), 0.0, 0.95),
-        "scarf": material("Scarf", (0.5, 0.15, 0.12), 0.0, 0.9),
+        "scarf": material("Scarf", (0.24, 0.163, 0.108), 0.0, 0.93),
         "hard": material("HardHat", (0.95, 0.75, 0.1), 0.1, 0.4),
         "hiviz": material("HiViz", (1.0, 0.45, 0.05), 0.0, 0.6, 0.3),
         "tool": material("Toolbox", (0.7, 0.1, 0.08), 0.4, 0.5),
@@ -671,7 +696,7 @@ def build(faction, variant):
         "iris_blue": material("IrisBlue", (0.25, 0.5, 0.75), 0.0, 0.3),
         "iris_grey": material("IrisGrey", (0.45, 0.5, 0.52), 0.0, 0.3),
         "iris_brown": material("IrisBrown", (0.3, 0.17, 0.08), 0.0, 0.3),
-        "nail": material("Nail", (0.85, 0.7, 0.65), 0.0, 0.4),
+        "glove": material("Gloves", (0.095, 0.082, 0.066), 0.0, 0.86),
         "wood": material("Wood", (0.45, 0.3, 0.16), 0.0, 0.8),
         "sole": material("Sole", (0.04, 0.04, 0.04), 0.0, 0.9),
         "lace": material("Lace", (0.14, 0.13, 0.105), 0.0, 0.8),
@@ -690,7 +715,7 @@ def build(faction, variant):
     uniform = M["team"] if variant != "worker" else material("Overall", {"west": (0.72, 0.75, 0.8), "red": (0.27, 0.3, 0.22), "shadow": (0.44, 0.35, 0.24)}[faction], 0.0, 0.85)
     if variant == "worker":
         M["team"] = uniform   # Saum, Taschen, Manschetten in Arbeitskleidung, nicht in Teamfarbe
-    body = build_body(uniform, M["skin"], M["boot"])
+    body = build_body(uniform, M["boot"])
     rig = build_rig()
     skin_to(rig, body)
     gear(faction, variant, rig, M)
