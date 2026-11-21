@@ -56,7 +56,7 @@ void gerstner(vec2 p, float t, out vec3 disp, out vec2 grad, out float jacobian)
 	grad = vec2(0.0);
 	float j = 1.0;
 	for (int i = 0; i < 4; i++) {
-		float ph = dot(D[i], p) * K[i] + t * sqrt(9.8 * K[i]) * 0.7;
+		float ph = dot(D[i], p) * K[i] + t * sqrt(9.8 * K[i]) * 0.3;
 		float s = sin(ph), c = cos(ph);
 		float qa = Q[i] / K[i];
 		disp.xz -= D[i] * (qa * c); // Horizontale Einschnürung zum Kamm
@@ -82,9 +82,9 @@ void vertex() {
 void fragment() {
 	float vis = fog_at(wpos.xz / world_size + 0.5);
 	// Normalen: grosse Duenung, zwei Kräuselschichten in verschiedene Richtungen
-	vec3 s = texture(n_swell, wpos.xz * 0.017 + TIME * vec2(0.010, 0.004)).rgb;
-	vec3 a = texture(n_ripple, wpos.xz * 0.06 + TIME * vec2(0.014, 0.008)).rgb;
-	vec3 b = texture(n_ripple, wpos.xz * 0.13 - TIME * vec2(0.011, 0.016) + 0.37).rgb;
+	vec3 s = texture(n_swell, wpos.xz * 0.017 + TIME * vec2(0.005, 0.002)).rgb;
+	vec3 a = texture(n_ripple, wpos.xz * 0.06 + TIME * vec2(0.007, 0.004)).rgb;
+	vec3 b = texture(n_ripple, wpos.xz * 0.13 - TIME * vec2(0.006, 0.008) + 0.37).rgb;
 	vec3 nm = normalize(vec3((s.xy - 0.5) * 1.1 + (a.xy - 0.5) * 0.9 + (b.xy - 0.5) * 0.6, 1.0));
 	nm = normalize(vec3(nm.xy - wgrad * 1.6, nm.z));
 	vec2 rr = vec2(0.0);
@@ -144,7 +144,7 @@ void fragment() {
 	float ship_foam = obj_edge * mix(0.35, 1.0, slope) * smoothstep(0.28, 0.65, foam_noise + 0.2);
 
 	// B) Auslaufende Strandbrandung (nur an flachem Ufer, organisch aufgebrochen)
-	float wave_phase = fract(v_depth * 0.85 - TIME * 0.28 + (ft - 0.5) * 0.35);
+	float wave_phase = fract(v_depth * 0.85 - TIME * 0.12 + (ft - 0.5) * 0.35);
 	float surf_line = smoothstep(0.0, 0.12, wave_phase) * (1.0 - smoothstep(0.12, 0.65, wave_phase));
 	surf_line *= (1.0 - wave_phase); // Sanftes Auslaufen nach hinten
 	surf_line *= (1.0 - slope * 0.8) * exp(-v_depth * 0.9) * smoothstep(0.02, 0.18, v_depth);
