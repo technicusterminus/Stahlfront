@@ -14,8 +14,8 @@ extends RefCounted
 ##   biome      Landschaftsprägung (Pflanzen, Farben, Schneegrenze, Tiere), siehe scripts/biome.gd; "" = Standard
 ##   sites      Orte der Karte (Städte, Ruinen, Kuppel, Masten ...), siehe scripts/settlement.gd
 
-const SIZE_MIN := 160
-const SIZE_MAX := 336
+const SIZE_MIN := 256
+const SIZE_MAX := 640
 
 static func default_spec() -> Dictionary:
 	return {"name": "Standardkarte", "size": 240, "water": 0.5, "islands": 0.3, "resources": 0.5, "hills": 0.5, "forest": 0.5, "layout": 0, "seed": 7, "dry_core": 0.0, "causeway": 0.0, "causeway_deg": 0.0, "biome": "", "sites": []}
@@ -33,7 +33,7 @@ const ARCH := [
 	{"n": ["Schären", "Nordfjord", "Stürmische See", "Klippenküste"], "l": 3, "w": 0.85, "i": 0.9, "r": 0.4, "h": 0.6, "f": 0.4},
 	{"n": ["Klamm", "Felsenschlucht", "Rotes Tal", "Eisenpass"], "l": 1, "w": 0.35, "i": 0.1, "r": 0.9, "h": 0.9, "f": 0.3},
 ]
-const SIZES := [192, 240, 288, 336]
+const SIZES := [320, 400, 480, 560]
 static var _presets: Array = []
 
 ## Die 40 Standardkarten: zehn Landschaftstypen in je vier Größen und Abwandlungen.

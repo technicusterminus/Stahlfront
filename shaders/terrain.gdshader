@@ -50,7 +50,7 @@ void fragment() {
 	vec3 col = mix(grass, dirt, smoothstep(0.42, 0.62, n1 * 0.7 + n2 * 0.3));
 	col = mix(col, rock, smoothstep(0.07, 0.2, slope + zn.a * 0.12));
 	col = mix(col, rock * 1.12, zn.a * 0.5);
-	col = mix(sand, col, smoothstep(-1.0, 0.1, wpos.y));
+	col = mix(sand, col, smoothstep(-1.0, 0.35 + (n2 - 0.5) * 0.9, wpos.y));
 	// Schneegrenze: ab snow_y Schnee, an Steilhaengen blankes Gestein
 	float snow = smoothstep(snow_y, snow_y + 1.6, wpos.y + (n2 - 0.5) * 1.8) * (1.0 - smoothstep(0.16, 0.34, slope));
 	col = mix(col, vec3(0.86, 0.89, 0.93) * (0.92 + 0.08 * n3), snow);
@@ -82,6 +82,10 @@ void fragment() {
 	col = mix(col, cs, ms * (1.0 - mw) * (1.0 - mr));
 	rough = mix(rough, 0.78, max(mw, mr));
 
+	// Nasser Uferstreifen: dunklerer, glatter Sand unmittelbar an der Wasserlinie
+	float wet_band = 1.0 - smoothstep(-0.7, 0.55 + (n2 - 0.5) * 0.5, wpos.y);
+	col = mix(col, col * vec3(0.52, 0.5, 0.48), wet_band * 0.85);
+	rough = mix(rough, 0.3, wet_band * 0.75);
 	col *= 1.0 - 0.3 * wetness;
 	rough = mix(rough, 0.42, wetness);
 	float vis = fog_at(wpos.xz / world_size + 0.5);

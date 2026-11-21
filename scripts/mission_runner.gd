@@ -420,7 +420,7 @@ func _autoplay() -> void:
 			_play_step = 4
 	elif m["id"] == "c2":
 		var wg = _alive("wing")
-		var legs = [[1.0, "mid", -34.0, 6.0], [25.0, "mid", 18.0, -30.0], [55.0, "en", -4.0, 4.0], [66.0, "me", 0.0, 10.0]]
+		var legs = [[1.0, "mid", -34.0, 6.0], [25.0, "mid", 18.0, -30.0], [55.0, "en", -4.0, 4.0], [105.0, "me", 0.0, 10.0]]
 		if _play_step < legs.size() and t > float(legs[_play_step][0]):
 			print("AUTO c2 Etappe %d t=%d: Flieger %d" % [_play_step, int(t), wg.size()])
 			for u in wg:

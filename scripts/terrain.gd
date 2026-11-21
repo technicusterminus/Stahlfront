@@ -181,7 +181,7 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 			var lz = z + warp.get_noise_2d(x + 517.0, z - 311.0) * 30.0
 			var l = lake.get_noise_2d((lx * wca + lz * wsa) * 0.72, (-lx * wsa + lz * wca) * 1.3)
 			if l > lake_thr:
-				h -= (l - lake_thr) * 32.0
+				h -= (l - lake_thr) * 11.0 + pow(l - lake_thr, 2.0) * 90.0
 			var e: float = min(half - abs(x), half - abs(z))
 			if e < 16.0:
 				h += (16.0 - e) * (16.0 - e) * 0.085
@@ -417,7 +417,7 @@ func preview_image(sp: Dictionary, res: int) -> Image:
 			var lz = wz + warp.get_noise_2d(wx + 517.0, wz - 311.0) * 30.0
 			var l = lake.get_noise_2d((lx * wca + lz * wsa) * 0.72, (-lx * wsa + lz * wca) * 1.3)
 			if l > lake_thr:
-				h -= (l - lake_thr) * 32.0
+				h -= (l - lake_thr) * 11.0 + pow(l - lake_thr, 2.0) * 90.0
 			var e: float = min(half - abs(wx), half - abs(wz))
 			if e < 16.0:
 				h += (16.0 - e) * (16.0 - e) * 0.085

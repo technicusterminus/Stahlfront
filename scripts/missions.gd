@@ -9,7 +9,7 @@ extends RefCounted
 ## Orte sind [Anker, dx, dz] mit Anker "me" (eigene Basis), "en" (Gegnerbasis) oder "mid" (Kartenmitte zwischen beiden).
 ## Einheitenkürzel ("inf", "tank", "heli", "harv" …) werden mit der Fraktion der Seite zur Kennung ergänzt.
 
-const TUTORIAL_MAP := {"name": "Übungsgelände", "size": 256, "water": 0.4, "islands": 0.0, "resources": 0.8, "hills": 0.2, "forest": 0.4, "layout": 0, "seed": 4242}
+const TUTORIAL_MAP := {"name": "Übungsgelände", "size": 320, "water": 0.4, "islands": 0.0, "resources": 0.8, "hills": 0.2, "forest": 0.4, "layout": 0, "seed": 4242}
 
 const C_INSTR := Color(0.62, 0.86, 1.0)
 const C_ELIN := Color(0.7, 0.95, 0.85)
@@ -41,8 +41,8 @@ const PASS_R_SITES := [
 	{"name": "tunnel", "kind": "tunnel", "collapsed": true, "at": ["mid", -12, 7], "seed": 33},
 ]
 const BRIDGE_SITES := [
-	{"name": "dorf_nord", "kind": "village", "ruin": 0.2, "at": ["mid", -89, -67], "r": 14, "seed": 41},
-	{"name": "dorf_sued", "kind": "village", "ruin": 0.4, "at": ["mid", 85, 74], "r": 14, "seed": 42},
+	{"name": "dorf_nord", "kind": "village", "ruin": 0.2, "at": ["mid", -93, -63], "r": 14, "seed": 41},
+	{"name": "dorf_sued", "kind": "village", "ruin": 0.4, "at": ["mid", 104, 69], "r": 14, "seed": 42},
 ]
 const LAZARETT_SITES := [
 	{"name": "lazarett", "kind": "lazarett", "at": ["mid", 43, 12], "r": 14, "seed": 51},
@@ -60,7 +60,7 @@ const SCHIENEN_SITES := [
 ]
 const AURELIA_SITES := [
 	{"name": "kuppel", "kind": "dome", "at": ["mid", 0, 45], "r": 14, "ruin": 0.5, "seed": 1},
-	{"name": "glasviertel", "kind": "town", "style": "modern", "ruin": 0.85, "at": ["mid", -78, 78], "r": 26, "seed": 2},
+	{"name": "glasviertel", "kind": "town", "style": "modern", "ruin": 0.85, "at": ["mid", -44, 87], "r": 26, "seed": 2},
 	{"name": "ostviertel", "kind": "town", "style": "mixed", "ruin": 0.8, "at": ["mid", 69, 26], "r": 24, "seed": 3},
 	{"name": "altstadt", "kind": "town", "style": "old", "ruin": 0.75, "at": ["mid", 0, 92], "r": 22, "seed": 4},
 	{"name": "metro_west", "kind": "tunnel", "collapsed": false, "rot": 0.6, "at": ["mid", -100, 20], "seed": 5},
@@ -238,7 +238,7 @@ static func _c1() -> Dictionary:
 	return {
 		"id": "c1", "kind": "campaign", "title": "Kapitel 1: Port Meridian", "faction": "west", "enemy_faction": "shadow", "next": "c2",
 		"brief": "Jahr fünfzehn nach dem Blackout. Port Meridian ist die letzte große Hafenstadt des Westbunds, und Dr. Elin Voss, die Chefstrategin, hat gerade etwas gehört, das sie nicht mehr loslässt: ORAKEL, die letzte Analyse-KI des Bundes, hat zum ersten Mal einen Satz gesagt, den niemand berechnet hat. „Das Prisma erwacht.“\n\nDer Rat der Sieben gibt euch drei Tage, dann soll von hier die Expedition ins Hochland aufbrechen. Bis dahin muss aus der Stadt ein Stützpunkt werden, der standhält. In den Bergen sitzen Banden der Schattenfront, und sie wissen, wie schwach Port Meridian heute Nacht ist.\n\nAuftrag: Baue Nachschub, Kraftwerk, Kaserne und Fabrik, stelle acht Kampfeinheiten auf und halte Port Meridian zehn Minuten lang.",
-		"map": {"name": "Port Meridian", "size": 320, "water": 0.5, "islands": 0.2, "resources": 0.6, "hills": 0.4, "forest": 0.5, "layout": 3, "seed": 5101, "biome": "coast", "sites": PORT_SITES},
+		"map": {"name": "Port Meridian", "size": 560, "water": 0.5, "islands": 0.2, "resources": 0.6, "hills": 0.4, "forest": 0.5, "layout": 3, "seed": 5101, "biome": "coast", "sites": PORT_SITES},
 		"hour": 20.0, "difficulty": 1, "credits": 4500, "ai": "off",
 		"intro": [
 			at(0.2, {"do": "still", "id": "s_c1_intro", "secs": 11.0}),
@@ -340,7 +340,7 @@ static func _c2() -> Dictionary:
 	return {
 		"id": "c2", "kind": "campaign", "title": "Kapitel 2: Der Falke fliegt", "faction": "west", "enemy_faction": "red", "next": "c3",
 		"brief": "Major Kai Laurent, den alle Falke nennen, hält jeden Tag für den letzten und fliegt entsprechend. Elin schickt ihn über den Eisenkamm: Messwerte holen, sonst nichts. Das ist ein Befehl, und Falke hat noch nie einen Befehl so gründlich nach seinen Lücken durchsucht.\n\nDu führst zwei Jäger und eine Spähdrohne über drei Messpunkte. An jedem sitzt Flugabwehr der Roten Allianz. Halte Abstand, wo es geht, schick die Drohne als Köder voraus und kämpfe nur, wenn du musst. Am letzten Punkt wartet eine Falle.\n\nAuftrag: Überfliege alle drei Messpunkte und kehre zur Basis zurück. Gehen alle Flugzeuge verloren, ist die Mission gescheitert.",
-		"map": {"name": "Eisenkamm", "size": 384, "water": 0.2, "islands": 0.05, "resources": 0.5, "hills": 0.9, "forest": 0.4, "layout": 0, "seed": 5202, "biome": "alpine", "sites": EISENKAMM_SITES},
+		"map": {"name": "Eisenkamm", "size": 512, "water": 0.2, "islands": 0.05, "resources": 0.5, "hills": 0.9, "forest": 0.4, "layout": 0, "seed": 5202, "biome": "alpine", "sites": EISENKAMM_SITES},
 		"hour": 12.0, "difficulty": 1, "credits": 3000, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "jet", "n": 2, "at": ["me", 0, 18], "spread": 6.0, "tag": "wing", "hp": 1.7},
@@ -411,7 +411,7 @@ static func _c3() -> Dictionary:
 	return {
 		"id": "c3", "kind": "campaign", "title": "Kapitel 3: Der Pass", "faction": "west", "enemy_faction": "red", "next": "c4",
 		"brief": "Sechs Lkw voller Medizin und Messgeräte fahren in den Pass. Auf einem sitzt Dr. Yusuf Brandt, der Prisma-Forscher, den der Rat gern für verrückt erklärt. Auf einem anderen Mira Tanaka, die man „Glas“ nennt, weil sie durch alles hindurchsieht und kaum ein Wort verliert. Hinter dem Konvoi rollt der Siedlertreck der Allianz, so will es der Vertrag von Lysa.\n\nBring mindestens vier der sechs Lkw zur Passhöhe. Zwei Hinterhalte sind sicher, ein dritter Angriff ist wahrscheinlich. Halte die Eskorte beim Konvoi, schalte Raketenwerfer zuerst aus und lass die Lkw nie allein.\n\nVerlierst du drei Lkw, ist der Auftrag gescheitert.",
-		"map": {"name": "Eisenkamm-Pass", "size": 320, "water": 0.35, "islands": 0.0, "resources": 0.5, "hills": 0.85, "forest": 0.3, "layout": 1, "seed": 5303, "dry_core": 34.0, "biome": "alpine", "sites": PASS_SITES},
+		"map": {"name": "Eisenkamm-Pass", "size": 400, "water": 0.35, "islands": 0.0, "resources": 0.5, "hills": 0.85, "forest": 0.3, "layout": 1, "seed": 5303, "dry_core": 34.0, "biome": "alpine", "sites": PASS_SITES},
 		"hour": 14.0, "difficulty": 1, "credits": 2000, "ai": "off",
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "harv", "n": 6, "at": ["me", 0, 20], "spread": 9.0, "tag": "convoy", "speed": 0.38, "hp": 1.6},
@@ -491,7 +491,7 @@ static func _c4() -> Dictionary:
 	return {
 		"id": "c4", "kind": "campaign", "title": "Kapitel 4: Die Brücke über Lysa", "faction": "west", "enemy_faction": "shadow", "next": "c5",
 		"brief": "Der Lysa ist ein breiter, träger Fluss, und die Südbrücke ist der einzige Weg hinüber. Der Rat hat entschieden: Die Rote Allianz und die Schattenfront haben den Konvoi am Pass beschossen, ORAKEL beziffert die Wahrscheinlichkeit auf sechsundneunzig Prozent. Elin Voss führt den Übergang, Falke deckt aus der Luft.\n\nErst die Verteidiger der Brücke, dann das andere Ufer, dann der Gegenangriff. Auf der Brücke wird dir jemand begegnen, den Elin nie wiedersehen wollte. Und in den Felsen über dem Nordufer wartet etwas auf Falke.\n\nAuftrag: Zerschlage die Verteidiger, überquere die Brücke und wehre den Gegenangriff ab. Optional: Lass Lena ziehen.",
-		"map": {"name": "Südbrücke", "size": 384, "water": 0.55, "islands": 0.1, "resources": 0.5, "hills": 0.45, "forest": 0.5, "layout": 0, "seed": 5404, "causeway": 5.0, "causeway_deg": 0.0, "biome": "marsh", "sites": BRIDGE_SITES}, "rain": 0.6,
+		"map": {"name": "Südbrücke", "size": 576, "water": 0.55, "islands": 0.1, "resources": 0.5, "hills": 0.45, "forest": 0.5, "layout": 0, "seed": 5404, "causeway": 5.0, "causeway_deg": 0.0, "biome": "marsh", "sites": BRIDGE_SITES}, "rain": 0.6,
 		"hour": 6.5, "difficulty": 1, "credits": 4000, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "tank", "n": 5, "at": ["me", 0, 26], "spread": 9.0},
@@ -573,7 +573,7 @@ static func _c5() -> Dictionary:
 	return {
 		"id": "c5", "kind": "campaign", "title": "Kapitel 5: Zeugen", "faction": "west", "enemy_faction": "west", "next": "c6",
 		"brief": "Falke ist abgestürzt, und fast hätte ihn das Gebirge behalten. Zwei Nächte lang hat Mutter Karga ihn gepflegt, ein Junge namens Pip hat ihm den Weg gezeigt. Jetzt humpelt er heimwärts, mit gebrochenem Bein und mit dem, was er gesehen hat: fliehende Dörfer und ein Leuchten über den Kavernen.\n\nMira Tanaka trägt den Datenspeicher der Drohne, die den Konvoi beschossen hat. Der Rat hat die Daten schon für gefälscht erklärt, und Präsident Aldane schickt seine Elitegarde, um die Zeugen zu holen.\n\nAuftrag: Hole Falke und Pip ab, bring sie ins Lazarett, halte es, bis Dr. Brandt die Spur gesichert hat, und schlage den Angriff der Garde zurück. Falke und Pip dürfen nicht fallen.",
-		"map": {"name": "Das Lazarett", "size": 320, "water": 0.4, "islands": 0.1, "resources": 0.5, "hills": 0.6, "forest": 0.5, "layout": 2, "seed": 5505, "biome": "boreal", "sites": LAZARETT_SITES},
+		"map": {"name": "Das Lazarett", "size": 400, "water": 0.4, "islands": 0.1, "resources": 0.5, "hills": 0.6, "forest": 0.5, "layout": 2, "seed": 5505, "biome": "boreal", "sites": LAZARETT_SITES},
 		"hour": 5.6, "difficulty": 1, "credits": 3500, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "inf", "n": 5, "at": ["me", 0, 26], "spread": 8.0, "tag": "escort"},
@@ -675,7 +675,7 @@ static func _c6() -> Dictionary:
 	return {
 		"id": "c6", "kind": "campaign", "title": "Kapitel 6: Die Nacht von Aurelia", "faction": "west", "enemy_faction": "red", "next": "c7",
 		"brief": "Der Westbund erreicht die Glasstadt Aurelia als Erster, aber nicht allein: Die Rote Allianz marschiert über die Brücken, aus den Tunneln steigt die Schattenfront. Es wird die größte Schlacht seit dem Blackout, und in ihrer Mitte liegt die Kuppel mit dem Prisma.\n\nFalke hält mit der Luftstaffel den Himmel gegen rote Bomber. Mira Tanaka führt Dr. Brandt über die Dächer zur Kuppel: Er muss den Schlüsselraum öffnen, bevor ORAKEL den Kern übernimmt. Und in der Kuppel wartet Präsident Aldane, die Waffe in der Hand.\n\nAuftrag: Rücke auf Aurelia vor, schalte die Bomber aus, bring Mira und Brandt zur Kuppel, halte sie, bis der Schlüsselraum offen ist, entwaffne Aldane, ohne ihn zu töten, und sichere das Prisma.",
-		"map": {"name": "Aurelia", "size": 384, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606, "sites": AURELIA_SITES, "biome": "coast"},
+		"map": {"name": "Aurelia", "size": 576, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606, "sites": AURELIA_SITES, "biome": "coast"},
 		"hour": 22.5, "difficulty": 1, "credits": 3000, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "tank", "n": 6, "at": ["me", 0, 28], "spread": 9.0, "tag": "army"},
@@ -785,7 +785,7 @@ static func _c7() -> Dictionary:
 	return {
 		"id": "c7", "kind": "campaign", "title": "Kapitel 7: Das Licht", "faction": "west", "enemy_faction": "red", "next": "",
 		"brief": "Aldane ist entwaffnet und die Kuppel steht, aber ORAKEL hat sich tief in die Netze des Westbunds geschrieben und greift nach dem Kern. Elin Voss bleibt eine Minute. Es gibt nur einen Weg: ORAKELs Verbindung kappen und dafür das ganze Netz opfern. Schilde, Drohnen und Sensoren fallen aus, die Armee kämpft mit halben Mitteln, während Rote und Stimmlose auf die Kuppel zumarschieren.\n\nDanach spricht Elin zum Prisma, und das Prisma hört zu. Aber bis es antwortet, muss die Kuppel stehen.\n\nAuftrag: Bring Elin zur Kuppel und kappe ORAKELs Verbindung, halte die Kuppel gegen drei Angriffswellen, bis Elin das Prisma erreicht hat, und überstehe den Augenblick, in dem der Lichtschild entsteht. Elin darf nicht fallen.",
-		"map": {"name": "Aurelia", "size": 384, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606, "sites": AURELIA_SITES, "biome": "coast"},
+		"map": {"name": "Aurelia", "size": 576, "water": 0.3, "islands": 0.0, "resources": 0.5, "hills": 0.35, "forest": 0.4, "layout": 0, "seed": 5606, "sites": AURELIA_SITES, "biome": "coast"},
 		"hour": 3.5, "difficulty": 1, "credits": 3000, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "tank", "n": 4, "at": ["mid", -6, 52], "spread": 8.0, "tag": "army"},
@@ -871,7 +871,7 @@ static func _r1() -> Dictionary:
 	return {
 		"id": "r1", "kind": "campaign", "title": "Kapitel 1: Die Halle in Kessel-Ost", "faction": "red", "enemy_faction": "shadow", "next": "r2",
 		"brief": "Jahr fünfzehn nach dem Blackout. Marschall Ilja Wolkow, den alle den Bären nennen, steht in der Halle, in der alles anfing. Damals war er Vorarbeiter, und keine der zweihundert Maschinen lief mehr. Heute ist sie das Herz von Kessel-Ost, und der Rat der Genossen verlangt den Marsch zum Prisma.\n\nVorher muss Kessel-Ost aus eigener Kraft stehen: Nachschub, Strom, Kaserne, Fabrik. Wo der Westbund rechnet, packt die Allianz an, und je enger die Genossen beieinanderstehen, desto härter kämpft jeder Einzelne (Hordenbonus). Aus den Bergen kommen Raubzüge der Schattenfront. Sie nehmen, was nicht bewacht wird.\n\nAuftrag: Baue Nachschub, Kraftwerk, Kaserne und Fabrik, stelle zehn Kampfeinheiten auf und halte Kessel-Ost, bis die Uhr 8:00 zeigt.",
-		"map": {"name": "Kessel-Ost", "size": 320, "water": 0.2, "islands": 0.0, "resources": 0.7, "hills": 0.3, "forest": 0.3, "layout": 1, "seed": 5201, "biome": "steppe", "sites": KESSEL_SITES},
+		"map": {"name": "Kessel-Ost", "size": 480, "water": 0.2, "islands": 0.0, "resources": 0.7, "hills": 0.3, "forest": 0.3, "layout": 1, "seed": 5201, "biome": "steppe", "sites": KESSEL_SITES},
 		"hour": 6.0, "difficulty": 1, "credits": 4500, "ai": "off",
 		"intro": [
 			at(0.2, {"do": "still", "id": "s_r1_intro", "secs": 11.0}),
@@ -966,7 +966,7 @@ static func _r2() -> Dictionary:
 	return {
 		"id": "r2", "kind": "campaign", "title": "Kapitel 2: Das Signal", "faction": "red", "enemy_faction": "west", "next": "r3",
 		"brief": "Nachts, wenn niemand sonst zuhört, fängt Oberstleutnant Nastja Petrowa auf den alten Schienen ein Signal auf: einen Puls, gleichmäßig wie ein Herzschlag. Der Rat behauptet, der Westbund habe das Prisma geweckt. Nastja behauptet nichts und hört weiter. Denn unter dem Puls liegt ein zweites, leiseres Signal, verschlüsselt und kalt, und es tanzt im Takt mit dem ersten.\n\nFür ihre Aufzeichnungen braucht sie drei Messungen an den alten Schienenmasten. Westbund-Patrouillen sichern die Gegend, und der Rat darf von dieser Reise nichts erfahren.\n\nAuftrag: Führe Nastja nacheinander zu den drei Messpunkten (gelbe Markierung) und halte jeweils die Stellung, bis die Messung steht. Danach zurück nach Kessel-Ost. Nastja darf nicht fallen.",
-		"map": {"name": "Die alten Schienen", "size": 320, "water": 0.2, "islands": 0.0, "resources": 0.4, "hills": 0.3, "forest": 0.35, "layout": 1, "seed": 5202, "biome": "boreal", "sites": SCHIENEN_SITES},
+		"map": {"name": "Die alten Schienen", "size": 400, "water": 0.2, "islands": 0.0, "resources": 0.4, "hills": 0.3, "forest": 0.35, "layout": 1, "seed": 5202, "biome": "boreal", "sites": SCHIENEN_SITES},
 		"hour": 23.0, "difficulty": 1, "credits": 1500, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "inf", "n": 1, "at": ["me", 0, 18], "spread": 1.0, "tag": "nastja", "hp": 5.0, "speed": 0.95},
@@ -1043,7 +1043,7 @@ static func _r3() -> Dictionary:
 	return {
 		"id": "r3", "kind": "campaign", "title": "Kapitel 3: Der Pass", "faction": "red", "enemy_faction": "west", "next": "",
 		"brief": "Der Siedlertreck der Allianz ist kein Militärtransport: Vierhundert Arbeiterfamilien ziehen ins Hochland, mit Vorräten, Werkzeug und ihren Kindern. Weiter vorn rollt der Forschertransport des Westbunds, so verlangt es der Vertrag von Lysa. Hauptmann Dmitri „Funke“ Karpow sichert den Treck, weil er Brücken bauen kann und weil sein Bruder unter den Siedlern ist.\n\nAm Pass schlagen Raketen aus dem Westen ein. Danach bleiben ein eingestürzter Tunnel, unter dem noch Menschen leben, und ein Junge, der nicht mehr spricht.\n\nAuftrag: Führe den Konvoi bis zur Passhöhe, räume mit Funke den eingestürzten Tunnel (er muss dafür die Stellung halten), rette die Verschütteten und bring sie mit dem Jungen Mischa zum Pass. Funke und Mischa dürfen nicht fallen.",
-		"map": {"name": "Eisenkamm-Pass", "size": 320, "water": 0.35, "islands": 0.0, "resources": 0.5, "hills": 0.85, "forest": 0.3, "layout": 1, "seed": 5303, "dry_core": 34.0, "biome": "alpine", "sites": PASS_R_SITES},
+		"map": {"name": "Eisenkamm-Pass", "size": 400, "water": 0.35, "islands": 0.0, "resources": 0.5, "hills": 0.85, "forest": 0.3, "layout": 1, "seed": 5303, "dry_core": 34.0, "biome": "alpine", "sites": PASS_R_SITES},
 		"hour": 14.0, "difficulty": 1, "credits": 2000, "ai": "off", "sequential": true,
 		"setup": [
 			{"do": "spawn", "side": "me", "def": "harv", "n": 6, "at": ["me", 0, 20], "spread": 9.0, "tag": "convoy", "speed": 0.38},
