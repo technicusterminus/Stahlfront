@@ -570,10 +570,21 @@ static func _hall(parent: Node3D, t, p: Vector2, w: float, d: float, h: float, r
 	var conc := _mat("concrete", Color(0.8, 0.8, 0.78), 0.9, 0.3)
 	_box(parent, Vector3(w, h, d), local + Vector3(0, h * 0.5, 0), wallm)
 	_box(parent, Vector3(w + 0.3, 0.5, d + 0.3), local + Vector3(0, 0.25, 0), conc)
-	var n := int(max(2.0, round(w / 7.0)))
-	for k in n:
-		var x := -w * 0.5 + (float(k) + 0.5) * (w / float(n))
-		_roof(parent, w / float(n), d, h * 0.28, local + Vector3(x, h + h * 0.14, 0), metal, 0.0)
+	var style := _rng.randi() % 3
+	if style == 0:
+		var n := int(max(2.0, round(w / 7.0)))
+		for k in n:
+			var x := -w * 0.5 + (float(k) + 0.5) * (w / float(n))
+			_roof(parent, w / float(n), d, h * 0.28, local + Vector3(x, h + h * 0.14, 0), metal, 0.0)
+	elif style == 1:
+		_roof(parent, w + 0.4, d + 0.4, h * 0.4, local + Vector3(0, h + h * 0.2, 0), metal, 0.0)
+	else:
+		_box(parent, Vector3(w + 0.3, 0.4, d + 0.3), local + Vector3(0, h + 0.2, 0), conc)
+		_box(parent, Vector3(w * 0.5, h * 0.25, d * 0.35), local + Vector3(0, h + h * 0.125 + 0.4, 0), wallm)
+		for k in 3:
+			_box(parent, Vector3(1.2, 1.4, 1.2), local + Vector3(-w * 0.35 + float(k) * w * 0.35, h + 1.1, d * 0.3), _flat(Color(0.4, 0.4, 0.42), 0.6))
+	_box(parent, Vector3(w * 0.26, h * 0.65, 0.3), local + Vector3(0, h * 0.325, d * 0.5 + 0.1), _flat(Color(0.12, 0.12, 0.13), 0.9))
+	_box(parent, Vector3(w + 0.35, 0.7, d + 0.35), local + Vector3(0, h * 0.8, 0), _flat(Color(0.55, 0.3, 0.2) if _rng.randf() < 0.5 else Color(0.25, 0.38, 0.5), 0.8))
 	if _rng.randf() < 0.7:
 		_cyl(parent, 0.8, 1.1, h * 2.4, local + Vector3(w * 0.35, h * 1.2, d * 0.55 + 1.2), _mat("brick", Color(0.85, 0.7, 0.62), 0.9, 0.3), 12)
 	_cyl(parent, 0.25, 0.25, d * 0.9, local + Vector3(-w * 0.5 - 0.5, h * 0.7, 0), _mat("corrugated", Color(0.75, 0.55, 0.4), 0.6, 0.4, 0.5), 8).rotation.x = PI * 0.5
@@ -868,6 +879,40 @@ static func _industry(node: Node3D, t, c: Vector2, r: float, s: Dictionary) -> v
 			_furnace(node, t, p)
 		else:
 			_hall(node, t, p, _rng.randf_range(12.0, 20.0), _rng.randf_range(8.0, 12.0), _rng.randf_range(5.0, 7.5), ruin)
+	# Rohrbrücken zwischen den Hallen
+	var pm := _mat("corrugated", Color(0.75, 0.55, 0.4), 0.6, 0.4, 0.5)
+	for i in range(1, n - 1):
+		var a1 := TAU * float(i) / float(n) + 0.4
+		var a2 := TAU * float(i + 1) / float(n) + 0.4
+		var p1 := c + Vector2(cos(a1), sin(a1)) * r * 0.7
+		var p2 := c + Vector2(cos(a2), sin(a2)) * r * 0.7
+		var y0: float = _base_y(t, c, 2.0, 2.0) - node.position.y + 6.5
+		var va := Vector3(p1.x - node.position.x, y0, p1.y - node.position.z)
+		var vb := Vector3(p2.x - node.position.x, y0, p2.y - node.position.z)
+		var len := va.distance_to(vb)
+		var pipe := _cyl(node, 0.35, 0.35, len, (va + vb) * 0.5, pm, 8)
+		var dir := (vb - va).normalized()
+		var axis := Vector3.UP.cross(dir)
+		if axis.length() > 0.001:
+			pipe.basis = Basis(axis.normalized(), Vector3.UP.angle_to(dir))
+	# Containerstapel in Rost, Blau und Grün
+	var cols := [Color(0.55, 0.28, 0.2), Color(0.2, 0.34, 0.5), Color(0.25, 0.42, 0.3)]
+	for k in 3:
+		var a := _rng.randf() * TAU
+		var pc := c + Vector2(cos(a), sin(a)) * r * _rng.randf_range(0.5, 0.95)
+		var cy: float = _base_y(t, pc, 3.0, 2.0)
+		for lv in _rng.randi_range(1, 3):
+			_box(node, Vector3(6.0, 2.4, 2.4), Vector3(pc.x - node.position.x, cy - node.position.y + 1.2 + float(lv) * 2.4, pc.y - node.position.z), _flat(cols[(k + lv) % 3], 0.75), a)
+		_block(t, pc, 3.2, 3.2)
+	# Portalkran
+	var kp := c + Vector2(r * 0.15, r * 0.5)
+	var ky: float = _base_y(t, kp, 6.0, 2.0) - node.position.y
+	var steel := _flat(Color(0.8, 0.62, 0.15), 0.6)
+	var kl := Vector3(kp.x - node.position.x, ky, kp.y - node.position.z)
+	_box(node, Vector3(0.7, 10.0, 0.7), kl + Vector3(-6.0, 5.0, 0), steel)
+	_box(node, Vector3(0.7, 10.0, 0.7), kl + Vector3(6.0, 5.0, 0), steel)
+	_box(node, Vector3(14.0, 0.9, 1.2), kl + Vector3(0, 10.2, 0), steel)
+	_box(node, Vector3(0.15, 4.0, 0.15), kl + Vector3(2.0, 8.0, 0), _flat(Color(0.1, 0.1, 0.1), 0.8))
 	# Tanks und Containerstapel
 	var tank := _mat("corrugated", Color(0.9, 0.95, 1.0), 0.55, 0.3, 0.5)
 	for i in 3:
@@ -989,21 +1034,49 @@ static func _lazarett(node: Node3D, t, c: Vector2, r: float, s: Dictionary) -> v
 	var white := _mat("concrete", Color(1.0, 1.0, 0.98), 0.7, 0.3)
 	var canvas := _mat("plaster", Color(0.88, 0.9, 0.82), 0.95, 0.3)
 	var red := _flat(Color(0.9, 0.12, 0.1), 0.6, 1.0)
-	var n := int(s.get("n", 4))
+	var glass := _flat(Color(0.12, 0.2, 0.26), 0.3)
+	# Hauptgebäude mit Dachkreuz und Fensterband
+	_box(node, Vector3(14.0, 5.0, 6.5), Vector3(0, 2.5, 0), white)
+	_box(node, Vector3(14.4, 0.4, 6.9), Vector3(0, 5.2, 0), canvas)
+	_box(node, Vector3(14.2, 1.1, 0.1), Vector3(0, 3.2, 3.3), glass)
+	_box(node, Vector3(14.2, 1.1, 0.1), Vector3(0, 3.2, -3.3), glass)
+	_box(node, Vector3(3.6, 0.3, 1.0), Vector3(0, 5.55, 0), red)
+	_box(node, Vector3(1.0, 0.3, 3.6), Vector3(0, 5.55, 0), red)
+	_box(node, Vector3(2.0, 0.08, 0.6), Vector3(0, 3.8, 3.4), red)
+	_box(node, Vector3(0.6, 0.08, 2.0), Vector3(0, 3.8, 3.4), red)
+	_box(node, Vector3(2.4, 2.6, 0.3), Vector3(0, 1.3, 3.4), _flat(Color(0.25, 0.3, 0.35), 0.7))
+	_block(t, c, 7.4, 4.0)
+	var n := int(s.get("n", 5))
 	for i in n:
 		var a := TAU * float(i) / float(n) + 0.5
-		var p := c + Vector2(cos(a), sin(a)) * r * 0.6
+		var p := c + Vector2(cos(a), sin(a)) * r * 0.85
 		var by: float = _base_y(t, p, 3.0, 2.0)
 		var l := Vector3(p.x - node.position.x, by - node.position.y, p.y - node.position.z)
 		if i % 2 == 0:
 			_box(node, Vector3(7.0, 3.0, 4.0), l + Vector3(0, 1.5, 0), white, a)
 			_box(node, Vector3(7.2, 0.3, 4.2), l + Vector3(0, 3.1, 0), canvas, a)
-			var q := _box(node, Vector3(1.4, 1.4, 0.06), l + Vector3(0, 2.0, 0) + Vector3(sin(a), 0, cos(a)) * 2.05, red, a)
+			_box(node, Vector3(1.4, 1.4, 0.06), l + Vector3(0, 2.0, 0) + Vector3(sin(a), 0, cos(a)) * 2.05, red, a)
 		else:
 			_roof(node, 6.0, 5.0, 3.0, l + Vector3(0, 1.5, 0), canvas, a)
+			_box(node, Vector3(1.0, 0.06, 0.3), l + Vector3(0, 3.1, 0), red, a)
 		_block(t, p, 3.6, 3.0)
-	_box(node, Vector3(1.6, 1.6, 0.08), Vector3(0, 6.0, 0), red)
-	_cyl(node, 0.08, 0.08, 6.0, Vector3(0, 3.0, 0), _flat(Color(0.8, 0.8, 0.8), 0.6), 6)
+	# zwei Krankenwagen
+	for k in 2:
+		var ap := c + Vector2(-5.0 + float(k) * 10.0, r * 0.55)
+		var ay: float = _base_y(t, ap, 2.5, 1.2) - node.position.y
+		var al := Vector3(ap.x - node.position.x, ay, ap.y - node.position.z)
+		_box(node, Vector3(4.6, 2.0, 2.2), al + Vector3(0, 1.4, 0), white)
+		_box(node, Vector3(1.6, 1.5, 2.1), al + Vector3(3.0, 1.1, 0), white)
+		_box(node, Vector3(1.0, 0.7, 2.15), al + Vector3(3.3, 1.5, 0), glass)
+		_box(node, Vector3(1.3, 0.4, 0.06), al + Vector3(-0.2, 1.5, 1.12), red)
+		_box(node, Vector3(0.4, 1.3, 0.06), al + Vector3(-0.2, 1.5, 1.12), red)
+		_block(t, ap, 3.4, 1.6)
+	# Fahne und Laternen
+	_box(node, Vector3(1.6, 1.0, 0.08), Vector3(0.8, 10.0, 0), red)
+	_cyl(node, 0.08, 0.08, 10.0, Vector3(0, 5.5, 0), _flat(Color(0.8, 0.8, 0.8), 0.6), 6)
+	for k in 6:
+		var la := TAU * float(k) / 6.0
+		_light_dot(node, Vector3(cos(la), 0, sin(la)) * r * 0.5 + Vector3(0, 2.2, 0), Color(1.0, 0.85, 0.55))
 
 ## Brücke: Fahrbahn, Brüstungen, Pfeiler, Laternen entlang des Damms.
 static func _bridge(node: Node3D, t, c: Vector2, s: Dictionary) -> void:
