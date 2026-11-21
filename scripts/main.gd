@@ -147,12 +147,26 @@ func _build_world(sp: Dictionary) -> void:
 var _bc_t = 0.0
 
 func _process(delta: float) -> void:
+	if args.has("autosell") and Game.running and not _sold:
+		_sell_t += delta
+		if _sell_t > float(args["autosell"]):
+			for o in Game.buildings:
+				if o.owner_id == Game.human and o.alive:
+					_sold = true
+					print("AUTOSELL ", o.def["name"], " ", o.position, " n=", Game.buildings.size())
+					Game.cam.look_at_pos(o.position)
+					Game.cam.dist_target = 30.0
+					o.sell()
+					break
 	if args.has("battlecam") and Game.running:
 		_bc_t -= delta
 		if _bc_t <= 0.0 and Game.last_combat_pos != Vector3.ZERO:
 			_bc_t = 3.0
 			Game.cam.look_at_pos(Game.last_combat_pos)
 			Game.cam.dist_target = 48.0
+
+var _sold := false
+var _sell_t := 0.0
 
 func _parse_args() -> void:
 	for a in OS.get_cmdline_user_args():

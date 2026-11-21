@@ -165,8 +165,42 @@ func sell() -> void:
 		Game.refund(owner_id, Defs.units[qid])
 	queue.clear()
 	Game.notify_player(owner_id, "%s %s: +%d Credits" % [def["name"], "abgebrochen" if not complete else "verkauft", int(refund)], Color(0.9, 0.9, 0.6))
-	FX.dust(position + Vector3(0, 1, 0), float(def["size"]) * 0.8)
-	_remove(false)
+	_deconstruct()
+
+## Rückbau: das Gerüst wächst wieder hoch, der Bau sinkt Stück für Stück ein, Funken und Staub – dann ist das Feld frei.
+func _deconstruct() -> void:
+	alive = false
+	set_selected(false)
+	Game.set_cells(cells, false)
+	Game.set_occ(cells, false)
+	Game.remove_object(self)
+	Game.recalc_power(owner_id)
+	if scaffold == null:
+		scaffold = Models.build_construction(def, Game.players[owner_id]["color"], float(def["size"]) * 2.0 - 0.4, max(height, 3.0))
+		add_child(scaffold)
+	var dur: float = 2.6 + float(def["size"]) * 0.8
+	var y0: float = body.scale.y
+	var tw := create_tween()
+	tw.tween_method(_decon_step.bind(y0), 0.0, 1.0, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_callback(_decon_done)
+
+func _decon_step(t: float, y0: float) -> void:
+	body.scale = Vector3(1, max(0.03, lerp(y0, 0.05, t)), 1)
+	body.position.y = -0.15 * t
+	body.rotation.y = sin(t * PI) * 0.06
+	if scaffold != null and scaffold.has_node("Orbit"):
+		var orb: Node3D = scaffold.get_node("Orbit")
+		orb.rotation.y -= 0.05 + 0.1 * t
+		_dust_t -= 0.016
+		if _dust_t <= 0.0:
+			_dust_t = 0.35
+			for dr in orb.get_children():
+				FX.weld((dr as Node3D).global_position - Vector3(0, 0.6, 0))
+			FX.dust(position + Vector3(randf_range(-half, half), 0.4, randf_range(-half, half)), 1.0 + 0.8 * t)
+
+func _decon_done() -> void:
+	FX.dust(position + Vector3(0, 0.6, 0), float(def["size"]) * 1.1)
+	queue_free()
 
 func _remove(explode: bool) -> void:
 	alive = false
