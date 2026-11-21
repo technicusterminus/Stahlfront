@@ -124,6 +124,16 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	var lake = FastNoiseLite.new()
 	lake.seed = seed_val + 13
 	lake.frequency = 0.011
+	lake.fractal_octaves = 5
+	lake.fractal_gain = 0.55
+	# Verzerrung und Streckung: Seen werden länglich, gebuchtet und unregelmäßig statt kreisrund
+	var warp = FastNoiseLite.new()
+	warp.seed = seed_val + 31
+	warp.frequency = 0.016
+	warp.fractal_octaves = 3
+	var wang: float = float(seed_val % 628) / 100.0
+	var wca: float = cos(wang)
+	var wsa: float = sin(wang)
 	var ridge = FastNoiseLite.new()
 	ridge.seed = seed_val + 21
 	ridge.frequency = 0.013
@@ -167,7 +177,9 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 			var r = ridge.get_noise_2d(x, z)
 			if r > ridge_thr:
 				h += (r - ridge_thr) * 26.0 * lerp(0.7, 1.3, hills)
-			var l = lake.get_noise_2d(x, z)
+			var lx = x + warp.get_noise_2d(x, z) * 30.0
+			var lz = z + warp.get_noise_2d(x + 517.0, z - 311.0) * 30.0
+			var l = lake.get_noise_2d((lx * wca + lz * wsa) * 0.72, (-lx * wsa + lz * wca) * 1.3)
 			if l > lake_thr:
 				h -= (l - lake_thr) * 32.0
 			var e: float = min(half - abs(x), half - abs(z))
@@ -194,7 +206,7 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	for iz in N:
 		for ix in N:
 			var p = Vector2(float(ix) - half, float(iz) - half)
-			var wd = _wdist(p)
+			var wd = _wdist(p) + warp.get_noise_2d(p.x * 1.4 + 90.0, p.y * 1.4) * 9.0 + n2.get_noise_2d(p.x, p.y) * 3.0
 			if wd < 18.0:
 				var h = heights[iz * N + ix]
 				h = lerp(h, 1.4, smoothstep(18.0, 9.0, wd))
@@ -356,6 +368,15 @@ func preview_image(sp: Dictionary, res: int) -> Image:
 	var lake = FastNoiseLite.new()
 	lake.seed = seed_val + 13
 	lake.frequency = 0.011
+	lake.fractal_octaves = 5
+	lake.fractal_gain = 0.55
+	var warp = FastNoiseLite.new()
+	warp.seed = seed_val + 31
+	warp.frequency = 0.016
+	warp.fractal_octaves = 3
+	var wang: float = float(seed_val % 628) / 100.0
+	var wca: float = cos(wang)
+	var wsa: float = sin(wang)
 	var ridge = FastNoiseLite.new()
 	ridge.seed = seed_val + 21
 	ridge.frequency = 0.013
@@ -392,7 +413,9 @@ func preview_image(sp: Dictionary, res: int) -> Image:
 			var r = ridge.get_noise_2d(wx, wz)
 			if r > ridge_thr:
 				h += (r - ridge_thr) * 26.0 * lerp(0.7, 1.3, hills)
-			var l = lake.get_noise_2d(wx, wz)
+			var lx = wx + warp.get_noise_2d(wx, wz) * 30.0
+			var lz = wz + warp.get_noise_2d(wx + 517.0, wz - 311.0) * 30.0
+			var l = lake.get_noise_2d((lx * wca + lz * wsa) * 0.72, (-lx * wsa + lz * wca) * 1.3)
 			if l > lake_thr:
 				h -= (l - lake_thr) * 32.0
 			var e: float = min(half - abs(wx), half - abs(wz))
@@ -406,7 +429,7 @@ func preview_image(sp: Dictionary, res: int) -> Image:
 				var d = p.distance_to(Vector2(f.x, f.y))
 				if d < f.z:
 					h = lerp(h, 3.0, smoothstep(f.z, f.z * 0.6, d))
-			var wd = _wdist(p)
+			var wd = _wdist(p) + warp.get_noise_2d(p.x * 1.4 + 90.0, p.y * 1.4) * 9.0 + n2.get_noise_2d(p.x, p.y) * 3.0
 			if wd < 18.0:
 				h = lerp(h, 1.4, smoothstep(18.0, 9.0, wd))
 				if wd < 6.0:
@@ -569,8 +592,8 @@ func _build_mesh() -> void:
 func _build_water() -> void:
 	var pm = PlaneMesh.new()
 	pm.size = Vector2(SIZE + 180, SIZE + 180)
-	pm.subdivide_width = 120
-	pm.subdivide_depth = 120
+	pm.subdivide_width = 260
+	pm.subdivide_depth = 260
 	water_mat = ShaderMaterial.new()
 	water_mat.shader = load("res://shaders/water.gdshader")
 	water_mat.set_shader_parameter("n_ripple", load("res://models/water/water_ripple_normal.png"))
