@@ -156,6 +156,7 @@ func setup_world(size: int) -> void:
 	fog_exp = PackedByteArray()
 	fog_vis.resize(GRID * GRID)
 	fog_exp.resize(GRID * GRID)
+	_fog_sig = -1
 	fog_img = Image.create(GRID, GRID, false, Image.FORMAT_RG8)
 	fog_img.fill(Color(0, 0, 0))
 	fog_tex = ImageTexture.create_from_image(fog_img)
@@ -721,23 +722,52 @@ func notify_player(pid: int, text: String, col := Color(0.85, 0.92, 1.0)) -> voi
 
 # ---------------------------------------------------------------- Nebel des Krieges
 
+var fog_version := 0
+var _fog_sig := -1
+
+func _fog_signature() -> int:
+	var h := 17
+	for u in units:
+		if u.owner_id == human and u.alive:
+			var c = world_to_cell(u.position)
+			h = (h * 31 + c.y * GRID + c.x) & 0x7fffffff
+			h = (h * 31 + int(u.def["sight"])) & 0x7fffffff
+	for b in buildings:
+		if b.owner_id == human and b.alive:
+			var c2 = world_to_cell(b.position)
+			h = (h * 31 + c2.y * GRID + c2.x + 7) & 0x7fffffff
+	for r in reveals:
+		h = (h * 31 + int(r["until"] * 10.0) + int(r["radius"])) & 0x7fffffff
+	return h ^ int(sight_mult * 100.0)
+
 func update_fog() -> void:
 	if spectator:
-		fog_vis.fill(1)
-		fog_exp.fill(1)
+		if _fog_sig != -2:
+			_fog_sig = -2
+			fog_vis.fill(1)
+			fog_exp.fill(1)
+			_upload_fog()
 	else:
-		fog_vis.fill(0)
-		for u in units:
-			if u.owner_id == human and u.alive:
-				_mark(u.position, u.def["sight"] * sight_mult)
-		for b in buildings:
-			if b.owner_id == human and b.alive:
-				_mark(b.position, b.def["sight"] * sight_mult)
 		for r in reveals.duplicate():
 			if time > r["until"]:
 				reveals.erase(r)
-			else:
+		var sig := _fog_signature()
+		if sig != _fog_sig:
+			_fog_sig = sig
+			fog_vis.fill(0)
+			for u in units:
+				if u.owner_id == human and u.alive:
+					_mark(u.position, u.def["sight"] * sight_mult)
+			for b in buildings:
+				if b.owner_id == human and b.alive:
+					_mark(b.position, b.def["sight"] * sight_mult)
+			for r in reveals:
 				_mark(r["pos"], r["radius"])
+			_upload_fog()
+	update_fog_objects()
+
+
+func _upload_fog() -> void:
 	var data = PackedByteArray()
 	data.resize(GRID * GRID * 2)
 	for i in GRID * GRID:
@@ -745,6 +775,9 @@ func update_fog() -> void:
 		data[i * 2 + 1] = 255 if fog_exp[i] == 1 else 0
 	fog_img.set_data(GRID, GRID, false, Image.FORMAT_RG8, data)
 	fog_tex.update(fog_img)
+	fog_version += 1
+
+func update_fog_objects() -> void:
 	# Sichtbarkeit fremder Objekte
 	for u in units:
 		if u.owner_id != human:
@@ -780,6 +813,7 @@ func _mark(pos: Vector3, sight: float) -> void:
 
 ## Gebiet als erkundet markieren (z. B. Umgebung der Startbasis).
 func explore(pos: Vector3, r: float) -> void:
+	_fog_sig = -1
 	var c = world_to_cell(pos)
 	var rc = int(ceil(r / CELL))
 	for dz in range(-rc, rc + 1):

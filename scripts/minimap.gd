@@ -24,7 +24,12 @@ func _process(delta: float) -> void:
 		_update_fog()
 	queue_redraw()
 
+var _seen_ver := -1
+
 func _update_fog() -> void:
+	if _seen_ver == Game.fog_version and fog_tex.get_width() == Game.GRID:
+		return
+	_seen_ver = Game.fog_version
 	var data = PackedByteArray()
 	data.resize(Game.GRID * Game.GRID * 4)
 	for i in Game.GRID * Game.GRID:
