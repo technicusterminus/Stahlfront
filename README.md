@@ -2,7 +2,7 @@
 
 **Echtzeitstrategie in Godot 4.7** – drei grundverschiedene Fraktionen, Basisbau mit Nachschub-Wirtschaft, Generalsfähigkeiten, Superwaffen, Nebel des Krieges, Luftwaffe und ein Computergegner. Alle Grafik, Effekte und der Großteil der Modelle entstehen im Code oder in Blender-Skripten; es werden keine fremden Assets verwendet.
 
-> Stand: spielbarer Prototyp (Skirmish gegen KI oder Zuschauermodus). Vier Tutorials und der Beginn einer Kampagne, Ton (Stimmen und Geräusche), kein Mehrspieler. Siehe [Stand und bekannte Lücken](#stand-und-bekannte-lücken).
+> Stand: spielbarer Prototyp (Skirmish gegen KI oder Zuschauermodus). Vier Tutorials und drei Kampagnen (21 Kapitel), Ton (Stimmen und Geräusche), kein Mehrspieler. Siehe [Stand und bekannte Lücken](#stand-und-bekannte-lücken).
 
 ## Visuelle Testfassung
 
@@ -225,11 +225,14 @@ Beim Platzieren eines Gebäudes zeigt ein Phantom, ob der Platz gültig ist; Shi
 
 ## Kampagne und Tutorial
 
+**Landschaft und Leben:** Die Kampagnenkarten sind 400 bis 576 m groß und haben benannte Orte (Dörfer, Lazarett, Kesselwerk, Ruinenstädte). In den Dörfern leben neutrale Völker (Talvolk, Bergvolk, Uferleute) mit Milizen, die vor Bewaffneten ins Haus fliehen (`scripts/villagers.gd`). Wasser hat Wellen, Brandung und Schaum; verkaufte Gebäude werden mit Gerüst und Funken zurückgebaut.
+
 Im Hauptmenü öffnet **Kampagne und Tutorial …** die Missionsliste. Jede Mission beginnt mit einer Einsatzbesprechung, zeigt links oben die Ziele (abgehakt, sobald erfüllt) und meldet sich per Funk mit Sprechern. Fortschritt wird unter `user://campaign.json` gespeichert; Kampagnenkapitel schalten nacheinander frei, Tutorials sind immer offen.
 
 - **Tutorials** (mit der im Hauptmenü gewählten Fraktion, ohne Gegner-KI): 1 Erste Schritte (Auswählen, Bewegen, Nachschub, Strom, Kaserne, Truppe), 2 Wirtschaft und Fabrik, 3 Gefechtsbefehle (Rahmen, Gruppen, Angriffsmarsch), 4 Luft, See und Fähigkeiten.
 - **Kampagne „Das Licht über Lysa“ (Westbund)**, sieben Kapitel nach der Erzählung: 1 Port Meridian (Basis aufbauen, Raubzüge der Schattenfront abwehren, zehn Minuten halten), 2 Der Falke fliegt (Messpunkte mit Jägern und Drohne überfliegen, Flugabwehr umgehen), 3 Der Pass (Konvoi mit sechs Lkw eskortieren, zwei Hinterhalte überstehen, eine Drohne ohne Kennsignal abschießen), 4 Die Brücke über Lysa (Brücke erobern, Elins Begegnung mit Lena, Falke wird abgeschossen, Gegenangriff abwehren), 5 Zeugen (Falke und das Kind Pip heimgeleiten, das Lazarett gegen die Elitegarde des Rates halten, bis Dr. Brandt die Datenspur gesichert hat), 6 Die Nacht von Aurelia (Falke hält den Himmel, Mira und Brandt gehen zur Kuppel am Lysa-Ufer, Aldane wird entwaffnet, die letzte Welle abgewehrt), 7 Das Licht (Elin kappt ORAKEL, die Kuppel gegen drei Wellen halten, bis das Prisma den Lichtschild legt; Ende des Westbund-Feldzugs).
-- **Kampagne „Der lange Marsch nach Aurelia“ (Rote Allianz)**, im Aufbau: alle drei Kampagnen erzählen dieselbe Geschichte aus ihrer Sicht (`docs/story/`). Bisher spielbar: 2 Kapitel: 1 Die Halle in Kessel-Ost (Basis aus eigener Kraft aufbauen, Hordenbonus nutzen, Raubzüge der Schattenfront und einen Stromausfall überstehen), 2 Das Signal (Nastja belauscht an drei Schienenmasten den Puls und die zweite Frequenz aus dem Westen, Patrouillen abwehren). Das Kampagnenmenü zeigt je Fraktion eine eigene Kapitelreihe mit eigener Freischaltung.
+- **Kampagne „Der lange Marsch nach Aurelia“ (Rote Allianz)**, sieben Kapitel aus der Sicht von Wolkow, Nastja und Funke (`docs/story/02_rote_allianz.md`): 1 Die Halle in Kessel-Ost, 2 Das Signal, 3 Der Pass (Konvoi, Tunnel, Mischa), 4 Der lange Marsch (Funke baut unter Beschuss die Behelfsbrücke am gesprengten Viadukt), 5 Die Frequenz (Nastja sichert den Beweis gegen Lasarew an drei Masten), 6 Die Nacht von Aurelia (Wolkow rückt zur Kuppel vor, Lasarew), 7 Der Schlaf (Funke kriecht durch den Bunkerschacht und schaltet das Silo ab). Alle Kapitel haben Intro, Outro, Standbilder und Funkgespräche.
+- **Kampagne „Wer am Feuer sitzt“ (Schattenfront)**, sieben Kapitel aus der Sicht von Asha, Jago und Karga (`docs/story/03_schattenfront.md`): 1 Was übrig blieb (drei Feuer der Runde, Spähtrupp abwehren), 2 Das Pochen (Karga an den Horchstellen), 3 Der Pass (Spuren lesen, der Kartograf), 4 Die Werkstatt (Dorns Generator reparieren, die Mütter), 5 Die Wahrheit unter den Füßen (drei Beweiskästen), 6 Die Nacht von Aurelia (durch die Tunnel zur Kuppel), 7 Das Feuer (ohne Waffen: Feuer bauen, Runde einberufen, das Prisma spricht). Alle neuen Kapitel (r4–r7, s1–s7) werden von einem gemeinsamen Testspieler mit der Angabe `auto` in `scripts/missions_ext.gd` durchgespielt (`--missionplay`).
 - **Missionen schreiben:** `scripts/missions.gd` beschreibt jede Mission als Daten (Karte, Start, Ziele, Ereignisse, Funksprüche, Niederlage); `scripts/mission_runner.gd` führt sie aus. Neue Bedingungen und Aktionen stehen in `_cond` und `_do`.
 - **Spannungsbogen und Inszenierung:** Die Kampagnenkapitel haben ein filmisches Intro und Outro (Letterbox, Kamerafahrt, Titelkarte, Funksprüche; mit Leertaste überspringbar) und gliedern sich in Akte mit Bannern: Aufbau, Wendepunkt, Höhepunkt, Auflösung. Skript-Ereignisse sind unter anderem Alarmsirenen, Kamerafahrten zum Geschehen, Blackout mit Tageszeitwechsel, Artillerieeinschläge, Verstärkung, Abschüsse und Fluchtbewegungen. Entscheidungen zählen: In Kapitel 4 bleibt Lena nur am Leben, wenn du sie nicht ausdrücklich angreifst.
 - **Gesprochene Funksprüche:** Jede Funkzeile der Missionen ist vertont, mit eigener Stimme und Gefühlslage je Sprecher. `tools/audio/make_lines.py` liest die Funksprüche aus `scripts/missions.gd`, erzeugt fehlende oder geänderte Zeilen und legt sie unter `audio/lines/` ab (Dateiname = Hash des Textes). Wer einen Text ändert, startet das Skript erneut.
@@ -379,7 +382,7 @@ powershell -File tools/balance_test.ps1 -Godot <pfad\zu\godot_console.exe> -Seed
 
 - **Balance:** In KI-Messungen war die Schattenfront auffällig oft früh unterlegen; wird untersucht.
 - **Helden:** Die Story-Helden sind noch keine spielbaren Einheiten.
-- **Kampagne:** alle sieben Kapitel des Westbunds und Kapitel 1–2 der Roten Allianz sind spielbar; die übrigen Kapitel der Roten Allianz und die Schattenfront fehlen noch.
+- **Kampagne:** alle 21 Kapitel (Westbund, Rote Allianz, Schattenfront) sind spielbar. Die Kapitel r4–r7 und s1–s7 sind im Autoplay mit unverwundbaren Helden getestet, aber noch nicht von Hand durchgespielt und im Schwierigkeitsgrad nicht abgestimmt.
 - **Musik:** nicht vorhanden. Stimmen und Geräusche gibt es (siehe Abschnitt Ton).
 - **Mehrspieler:** nicht vorhanden.
 - **Plattformen:** nur unter Windows 11 getestet.
