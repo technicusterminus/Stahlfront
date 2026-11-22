@@ -96,7 +96,7 @@ func _spec_from_args() -> Dictionary:
 
 ## Baut Gelände, Vorkommen, Tiere und Raster für die Karte; ersetzt eine vorhandene Karte.
 func _build_world(sp: Dictionary) -> void:
-	for n in ["Terrain", "Units", "FX", "Animals"]:
+	for n in ["Terrain", "Units", "FX", "Animals", "Folk"]:
 		var old = world.get_node_or_null(n)
 		if old != null:
 			world.remove_child(old)
@@ -127,6 +127,10 @@ func _build_world(sp: Dictionary) -> void:
 	animals.name = "Animals"
 	world.add_child(animals)
 	animals.setup(int(sp["seed"]), starts_all)
+	var folk = load("res://scripts/villagers.gd").new()
+	folk.name = "Folk"
+	world.add_child(folk)
+	folk.setup(sp, starts_all)
 	if args.has("mapimg"):
 		var img: Image = terrain.minimap_image(320)
 		for dp in Game.depots:
