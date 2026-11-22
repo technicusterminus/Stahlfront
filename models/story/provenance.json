@@ -198,5 +198,90 @@
     "id": "s_r6_intro",
     "model": "black-forest-labs/flux.2-pro",
     "cost": 0.045
+  },
+  {
+    "id": "s_r6_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_r7_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_r7_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s1_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s1_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s2_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s2_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s3_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s3_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s4_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s4_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s5_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s5_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s6_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s6_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s7_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_s7_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
   }
 ]
