@@ -173,5 +173,30 @@
     "id": "s_r3_outro",
     "model": "black-forest-labs/flux.2-pro",
     "cost": 0.045
+  },
+  {
+    "id": "s_r4_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_r4_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_r5_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_r5_outro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
+  },
+  {
+    "id": "s_r6_intro",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.045
   }
 ]

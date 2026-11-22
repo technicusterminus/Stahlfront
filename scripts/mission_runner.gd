@@ -398,6 +398,37 @@ func _spawn_building(a: Dictionary) -> void:
 var _play_step := 0
 var _play_t := 0.0
 var _dbg_i := -1
+## Gemeinsamer Testspieler für die Kapitel mit "auto"-Angaben: Helden bleiben unversehrt, Armee und Helden laufen zum
+## Marker des ersten offenen Ziels, bei weiter Entfernung ruckt ein Held nach (Testhilfe).
+func _auto_generic(t: float) -> void:
+	var cfg: Dictionary = m["auto"]
+	for tg in cfg.get("heroes", []):
+		for u in _alive(tg):
+			if u.max_hp < 5000.0:
+				u.max_hp *= 60.0   # Testhilfe: Helden sind im Autoplay unverwundbar
+			u.hp = u.max_hp
+	if int(t) % 4 != 0 or _play_step == int(t):
+		return
+	_play_step = int(t)
+	for hh in cfg.get("heroes", []):
+		for u in _alive(hh):
+			if int(t) % 20 == 0:
+				print("AUTO %s t=%d %s bei %s" % [m["id"], int(t), hh, str(u.position)])
+	for o in _objs:
+		if done.has(o["id"]):
+			continue
+		if o.has("mark"):
+			var goal: Vector3 = _pos(o["mark"])
+			for tg in cfg.get("move", []):
+				for u in _alive(tg):
+					u.cmd_move(goal + Vector3(randf_range(-6, 6), 0, randf_range(-6, 6)), u.def["role"] == "combat")
+			for tg in cfg.get("heroes", []):
+				for u in _alive(tg):
+					u.cmd_move(goal + Vector3(randf_range(-2, 2), 0, randf_range(-2, 2)))
+					if cfg.get("nudge", false) and Game.flat_dist(u.position, goal) > 30.0 and int(t) % 8 == 0:
+						u.global_position = u.global_position.move_toward(goal, 14.0)
+		break
+
 func _autoplay() -> void:
 	var t = Game.time - t0
 	var dz = _mine(func(u): return u.def["role"] == "dozer")
@@ -472,6 +503,8 @@ func _autoplay() -> void:
 				for u in _alive("escort"):
 					u.cmd_move(goal + Vector3(randf_range(-5, 5), 0, randf_range(-5, 5)), true)
 				break
+	elif m.has("auto"):
+		_auto_generic(t)
 	elif m["id"] == "r3":
 		for u in _alive("funke") + _alive("mischa") + _alive("rescued"):
 			u.hp = u.max_hp   # Testhilfe: Schutzbefohlene fallen im Autoplay nicht

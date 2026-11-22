@@ -84,7 +84,13 @@ static func at(t: float, a: Dictionary) -> Dictionary:
 	return d
 
 static func list() -> Array:
-	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4(), _c5(), _c6(), _c7(), _r1(), _r2(), _r3()]
+	return [_t1(), _t2(), _t3(), _t4(), _c1(), _c2(), _c3(), _c4(), _c5(), _c6(), _c7(), _r1(), _r2(), _r3()] + _ext()
+
+static func _ext() -> Array:
+	var Ext = load("res://scripts/missions_ext.gd")
+	var maps := {"bridge": _c4()["map"], "rails": _r2()["map"], "aurelia": _c6()["map"], "pass": _r3()["map"],
+		"kessel": _r1()["map"], "eisen": _c2()["map"]}
+	return Ext.red(maps) + Ext.shadow(maps)
 
 static func by_id(id: String) -> Dictionary:
 	for m in list():
@@ -1041,7 +1047,7 @@ static func _r2() -> Dictionary:
 
 static func _r3() -> Dictionary:
 	return {
-		"id": "r3", "kind": "campaign", "title": "Kapitel 3: Der Pass", "faction": "red", "enemy_faction": "west", "next": "",
+		"id": "r3", "kind": "campaign", "title": "Kapitel 3: Der Pass", "faction": "red", "enemy_faction": "west", "next": "r4",
 		"brief": "Der Siedlertreck der Allianz ist kein Militärtransport: Vierhundert Arbeiterfamilien ziehen ins Hochland, mit Vorräten, Werkzeug und ihren Kindern. Weiter vorn rollt der Forschertransport des Westbunds, so verlangt es der Vertrag von Lysa. Hauptmann Dmitri „Funke“ Karpow sichert den Treck, weil er Brücken bauen kann und weil sein Bruder unter den Siedlern ist.\n\nAm Pass schlagen Raketen aus dem Westen ein. Danach bleiben ein eingestürzter Tunnel, unter dem noch Menschen leben, und ein Junge, der nicht mehr spricht.\n\nAuftrag: Führe den Konvoi bis zur Passhöhe, räume mit Funke den eingestürzten Tunnel (er muss dafür die Stellung halten), rette die Verschütteten und bring sie mit dem Jungen Mischa zum Pass. Funke und Mischa dürfen nicht fallen.",
 		"map": {"name": "Eisenkamm-Pass", "size": 400, "water": 0.35, "islands": 0.0, "resources": 0.5, "hills": 0.85, "forest": 0.3, "layout": 1, "seed": 5303, "dry_core": 34.0, "biome": "alpine", "sites": PASS_R_SITES},
 		"hour": 14.0, "difficulty": 1, "credits": 2000, "ai": "off", "sequential": true,
