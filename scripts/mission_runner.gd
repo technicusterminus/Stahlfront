@@ -429,6 +429,13 @@ func _auto_generic(t: float) -> void:
 					u.cmd_move(goal + Vector3(randf_range(-2, 2), 0, randf_range(-2, 2)))
 					if cfg.get("nudge", false) and Game.flat_dist(u.position, goal) > 30.0 and int(t) % 8 == 0:
 						u.global_position = u.global_position.move_toward(goal, 14.0)
+		elif String(o["c"]["t"]) == "not" and String(o["c"]["c"].get("t", "")) == "tag_alive":
+			# Ziel "zerschlage Gruppe X": die Armee greift die nächste lebende Einheit der Gruppe an
+			var foes := _alive(String(o["c"]["c"]["tag"]))
+			if not foes.is_empty():
+				for tg in cfg.get("move", []):
+					for u in _alive(tg):
+						u.cmd_move(foes[0].position + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
 		break
 
 func _autoplay() -> void:

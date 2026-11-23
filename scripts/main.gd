@@ -18,6 +18,44 @@ var starts_all: Array = []
 var world: Node3D
 var sun: DirectionalLight3D
 
+## Fokus geht verloren (Klick aus dem Fenster, Alt+Tab) oder kommt zurück: Godot sieht dann das Loslassen der Maustaste
+## nicht. Das Bedienelement, auf dem die Taste gedrückt wurde (z. B. die Übersichtskarte), behielt so den Mausfokus und
+## schluckte jeden weiteren Klick – die Einheiten ließen sich nicht mehr steuern. Hier werden alle Zustände zurückgesetzt
+## und ein künstliches Loslassen geschickt, damit kein Element den Mausfokus festhält.
+func _notification(what: int) -> void:
+	if what in [NOTIFICATION_APPLICATION_FOCUS_OUT, NOTIFICATION_APPLICATION_FOCUS_IN, NOTIFICATION_WM_WINDOW_FOCUS_OUT, NOTIFICATION_WM_WINDOW_FOCUS_IN]:
+		reset_input(true)
+	elif what == NOTIFICATION_WM_MOUSE_ENTER:
+		reset_input(false)
+
+## force: nach Fokuswechsel gilt jede gedrückte Taste als veraltet. Sonst (Maus kommt zurück ins Fenster) nur zurücksetzen,
+## wenn keine Taste gedrückt ist, damit ein echter Auswahlrahmen über den Rand hinaus erhalten bleibt.
+func reset_input(force: bool) -> void:
+	if not force and (Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE)):
+		return
+	if Game.ctrl != null:
+		Game.ctrl.dragging = false
+		Game.ctrl.box_active = false
+		Game.ctrl._mouse_seen = false
+	if Game.cam != null:
+		Game.cam._drag = false
+	if Game.hud != null and Game.hud.minimap != null:
+		Game.hud.minimap._drag = false
+	if not is_inside_tree():
+		return
+	var vp := get_viewport()
+	var mp := vp.get_mouse_position()
+	for b in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT, MOUSE_BUTTON_MIDDLE]:
+		if not force and Input.is_mouse_button_pressed(b):
+			continue
+		var ev := InputEventMouseButton.new()
+		ev.button_index = b
+		ev.pressed = false
+		ev.position = mp
+		ev.global_position = mp
+		Input.parse_input_event(ev)
+	vp.gui_release_focus()
+
 func _ready() -> void:
 	_parse_args()
 	Game.reset_match()

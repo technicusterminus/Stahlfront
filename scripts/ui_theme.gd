@@ -1,8 +1,8 @@
 extends RefCounted
 ## Fraktionsoberflächen. Alle Texturen entstehen im Code:
-##   Westbund      – Milchglas mit leuchtendem Cyan-Rand, abgerundete Ecken, moderne Schrift
-##   Rote Allianz  – gebürstetes Metall mit Nieten, abgeschrägte Ecken, Messing und Rot, kräftige Schrift
-##   Schattenfront – Holzbretter mit Nägeln, Leinenflicken mit Nähten, handschriftlicher Stil
+##   Westbund      – Rauchglas über gebürstetem Titan, feine Cyan-Leuchtkante, Eckmarken, moderne Schrift
+##   Rote Allianz  – Stahlplatte mit Messingfassung und Nieten, abgeschrägte Ecken, rote Zierlinie, kräftige Schrift
+##   Schattenfront – geöltes Leder mit Fadennaht und Bronzebeschlägen, Serifenschrift
 
 static var _cache = {}
 
@@ -58,198 +58,132 @@ static func _rivet(img: Image, cx: float, cy: float, r: float, col: Color) -> vo
 				var o = img.get_pixel(x, y)
 				img.set_pixel(x, y, o.darkened(0.45))
 
-# ---------------------------------------------------------------- Westbund
+# ---------------------------------------------------------------- Hochwertige Fassung (Materialbild + gezeichneter Rahmen)
+## Oberfläche aus models/ui/<fraktion>_material.png (Bildmodell, kachelbar), Rahmen, Nähte, Nieten und Beschläge im Code.
+## Größer aufgelöst als früher (256 px Tafel, 220×72 Knopf) und mit weichen Kanten, damit nichts verwaschen wirkt.
 
-static func _west_panel() -> Image:
-	var W = 112
-	var H = 112
-	var g = 8.0
-	var img = Image.create(W, H, false, Image.FORMAT_RGBA8)
-	for y in H:
-		for x in W:
-			var d = _sd_rr(x + 0.5, y + 0.5, g, g, W - g, H - g, 20.0)
-			var c = Color(0, 0, 0, 0)
-			if d < 0.0:
-				var t = clamp((y - g) / (H - 2 * g), 0.0, 1.0)
-				c = Color(0.11, 0.2, 0.3).lerp(Color(0.03, 0.07, 0.12), t)
-				c.a = 0.9
-				if t < 0.3:
-					c = c.lightened((0.3 - t) * 0.22)
-				if d > -1.4:
-					c = Color(0.45, 0.9, 1.0, 0.95)
-				elif d > -2.6:
-					c = c.lerp(Color(0.3, 0.75, 1.0, 0.9), 0.55)
-				elif d > -5.0:
-					c = c.lerp(Color(0.3, 0.7, 0.95, 0.9), 0.12)
-			elif d < g:
-				c = Color(0.3, 0.8, 1.0, pow(1.0 - d / g, 2.2) * 0.4)
-			img.set_pixel(x, y, c)
-	return img
+static var _mats := {}
 
-static func _west_button(state: String) -> Image:
-	var W = 72
-	var H = 44
-	var img = Image.create(W, H, false, Image.FORMAT_RGBA8)
-	var top = Color(0.17, 0.28, 0.4, 0.9)
-	var bot = Color(0.07, 0.14, 0.22, 0.92)
-	var edge = Color(0.35, 0.78, 1.0, 0.5)
-	match state:
-		"hover":
-			top = Color(0.22, 0.4, 0.55, 0.95)
-			bot = Color(0.1, 0.22, 0.34, 0.95)
-			edge = Color(0.55, 0.95, 1.0, 1.0)
-		"pressed":
-			top = Color(0.1, 0.32, 0.45, 0.98)
-			bot = Color(0.06, 0.2, 0.3, 0.98)
-			edge = Color(0.7, 1.0, 1.0, 1.0)
-		"disabled":
-			top = Color(0.1, 0.12, 0.14, 0.7)
-			bot = Color(0.07, 0.08, 0.1, 0.7)
-			edge = Color(0.25, 0.3, 0.35, 0.5)
+static func _mat(fid: String) -> Image:
+	if not _mats.has(fid):
+		var path := "res://models/ui/%s_material.png" % fid
+		var img: Image = null
+		if ResourceLoader.exists(path):
+			img = (load(path) as Texture2D).get_image()
+			if img != null and img.is_compressed():
+				img.decompress()
+		if img == null:
+			img = Image.create(8, 8, false, Image.FORMAT_RGB8)
+			img.fill(Color(0.12, 0.12, 0.13))
+		_mats[fid] = img
+	return _mats[fid]
+
+static func _ss(e0: float, e1: float, x: float) -> float:
+	var t = clamp((x - e0) / (e1 - e0), 0.0, 1.0)
+	return t * t * (3.0 - 2.0 * t)
+
+## Grundform je Fraktion: Abstand zur Kante (>0 innen). West rund, Rot abgeschrägt, Schatten weich gerundet.
+static func _edge(fid: String, x: float, y: float, w: float, h: float, r: float) -> float:
+	if fid == "red":
+		return _chamfer(x, y, w, h, 1.0, r)
+	return -_sd_rr(x + 0.5, y + 0.5, 1.0, 1.0, w - 1.0, h - 1.0, r)
+
+static func _premium(fid: String, W: int, H: int, state: String, is_button: bool) -> Image:
+	var img := Image.create(W, H, false, Image.FORMAT_RGBA8)
+	var m: Image = _mat(fid)
+	var mw := m.get_width()
+	var mh := m.get_height()
+	var r := 14.0 if fid == "west" else (16.0 if fid == "red" else 12.0)
+	if is_button:
+		r = 9.0 if fid == "west" else (10.0 if fid == "red" else 8.0)
+	var rim := Color(0.45, 0.88, 1.0)
+	var tint := Color(1.0, 1.0, 1.0)
+	var alpha := 0.92
+	var light := 1.0
+	if fid == "red":
+		rim = Color(0.86, 0.66, 0.32)
+		tint = Color(1.05, 0.98, 0.95)
+		alpha = 0.96
+	elif fid == "shadow":
+		rim = Color(0.72, 0.52, 0.28)
+		tint = Color(1.12, 1.0, 0.9)
+		alpha = 0.96
+	if is_button:
+		match state:
+			"hover":
+				light = 1.4
+				rim = rim.lightened(0.3)
+			"pressed":
+				light = 0.72
+			"disabled":
+				light = 0.65
+				rim = Color(0.36, 0.36, 0.37)
+				alpha *= 0.85
+	var thread := Color(0.86, 0.74, 0.52) if state != "disabled" else Color(0.45, 0.42, 0.38)
+	var st_d := 5.5 if is_button else 9.0
 	for y in H:
+		var vy := float(y) / float(H)
 		for x in W:
-			var d = _sd_rr(x + 0.5, y + 0.5, 2.0, 2.0, W - 2.0, H - 2.0, 11.0)
-			if d >= 0.0:
+			var e := _edge(fid, x, y, W, H, r)
+			if e <= -0.5:
 				img.set_pixel(x, y, Color(0, 0, 0, 0))
 				continue
-			var t = clamp(float(y) / H, 0.0, 1.0)
-			var c = top.lerp(bot, t)
-			if t < 0.45:
-				c = c.lightened((0.45 - t) * 0.15)
-			if d > -1.5:
-				c = edge
-			elif d > -3.0:
-				c = c.lerp(edge, 0.12)
+			var cov := _ss(-0.5, 0.8, e)
+			var mc: Color = m.get_pixel(x % mw, y % mh)
+			var c := Color(mc.r * tint.r * light, mc.g * tint.g * light, mc.b * tint.b * light)
+			# sanfte Wölbung: oben heller, unten dunkler, Rand abgedunkelt
+			c = Color(c.r * (1.08 - vy * 0.22), c.g * (1.08 - vy * 0.22), c.b * (1.08 - vy * 0.22))
+			c = c.darkened(0.35 * (1.0 - _ss(2.0, 14.0, e)))
+			if state == "pressed":
+				c = c.darkened(0.25 * (1.0 - _ss(2.0, 8.0, e)))
+			if fid == "west":
+				var k := 1.0 - _ss(0.0, 2.2, abs(e - 1.6))
+				c = c.lerp(rim, k * 0.95)
+				c = c.lerp(rim, (1.0 - _ss(2.0, 9.0, e)) * 0.12)
+			elif fid == "red":
+				var band := 1.0 - _ss(4.0, 5.5, e)
+				if band > 0.0:
+					var brass := rim.lightened(0.25 * (1.0 - vy)).darkened(0.25 * vy)
+					if e < 1.6:
+						brass = brass.darkened(0.45)
+					c = c.lerp(brass, band)
+				if not is_button:
+					c = c.lerp(Color(0.75, 0.14, 0.1), (1.0 - _ss(0.0, 0.9, abs(e - 7.0))) * 0.9)
+			else:
+				c = c.darkened(0.5 * (1.0 - _ss(0.0, 3.0, e)))
+				var on_line := 1.0 - _ss(0.0, 0.85, abs(e - st_d))
+				var horiz: bool = y < st_d + 3 or y > H - st_d - 4
+				var dash: bool = (int(x / 5.0) % 2 == 0) if horiz else (int(y / 5.0) % 2 == 0)
+				if on_line > 0.0 and dash:
+					c = c.lerp(thread, on_line * 0.85)
+				c = c.lightened((1.0 - _ss(0.0, 0.8, abs(e - (st_d - 2.2)))) * 0.08)
+			c.a = alpha * cov
 			img.set_pixel(x, y, c)
+	if not is_button:
+		var inset := 13.0
+		var pts := [Vector2(inset, inset), Vector2(W - inset - 1, inset), Vector2(inset, H - inset - 1), Vector2(W - inset - 1, H - inset - 1)]
+		if fid == "red":
+			for p in pts:
+				_rivet(img, p.x, p.y, 3.2, Color(0.62, 0.5, 0.3))
+		elif fid == "shadow":
+			for p in pts:
+				_rivet(img, p.x, p.y, 3.0, Color(0.58, 0.42, 0.22))
+		else:
+			for p in pts:
+				var sx := 1 if p.x < W * 0.5 else -1
+				var sy := 1 if p.y < H * 0.5 else -1
+				for i in range(0, 9):
+					for q in [Vector2(p.x - 6 * sx + i * sx, p.y - 6 * sy), Vector2(p.x - 6 * sx, p.y - 6 * sy + i * sy)]:
+						if q.x >= 0 and q.y >= 0 and q.x < W and q.y < H:
+							var o := img.get_pixel(int(q.x), int(q.y))
+							img.set_pixel(int(q.x), int(q.y), o.lerp(Color(0.6, 0.95, 1.0, o.a), 0.8))
 	return img
 
-# ---------------------------------------------------------------- Rote Allianz
+static func _premium_panel(fid: String) -> Image:
+	return _premium(fid, 256, 256, "normal", false)
 
-static func _red_panel() -> Image:
-	var W = 112
-	var H = 112
-	var img = Image.create(W, H, false, Image.FORMAT_RGBA8)
-	var nz = _noise(5, 0.04)
-	for y in H:
-		for x in W:
-			var d = _chamfer(x, y, W, H, 2.0, 18.0)
-			if d < 0.0:
-				img.set_pixel(x, y, Color(0, 0, 0, 0))
-				continue
-			var v = 0.16 + nz.get_noise_2d(x * 0.25, y * 3.5) * 0.05 + (1.0 - float(y) / H) * 0.03
-			var c = Color(v, v * 0.97, v * 0.94, 0.96)
-			if d < 3.0:
-				c = Color(0.5, 0.08, 0.06, 1.0)
-			elif d < 4.2:
-				c = Color(0.62, 0.55, 0.45, 1.0)
-			elif d < 5.2:
-				c = Color(0.07, 0.06, 0.06, 1.0)
-			img.set_pixel(x, y, c)
-	for p in [Vector2(14, 14), Vector2(W - 15, 14), Vector2(14, H - 15), Vector2(W - 15, H - 15)]:
-		_rivet(img, p.x, p.y, 3.4, Color(0.8, 0.62, 0.3))
-	return img
-
-static func _red_button(state: String) -> Image:
-	var W = 72
-	var H = 44
-	var img = Image.create(W, H, false, Image.FORMAT_RGBA8)
-	var nz = _noise(9, 0.05)
-	var base = Color(0.23, 0.22, 0.21)
-	var edge = Color(0.06, 0.05, 0.05)
-	var hi = Color(0.55, 0.5, 0.42)
-	match state:
-		"hover":
-			base = Color(0.36, 0.2, 0.18)
-			edge = Color(0.55, 0.08, 0.06)
-			hi = Color(0.85, 0.7, 0.4)
-		"pressed":
-			base = Color(0.13, 0.12, 0.12)
-			edge = Color(0.45, 0.07, 0.05)
-			hi = Color(0.5, 0.2, 0.15)
-		"disabled":
-			base = Color(0.16, 0.16, 0.16)
-			edge = Color(0.05, 0.05, 0.05)
-			hi = Color(0.3, 0.3, 0.3)
-	for y in H:
-		for x in W:
-			var d = _chamfer(x, y, W, H, 1.0, 9.0)
-			if d < 0.0:
-				img.set_pixel(x, y, Color(0, 0, 0, 0))
-				continue
-			var v = 1.0 + nz.get_noise_2d(x * 0.3, y * 4.0) * 0.12 - (float(y) / H) * 0.15
-			var c = Color(base.r * v, base.g * v, base.b * v, 0.97)
-			if d < 2.2:
-				c = edge
-			elif d < 3.2:
-				c = hi
-			img.set_pixel(x, y, c)
-	for p in [Vector2(8, 8), Vector2(W - 9, 8), Vector2(8, H - 9), Vector2(W - 9, H - 9)]:
-		_rivet(img, p.x, p.y, 1.9, Color(0.78, 0.6, 0.28) if state != "disabled" else Color(0.35, 0.33, 0.3))
-	return img
-
-# ---------------------------------------------------------------- Schattenfront
-
-static func _shadow_panel() -> Image:
-	var W = 112
-	var H = 112
-	var img = Image.create(W, H, false, Image.FORMAT_RGBA8)
-	var grain = _noise(21, 0.02)
-	var rough = _noise(33, 0.09)
-	for y in H:
-		var plank = int(y / 28)
-		var pv = (float(plank % 3) - 1.0) * 0.035
-		var seam = y % 28
-		for x in W:
-			var e = min(min(x, W - 1 - x), min(y, H - 1 - y)) + rough.get_noise_2d(x, y) * 5.0 - 1.5
-			if e < 1.0:
-				img.set_pixel(x, y, Color(0, 0, 0, 0))
-				continue
-			var gn = grain.get_noise_2d(x * 1.6 + plank * 41.0, y * 14.0) * 0.5 + 0.5
-			var c = Color(0.3, 0.2, 0.11).lerp(Color(0.44, 0.3, 0.17), gn)
-			c = Color(c.r + pv, c.g + pv * 0.8, c.b + pv * 0.6, 0.97)
-			if seam < 2 or seam > 26:
-				c = c.darkened(0.45)
-			if e < 4.0:
-				c = Color(0.1, 0.065, 0.035, 1.0)
-			elif e < 5.0:
-				c = c.lightened(0.12)
-			img.set_pixel(x, y, c)
-	for p in [Vector2(13, 13), Vector2(W - 14, 13), Vector2(13, H - 14), Vector2(W - 14, H - 14)]:
-		_rivet(img, p.x, p.y, 2.8, Color(0.28, 0.27, 0.26))
-	return img
-
-static func _shadow_button(state: String) -> Image:
-	var W = 72
-	var H = 44
-	var img = Image.create(W, H, false, Image.FORMAT_RGBA8)
-	var rough = _noise(41, 0.1)
-	var weave = _noise(43, 0.5)
-	var base = Color(0.63, 0.52, 0.36)
-	var stitch = Color(0.33, 0.23, 0.14)
-	match state:
-		"hover":
-			base = Color(0.76, 0.63, 0.43)
-		"pressed":
-			base = Color(0.5, 0.4, 0.27)
-			stitch = Color(0.25, 0.17, 0.1)
-		"disabled":
-			base = Color(0.24, 0.21, 0.18)
-			stitch = Color(0.42, 0.36, 0.28)
-	for y in H:
-		for x in W:
-			var e = min(min(x, W - 1 - x), min(y, H - 1 - y)) + rough.get_noise_2d(x, y) * 3.2 - 1.0
-			if e < 1.0:
-				img.set_pixel(x, y, Color(0, 0, 0, 0))
-				continue
-			var wv = weave.get_noise_2d(x * 1.3, y * 1.3) * 0.5
-			var chk = 0.045 if ((x / 2 + y / 2) % 2 == 0) else -0.02
-			var c = Color(base.r + wv * 0.14 + chk, base.g + wv * 0.12 + chk, base.b + wv * 0.1 + chk, 1.0)
-			if e < 2.0:
-				c = c.darkened(0.55)
-			elif abs(e - 6.0) < 0.8 and ((x + y) / 3) % 2 == 0:
-				c = stitch
-			img.set_pixel(x, y, c)
-	return img
+static func _premium_button(fid: String, state: String) -> Image:
+	return _premium(fid, 220, 72, state, true)
 
 # ---------------------------------------------------------------- Zusammenbau
 
@@ -269,6 +203,9 @@ static func _sbt(tex: Texture2D, margin: float, content: float) -> StyleBoxTextu
 	s.content_margin_right = content
 	s.content_margin_top = content * 0.7
 	s.content_margin_bottom = content * 0.7
+	# Mitte kacheln statt strecken: sonst zieht sich die Oberfläche auf breiten Leisten zu Streifen
+	s.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_TILE_FIT
+	s.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_TILE_FIT
 	return s
 
 static func _flat(bg: Color, border: Color, radius := 4, bw := 1, margin := 8.0) -> StyleBoxFlat:
@@ -291,8 +228,8 @@ static func font(fid: String) -> Font:
 			f.font_weight = 700
 			f.font_stretch = 85
 		"shadow":
-			f.font_names = PackedStringArray(["Segoe Print", "Ink Free", "Bradley Hand ITC", "Comic Sans MS"])
-			f.font_weight = 400
+			f.font_names = PackedStringArray(["Constantia", "Palatino Linotype", "Georgia"])
+			f.font_weight = 600
 		_:
 			f.font_names = PackedStringArray(["Bahnschrift", "Segoe UI", "Arial"])
 			f.font_weight = 400
@@ -317,26 +254,26 @@ static func build(fid: String) -> Theme:
 			btn_col = Color(0.96, 0.9, 0.78)
 			btn_hover = Color(1.0, 0.95, 0.7)
 			btn_dis = Color(0.66, 0.62, 0.54)
-			panel = _sbt(_tex("red_panel", _red_panel), 34, 18)
+			panel = _sbt(_tex("red_panel2", _premium_panel.bind("red")), 28, 18)
 			for s in states:
-				t.set_stylebox(s, "Button", _sbt(_tex("red_btn_" + s, _red_button.bind(s)), 14, 10))
+				t.set_stylebox(s, "Button", _sbt(_tex("red_btn2_" + s, _premium_button.bind("red", s)), 14, 10))
 			tip = _flat(Color(0.1, 0.09, 0.09, 0.97), Color(0.75, 0.58, 0.28), 2, 2, 10.0)
 		"shadow":
-			text_col = Color(0.97, 0.9, 0.74)
-			btn_col = Color(0.14, 0.08, 0.04)
-			btn_hover = Color(0.05, 0.02, 0.0)
-			btn_dis = Color(0.76, 0.7, 0.58)
-			size = 14
-			bsize = 13
-			panel = _sbt(_tex("shadow_panel", _shadow_panel), 32, 18)
+			text_col = Color(0.95, 0.88, 0.74)
+			btn_col = Color(0.94, 0.86, 0.7)
+			btn_hover = Color(1.0, 0.95, 0.82)
+			btn_dis = Color(0.55, 0.5, 0.44)
+			size = 15
+			bsize = 14
+			panel = _sbt(_tex("shadow_panel2", _premium_panel.bind("shadow")), 26, 18)
 			for s in states:
-				t.set_stylebox(s, "Button", _sbt(_tex("shadow_btn_" + s, _shadow_button.bind(s)), 14, 10))
-			tip = _flat(Color(0.82, 0.72, 0.52, 0.98), Color(0.25, 0.16, 0.08), 3, 2, 10.0)
-			tip_col = Color(0.14, 0.08, 0.04)
+				t.set_stylebox(s, "Button", _sbt(_tex("shadow_btn2_" + s, _premium_button.bind("shadow", s)), 12, 10))
+			tip = _flat(Color(0.13, 0.09, 0.06, 0.97), Color(0.72, 0.52, 0.28), 6, 1, 10.0)
+			tip_col = Color(0.95, 0.88, 0.74)
 		_:
-			panel = _sbt(_tex("west_panel", _west_panel), 34, 18)
+			panel = _sbt(_tex("west_panel2", _premium_panel.bind("west")), 24, 18)
 			for s in states:
-				t.set_stylebox(s, "Button", _sbt(_tex("west_btn_" + s, _west_button.bind(s)), 16, 10))
+				t.set_stylebox(s, "Button", _sbt(_tex("west_btn2_" + s, _premium_button.bind("west", s)), 12, 10))
 			tip = _flat(Color(0.04, 0.09, 0.14, 0.97), Color(0.4, 0.85, 1.0), 10, 1, 10.0)
 	t.set_stylebox("panel", "PanelContainer", panel)
 	t.set_stylebox("focus", "Button", StyleBoxEmpty.new())
@@ -361,8 +298,8 @@ static func build(fid: String) -> Theme:
 			t.set_stylebox("background", "ProgressBar", _flat(Color(0.07, 0.06, 0.06), Color(0.55, 0.45, 0.3), 0, 1, 0.0))
 			t.set_stylebox("fill", "ProgressBar", _flat(Color(0.8, 0.2, 0.15), Color(0, 0, 0, 0), 0, 0, 0.0))
 		"shadow":
-			t.set_stylebox("background", "ProgressBar", _flat(Color(0.12, 0.08, 0.05), Color(0.28, 0.18, 0.1), 3, 1, 0.0))
-			t.set_stylebox("fill", "ProgressBar", _flat(Color(0.8, 0.55, 0.15), Color(0, 0, 0, 0), 3, 0, 0.0))
+			t.set_stylebox("background", "ProgressBar", _flat(Color(0.07, 0.05, 0.035), Color(0.45, 0.32, 0.18), 4, 1, 0.0))
+			t.set_stylebox("fill", "ProgressBar", _flat(Color(0.86, 0.6, 0.22), Color(1.0, 0.82, 0.5, 0.6), 4, 1, 0.0))
 		_:
 			t.set_stylebox("background", "ProgressBar", _flat(Color(0.04, 0.09, 0.14), Color(0.3, 0.6, 0.8, 0.5), 6, 1, 0.0))
 			t.set_stylebox("fill", "ProgressBar", _flat(Color(0.3, 0.8, 1.0), Color(0, 0, 0, 0), 6, 0, 0.0))

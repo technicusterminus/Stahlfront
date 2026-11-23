@@ -171,9 +171,13 @@ static func _r5(maps: Dictionary) -> Dictionary:
 		"objectives": [
 			_reach("mast1", "Bringe Nastja zum ersten Mast (gelbe Markierung).", ["mid", -20, 15], "tag:nastja", [
 				{"do": "flag", "f": "m1"}, _banner("MAST 1 – DER EINGANG DER SEQUENZ", Color(0.6, 0.85, 1.0)), {"do": "sfx", "name": "stinger"},
-				radio("Nastja Petrowa", C_NASTJA, "Da. Der Anfang der Sequenz. Ich brauche vierzehn Sekunden Ruhe, jemand hat sie gerade erst überschrieben.", 7.0)]),
+				radio("Nastja Petrowa", C_NASTJA, "Da. Der Anfang der Sequenz. Ich brauche vierzehn Sekunden Ruhe, jemand hat sie gerade erst überschrieben.", 7.0),
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 3, "at": ["mid", 84, -70], "spread": 3.0, "tag": "loescher", "speed": 0.2},
+				{"do": "convoy", "tag": "loescher", "to": ["mid", 14, -18]},
+				_banner("EIN LÖSCHTRUPP LÄUFT AUF MAST 2 ZU", Color(1.0, 0.45, 0.35), 3.4),
+				radio("Ilja Wolkow", C_WOLKOW, "Nastja, drei Mann laufen auf deinen zweiten Mast zu. Mit Werkzeug, nicht mit Gewehren. Die wollen löschen.", 7.0)]),
 			_hold("hold1", "m1", 14.0, "Halte die Stellung, bis der Anfang gesichert ist."),
-			_reach("mast2", "Weiter zum zweiten Mast (gelbe Markierung).", ["mid", 14, -18], "tag:nastja", [
+			_reach("mast2", "Erreiche den zweiten Mast vor dem Löschtrupp, oder halte ihn auf (gelbe Markierung).", ["mid", 14, -18], "tag:nastja", [
 				{"do": "flag", "f": "m2"}, _banner("MAST 2 – DIE MITTE DER SEQUENZ", Color(1.0, 0.45, 0.35)), {"do": "sfx", "name": "siren"},
 				radio("Nastja Petrowa", C_NASTJA, "Marschall, hier hat jemand gelöscht, und zwar gestern. Ich lese noch einen Rest. Haltet mir die Leute vom Leib, die gleich kommen.", 8.0)]),
 			_hold("hold2", "m2", 20.0, "Halte die Stellung, bis die Mitte gesichert ist."),
@@ -191,7 +195,9 @@ static func _r5(maps: Dictionary) -> Dictionary:
 				_wave(5, "inf", ["mid", 0, -78], "nastja"), _wave(2, "tank", ["mid", 2, -80], "nastja", 0.7)]},
 			{"when": {"t": "tag_dead", "tag": "nastja", "n": 1}, "do": [radio("Ilja Wolkow", C_WOLKOW, "Nastja! Hörst du mich? Nastja!", 5.0)]}],
 		"auto": {"heroes": ["nastja"], "move": ["army"], "nudge": false},
-		"lose": _lose_if_dead("nastja", "Nastja Petrowa ist gefallen."),
+		"lose": _lose_if_dead("nastja", "Nastja Petrowa ist gefallen.") + [
+			{"c": {"t": "all", "c": [{"t": "tag_reach", "tag": "loescher", "at": ["mid", 14, -18], "r": 7.0, "n": 1}, {"t": "not", "c": {"t": "flag", "f": "m2"}}]},
+			 "text": "Der Löschtrupp war schneller. Die Mitte der Sequenz ist gelöscht."}],
 	}
 
 static func _r6(maps: Dictionary) -> Dictionary:
@@ -323,19 +329,26 @@ static func _s1(maps: Dictionary) -> Dictionary:
 			_hold("talk1", "f1", 10.0, "Höre der ersten Runde zu."),
 			_reach("fire2", "Weiter zur zweiten Feuerstelle (gelbe Markierung).", ["mid", 15, -33], "tag:asha", [
 				{"do": "flag", "f": "f2"}, _banner("FEUER 2 – DIE JÄGER", Color(1.0, 0.7, 0.4)), {"do": "sfx", "name": "siren"},
-				radio("Asha Karim", C_ASHA, "Die Jäger haben die Spur des Trupps gefunden. Sie nähern sich, vorsichtig und gut gerüstet.", 7.0)]),
-			_hold("talk2", "f2", 16.0, "Wehre den Trupp ab, solange die Jäger sprechen."),
+				radio("Asha Karim", C_ASHA, "Die Jäger haben die Spur des Trupps gefunden. Er zieht durch die Senke auf unser Lager zu.", 7.0),
+				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 52, -52], "spread": 5.0, "tag": "patrol", "speed": 0.45},
+				{"do": "spawn", "side": "enemy", "def": "tank", "n": 1, "at": ["mid", 56, -50], "spread": 2.0, "tag": "patrol", "speed": 0.45, "hp": 0.6},
+				{"do": "convoy", "tag": "patrol", "to": ["me", 0, 18]},
+				radio("Mutter Karga", C_KARGA, "Lass sie kommen, Kind. Wer durch eine Senke geht, sieht nur den Himmel über sich.", 7.0)]),
+			{"id": "ambush", "text": "Lege mit den Jägern einen Hinterhalt und zerschlage die Patrouille, bevor sie das Lager erreicht.",
+				"c": {"t": "not", "c": {"t": "tag_alive", "tag": "patrol", "n": 1}},
+				"done": [_banner("DIE SENKE IST STILL", Color(0.7, 0.95, 0.7)), {"do": "sfx", "name": "stinger"},
+					radio("Asha Karim", C_ASHA, "Keiner von ihnen hat uns kommen sehen. Ich wünschte, es hätte sich besser angefühlt.", 7.0)]},
 			_reach("fire3", "Zum dritten Feuer im Osten (gelbe Markierung).", ["en", -4, 4], "tag:asha", [
 				{"do": "flag", "f": "f3"}, _banner("FEUER 3 – DIE KINDER", Color(0.7, 0.95, 0.7)),
 				radio("Pip", C_PIP, "Asha! Am unteren Feuer sitzen die Hirten. Und im Tal habe ich die Späher gesehen. Ganz jung. Die frieren wie wir!", 7.0)]),
 			_hold("talk3", "f3", 10.0, "Bleibe bei den Kindern, bis die Runde beschließt.")],
 		"events": [
 			{"when": {"t": "time", "s": 3.0}, "do": [_banner("KAPITEL 1 BEGINNT", Color(1, 0.85, 0.4), 2.4)]},
-			{"when": {"t": "since", "f": "f2", "s": 4.0}, "do": [_wave(5, "inf", ["mid", 20, -10], "asha"), _wave(1, "tank", ["mid", 22, -8], "asha", 0.6)]},
 			{"when": {"t": "since", "f": "f3", "s": 3.0}, "do": [_wave(4, "inf", ["en", 16, 12], "asha")]},
 			{"when": {"t": "tag_dead", "tag": "asha", "n": 1}, "do": [radio("Mutter Karga", C_KARGA, "Asha! Kind! Hör mich! Asha!", 5.0)]}],
 		"auto": {"heroes": ["asha"], "move": ["army"]},
-		"lose": _lose_if_dead("asha", "Asha Karim ist gefallen."),
+		"lose": _lose_if_dead("asha", "Asha Karim ist gefallen.") + [
+			{"c": {"t": "tag_reach", "tag": "patrol", "at": ["me", 0, 18], "r": 16.0, "n": 1}, "text": "Die Patrouille hat das Lager erreicht."}],
 	}
 
 static func _s2(maps: Dictionary) -> Dictionary:

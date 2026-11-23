@@ -356,8 +356,14 @@ func show_menu() -> void:
 	menu_layer.color = Color(0, 0, 0, 0.25)
 	var p = _center_panel(menu_layer, 640)
 	var v: VBoxContainer = p.get_child(0)
-	v.add_child(_label("STAHLFRONT", 44, Color(1, 1, 1)))
-	v.add_child(_label("Echtzeitstrategie · Drei Fraktionen · Ein Schlachtfeld", 15, Color(0.6, 0.72, 0.85)))
+	var title = _label("S T A H L F R O N T", 46, Color(1, 1, 1))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+	title.add_theme_constant_override("shadow_offset_y", 3)
+	v.add_child(title)
+	var sub = _label("Echtzeitstrategie · Drei Fraktionen · Ein Schlachtfeld", 15, Color(0.6, 0.72, 0.85))
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(sub)
 	v.add_child(HSeparator.new())
 	v.add_child(_label("Deine Fraktion", 16, Color(0.8, 0.88, 1.0)))
 	var fh = HBoxContainer.new()
@@ -365,7 +371,7 @@ func show_menu() -> void:
 	v.add_child(fh)
 	var fdesc = _label("", 14, Color(0.8, 0.85, 0.9))
 	fdesc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	fdesc.custom_minimum_size = Vector2(600, 150)
+	fdesc.custom_minimum_size = Vector2(600, 104)
 	var fbtns = {}
 	for fid in ["west", "red", "shadow"]:
 		var f: Dictionary = Defs.factions[fid]
@@ -394,12 +400,14 @@ func show_menu() -> void:
 	grid2.columns = 2
 	grid2.add_theme_constant_override("h_separation", 16)
 	grid2.add_theme_constant_override("v_separation", 8)
+	grid2.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	v.add_child(grid2)
 	grid2.add_child(_label("Gegner", 15))
 	var ob = OptionButton.new()
 	for i in [1, 2, 3]:
 		ob.add_item("%d KI-Gegner (jeder gegen jeden)" % i if i > 1 else "1 KI-Gegner")
 	ob.focus_mode = Control.FOCUS_NONE
+	ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ob.item_selected.connect(func(i): _cfg["enemies"] = i + 1)
 	grid2.add_child(ob)
 	grid2.add_child(_label("Schwierigkeit", 15))
@@ -408,12 +416,14 @@ func show_menu() -> void:
 		od.add_item(t)
 	od.select(1)
 	od.focus_mode = Control.FOCUS_NONE
+	od.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	od.item_selected.connect(func(i): _cfg["difficulty"] = i)
 	grid2.add_child(od)
 	_cfg["map"] = Game.map_spec.duplicate()
 	grid2.add_child(_label("Karte", 15))
 	var mrow = HBoxContainer.new()
 	mrow.add_theme_constant_override("separation", 10)
+	mrow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var msum = _label(_map_summary(), 14, Color(0.8, 0.88, 1.0))
 	msum.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	msum.clip_text = true
@@ -1264,7 +1274,8 @@ func _draw_opening_marks(cam: Camera3D) -> void:
 		overlay.draw_arc(sp, 26.0 + pulse * 5.0, 0.0, TAU, 40, col, 2.5)
 		var lp = sp + Vector2(80, -56)
 		overlay.draw_line(sp + Vector2(18, -15), lp + Vector2(-6, 6), col, 1.5)
-		_mark_text(font, lp, "Baudrohne ✓ ausgewählt" if picked else "1  Baudrohne anklicken", col)
+		var bn: String = String(dz.def["name"])
+		_mark_text(font, lp, (bn + " ✓ ausgewählt") if picked else ("1  " + bn + " anklicken"), col)
 	var dep = null
 	var home: Vector3 = Game.players[Game.human]["start"]
 	var bd = 1e9
