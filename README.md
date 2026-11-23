@@ -352,6 +352,11 @@ Schalter folgen auf `--` hinter dem Godot-Aufruf, z. B. `godot --path . -- --aut
 | Schalter | Wirkung |
 |---|---|
 | `--autostart` | Überspringt das Menü, startet mit `--faction=west\|red\|shadow` |
+| `--speedtest` | Ein Panzer fährt 50 m geradeaus, Ausgabe: Zeit und Regen (Regenbremse: 10,7 s trocken, 17,3 s bei vollem Regen) |
+| `--autosell=SEK` | Verkauft nach SEK Sekunden das erste eigene Gebäude (Rückbau-Animation) |
+| `--fauna` | Meldet Herden, Vogelschwärme, Fischschwärme und Schwimmvögel der Karte |
+| `--nossr` `--nossil` `--nossao` `--novolfog` | Schalten einzelne Bildeffekte ab (Messung) |
+| `--fullfx` | Keine automatische Absenkung: sonst fallen bei unter 40 FPS nach 6 s zuerst die Spiegelungen, dann das indirekte Licht weg |
 | `--demo` | KI gegen KI (Zuschauer) |
 | `--enemies=1..3`, `--difficulty=0..2` | Gegneranzahl und Stufe |
 | `--seed=N` | Kartenseed |

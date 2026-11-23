@@ -151,6 +151,9 @@ func _build_world(sp: Dictionary) -> void:
 var _bc_t = 0.0
 
 func _process(delta: float) -> void:
+	_auto_quality(delta)
+	if args.has("speedtest") and Game.running:
+		_speed_test(delta)
 	if args.has("autosell") and Game.running and not _sold:
 		_sell_t += delta
 		if _sell_t > float(args["autosell"]):
@@ -170,6 +173,51 @@ func _process(delta: float) -> void:
 			Game.cam.dist_target = 48.0
 
 var _sold := false
+var _env: Environment
+var _lowfps_t := 0.0
+var _fx_step := 0
+
+## Automatische Absenkung: liegt die Bildrate 6 s lang unter 40, fallen zuerst die Bildschirmspiegelungen, dann das
+## indirekte Licht weg (je etwa 3 ms auf großen Karten). --fullfx schaltet das ab.
+func _auto_quality(delta: float) -> void:
+	if _env == null or args.has("fullfx") or _fx_step >= 2 or not Game.running:
+		return
+	if Engine.get_frames_per_second() < 40:
+		_lowfps_t += delta
+	else:
+		_lowfps_t = max(0.0, _lowfps_t - delta * 0.5)
+	if _lowfps_t > 6.0:
+		_lowfps_t = 0.0
+		if _fx_step == 0 and _env.ssr_enabled:
+			_env.ssr_enabled = false
+			print("GRAFIK: Spiegelungen aus (Bildrate)")
+		elif _env.ssil_enabled:
+			_env.ssil_enabled = false
+			print("GRAFIK: indirektes Licht aus (Bildrate)")
+		_fx_step += 1
+var _st_unit = null
+var _st_t := 0.0
+var _st_from := Vector3.ZERO
+
+## Testschalter --speedtest: ein Panzer fährt 50 m geradeaus; gemessen werden Zeit und Regen/Straße am Start.
+func _speed_test(delta: float) -> void:
+	if _st_unit == null:
+		var st: Vector3 = Game.players[0]["start"]
+		var dir := (Vector3.ZERO - st).normalized()
+		_st_from = st + dir * 24.0
+		_st_from.y = Game.terrain.ground_y(_st_from.x, _st_from.z)
+		_st_unit = Game.spawn_unit(Game.players[0]["faction"] + "_tank", 0, _st_from)
+		var goal := _st_from + dir * 50.0
+		_st_unit.cmd_move(goal)
+		_st_t = 0.0
+		print("SPEEDTEST start rain=%.2f strasse=%s" % [Game.rain, str(Game.on_road(_st_from))])
+		return
+	if _st_t < 0.0:
+		return
+	_st_t += delta
+	if is_instance_valid(_st_unit) and _st_unit.path.is_empty() and _st_t > 0.5:
+		print("SPEEDTEST %.1f m in %.2f s, rain=%.2f" % [Game.flat_dist(_st_unit.position, _st_from), _st_t, Game.rain])
+		_st_t = -1.0
 var _sell_t := 0.0
 
 func _parse_args() -> void:
@@ -197,10 +245,10 @@ func _environment() -> void:
 	env.tonemap_mode = Environment.TONE_MAPPER_ACES
 	env.tonemap_exposure = 1.05
 	env.tonemap_white = 6.0
-	env.ssao_enabled = true
+	env.ssao_enabled = not args.has("nossao")
 	env.ssao_radius = 1.6
 	env.ssao_intensity = 2.2
-	env.ssil_enabled = true
+	env.ssil_enabled = not args.has("nossil")
 	env.ssil_intensity = 0.8
 	env.glow_enabled = true
 	env.glow_intensity = 0.55
@@ -211,7 +259,7 @@ func _environment() -> void:
 	env.fog_light_color = Color(0.62, 0.68, 0.76)
 	env.fog_density = 0.0016
 	env.fog_sky_affect = 0.4
-	env.volumetric_fog_enabled = true
+	env.volumetric_fog_enabled = not args.has("novolfog")
 	env.volumetric_fog_density = 0.006
 	env.volumetric_fog_albedo = Color(0.85, 0.85, 0.9)
 	env.volumetric_fog_length = 140.0
@@ -230,6 +278,7 @@ func _environment() -> void:
 		env.set_glow_level(gl, 0.8)
 	var we = WorldEnvironment.new()
 	we.environment = env
+	_env = env
 	world.add_child(we)
 	# Nachbearbeitung (Schärfen, Farbgebung, Vignette, Filmkorn) unter der Oberfläche
 	if not args.has("nopost"):

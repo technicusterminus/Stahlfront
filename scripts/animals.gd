@@ -51,6 +51,8 @@ func setup(seed_val: int, avoid: Array) -> void:
 			flocks.append(fl)
 
 	_setup_water(bio)
+	if OS.get_cmdline_user_args().has("--fauna"):
+		print("FAUNA herden=%d vogelschwaerme=%d fischschwaerme=%d schwimmer=%d erster_schwimmer=%s" % [herds.size(), flocks.size(), schools.size(), swimmers.size(), str(swimmers[0]["center"]) if swimmers.size() > 0 else "-"])
 
 func _near_any(p: Vector3, pts: Array, r: float) -> bool:
 	for q in pts:

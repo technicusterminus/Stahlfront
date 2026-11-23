@@ -151,7 +151,7 @@ void fragment() {
 	float surf_foam = surf_line * smoothstep(0.32, 0.72, foam_noise) * 1.25;
 
 	// C) Gerstner-Wellenkamm-Schaum (nutzt Jacobian-Stauchung aus vertex)
-	float crest_foam = smoothstep(0.32, 0.65, crest) * smoothstep(0.45, 0.8, foam_noise) * 0.45;
+	float crest_foam = smoothstep(0.55, 0.85, crest) * smoothstep(0.6, 0.9, foam_noise) * 0.18;
 
 	float foam = clamp(max(ship_foam, surf_foam) + crest_foam, 0.0, 1.0);
 
