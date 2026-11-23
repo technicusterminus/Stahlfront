@@ -36,6 +36,7 @@ const PORTRAITS := {
 	"Unbekannte Stimme": "p_orakel", "Dr. Brandt": "p_brandt", "Henrik Aldane": "p_aldane", "Lena Voss": "p_lena",
 	"Mutter Karga": "p_karga", "Ilja Wolkow": "p_wolkow", "Nastja Petrowa": "p_nastja", "Dmitri Karpow": "p_funke",
 	"Irina Zeljenko": "p_irina", "Oberst Lasarew": "p_lasarew", "Hauptmann Reyes": "p_reyes",
+	"Asha Karim": "p_asha", "Jago Moreau": "p_jago", "Pip": "p_pip", "Tobias Wehn": "p_wehn", "Ratte Dorn": "p_dorn",
 }
 var _radio_queue: Array = []
 var _radio_left := 0.0
@@ -48,6 +49,7 @@ var _cine_i := 0
 var _cine_cb: Callable = Callable()
 var _cine_final: Dictionary = {}
 var _cine_tweens: Array = []
+var _cam_tw: Tween = null
 var _bar_top: ColorRect
 var _bar_bot: ColorRect
 var _skip_hint: Label
@@ -892,6 +894,12 @@ func _radio_tick(delta: float) -> void:
 		if spoken > 0.0:
 			_radio_left = spoken + 0.9
 			print("MISSION %s: gesprochen %.1f s | %s" % [m["id"], spoken, String(r["text"]).substr(0, 50)])
+		# Kameraeinstellung zur Zeile: der Schnitt fällt genau dann, wenn die Figur zu sprechen beginnt
+		if r.has("cam") and _cine:
+			var ca: Dictionary = (r["cam"] as Dictionary).duplicate()
+			if not ca.has("time"):
+				ca["time"] = clampf(_radio_left * 0.9, 2.0, 9.0)
+			_cam_to(ca)
 		_radio_panel.position.y = 112.0 if _cine else 78.0
 		_radio_panel.visible = true
 		_radio_panel.reset_size()
@@ -1101,7 +1109,11 @@ func _cam_to(a: Dictionary) -> void:
 	var yaw: float = deg_to_rad(float(a.get("yaw", rad_to_deg(Game.cam.yaw))))
 	var pitch: float = deg_to_rad(float(a.get("pitch", rad_to_deg(Game.cam.pitch))))
 	var dist: float = float(a.get("dist", Game.cam.dist_target))
+	# Neue Einstellung löst die laufende ab, statt mit ihr um die Kamera zu ringen
+	if _cam_tw != null and _cam_tw.is_valid():
+		_cam_tw.kill()
 	var tw = create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_cam_tw = tw
 	tw.tween_property(Game.cam, "position:x", p.x, secs)
 	tw.tween_property(Game.cam, "position:z", p.z, secs)
 	tw.tween_property(Game.cam, "yaw", yaw, secs)

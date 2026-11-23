@@ -283,5 +283,30 @@
     "id": "s_s7_outro",
     "model": "black-forest-labs/flux.2-pro",
     "cost": 0.045
+  },
+  {
+    "id": "p_asha",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "p_jago",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "p_pip",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "p_wehn",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
+  },
+  {
+    "id": "p_dorn",
+    "model": "black-forest-labs/flux.2-pro",
+    "cost": 0.03
   }
 ]

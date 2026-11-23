@@ -35,6 +35,11 @@ CHARACTERS = {
     "Irina Zeljenko": ("nova", "Politische Offizierin, hart, doktrinär, aufrichtig, kühle Präzision, kein Zögern."),
     "Oberst Lasarew": ("ash", "Älterer Oberst, freundlich und vertraut im Ton, aber mit leiser Kälte darunter; väterlich, glatt."),
     "Unbekannte Stimme": ("alloy", "Sanfte, vollkommen gleichmäßige KI-Stimme, durch Funkrauschen verzerrt, unheimlich ruhig, ohne jedes Gefühl."),
+    "Asha Karim": ("shimmer", "Junge Frau, Mitte zwanzig, aus dem Hochland; ruhig, warm, wenige Worte, jedes mit Bedacht; Mut ohne Lautstärke."),
+    "Jago Moreau": ("verse", "Mechaniker Anfang vierzig, gutmütiger Spötter, spricht schnell und mit Händen, lacht über sich selbst, darunter Ernst."),
+    "Pip": ("coral", "Aufgewecktes Kind von neun Jahren, hell, atemlos, begeistert, überschlägt sich vor Eifer."),
+    "Tobias Wehn": ("fable", "Hagerer Kartograf in den Fünfzigern, leise, schuldbewusst, gebildet, zögernd."),
+    "Ratte Dorn": ("onyx", "Bandenführer der Pässe, rau, misstrauisch, polternd, aber darunter ein müder Mann."),
     "Hauptmann Reyes": ("echo", "Energischer Küstenwache-Hauptmann, funkt über Motorenlärm, zuversichtlich und knapp."),
 }
 
@@ -330,10 +335,15 @@ def direction(who, text):
     return voice, base + " Gefühlslage dieser Zeile: " + emo + " Spiele die Szene echt, nicht vorlesend."
 
 
+# Kapitel in scripts/missions_ext.gd schreiben Filmzeilen als ["Sprecher", C_FARBE, "Text"]
+LIST_RE = re.compile(r'\["([^"]+)", C_\w+, "([^"]+)"\]')
+
+
 def collect():
     src = open(MISSIONS, encoding="utf-8").read()
+    ext = open(os.path.join(ROOT, "scripts", "missions_ext.gd"), encoding="utf-8").read()
     seen, out = set(), []
-    for who, text in RADIO_RE.findall(src):
+    for who, text in RADIO_RE.findall(src) + RADIO_RE.findall(ext) + LIST_RE.findall(ext):
         if (who, text) in seen:
             continue
         seen.add((who, text))
