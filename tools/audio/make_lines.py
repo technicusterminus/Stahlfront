@@ -336,7 +336,7 @@ def direction(who, text):
 
 
 # Kapitel in scripts/missions_ext.gd schreiben Filmzeilen als ["Sprecher", C_FARBE, "Text"]
-LIST_RE = re.compile(r'\["([^"]+)", C_\w+, "([^"]+)"\]')
+LIST_RE = re.compile(r'\["([^"]+)", C_\w+, "([^"]+)"[\],]')
 
 
 def collect():

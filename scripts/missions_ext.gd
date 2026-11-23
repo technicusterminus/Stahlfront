@@ -104,7 +104,7 @@ static func _r4(maps: Dictionary) -> Dictionary:
 			_me("inf", 1, ["me", 0, 20], "funke", 1.0, 6.0, 0.9),
 			_me("tank", 4, ["me", 0, 28], "army", 9.0), _me("inf", 8, ["me", 0, 32], "army", 9.0),
 			_me("at", 2, ["me", 6, 32], "army", 4.0), _me("harv", 4, ["me", -6, 24], "convoy", 6.0, 1.0, 0.45)],
-		"intro": _intro("s_r4_intro", ["me", 0, 24], 110.0, 52.0, 40.0, "KAPITEL 4", "DER LANGE MARSCH  ·  Die gesprengte Brücke", [
+		"intro": _intro("s_r4_intro", ["me", 0, 24], 110.0, 52.0, 40.0, "KAPITEL 4", "DER LANGE MARSCH  ·  Der gesprengte Viadukt", [
 			["Dmitri Karpow", C_FUNKE, "Chef, sie haben die Brücke weggeblasen. Nicht abgebrannt, nicht beschädigt, weggeblasen. Da, wo sie war, ist jetzt ein Loch mit sehr viel Luft darunter.", {"at": ["mid", -20, 15], "dist": 110.0, "yaw": 35.0, "pitch": -42.0}],
 			["Ilja Wolkow", C_WOLKOW, "Wie lange brauchst du?"],
 			["Dmitri Karpow", C_FUNKE, "Mit Schienen, Containern und ein bisschen Dummheit? Sechs Stunden. Mit Beschuss von drüben vielleicht sieben.", {"at": ["me", 4, 22], "dist": 38.0, "yaw": 15.0, "pitch": -24.0}],
