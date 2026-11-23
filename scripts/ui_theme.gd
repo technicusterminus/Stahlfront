@@ -114,7 +114,9 @@ static func _premium(fid: String, W: int, H: int, state: String, is_button: bool
 				light = 1.4
 				rim = rim.lightened(0.3)
 			"pressed":
-				light = 0.72
+				# gedrückt und zugleich "ausgewählt" (Umschaltknöpfe): dunklere Fläche, aber hell leuchtende Fassung
+				light = 0.85
+				rim = rim.lightened(0.5)
 			"disabled":
 				light = 0.65
 				rim = Color(0.36, 0.36, 0.37)
