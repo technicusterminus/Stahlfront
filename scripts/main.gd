@@ -190,6 +190,15 @@ var _bc_t = 0.0
 
 func _process(delta: float) -> void:
 	_auto_quality(delta)
+	if args.has("selecthq") and Game.running and not _hq_sel:
+		_hq_t += delta
+	if args.has("selecthq") and Game.running and not _hq_sel and _hq_t > 2.0:
+		# Testschalter: eigenes Hauptquartier auswählen (Bild der Befehlsleiste)
+		for b in Game.buildings:
+			if b.owner_id == Game.human and b.def["role"] == "hq":
+				Game.ctrl.set_selection([b])
+				Game.cam.look_at_pos(b.position)
+		_hq_sel = true
 	if args.has("speedtest") and Game.running:
 		_speed_test(delta)
 	if args.has("autosell") and Game.running and not _sold:
@@ -211,6 +220,8 @@ func _process(delta: float) -> void:
 			Game.cam.dist_target = 48.0
 
 var _sold := false
+var _hq_sel := false
+var _hq_t := 0.0
 var _env: Environment
 var _lowfps_t := 0.0
 var _fx_step := 0

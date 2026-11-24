@@ -215,7 +215,8 @@ func _build_bottom() -> void:
 	var hpbox = HBoxContainer.new()
 	info.add_child(hpbox)
 	info_hp = ProgressBar.new()
-	info_hp.custom_minimum_size = Vector2(240, 12)
+	info_hp.custom_minimum_size = Vector2(260, 16)
+	info_hp.add_theme_stylebox_override("background", UITheme.bar_back())
 	info_hp.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	info_hp.show_percentage = false
 	hpbox.add_child(info_hp)
@@ -226,10 +227,10 @@ func _build_bottom() -> void:
 	info_status.custom_minimum_size = Vector2(300, 0)
 	info.add_child(info_status)
 	prod_bar = ProgressBar.new()
-	prod_bar.custom_minimum_size = Vector2(240, 8)
 	prod_bar.show_percentage = false
-	var fill = _sb(Color(0.35, 0.65, 1.0), Color(0, 0, 0, 0), 3, 0, 0.0)
-	prod_bar.add_theme_stylebox_override("fill", fill)
+	prod_bar.custom_minimum_size = Vector2(260, 10)
+	prod_bar.add_theme_stylebox_override("background", UITheme.bar_back())
+	prod_bar.add_theme_stylebox_override("fill", UITheme.bar_fill(Color("7dd3fc"), Color("38bdf8"), Color("0369a1")))
 	info.add_child(prod_bar)
 	queue_box = HBoxContainer.new()
 	queue_box.add_theme_constant_override("separation", 4)
@@ -247,7 +248,7 @@ func _build_bottom() -> void:
 
 func _build_messages() -> void:
 	msg_box = VBoxContainer.new()
-	msg_box.position = Vector2(16, 64)
+	msg_box.position = Vector2(16, 78)
 	msg_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	msg_box.add_theme_constant_override("separation", 3)
 	root.add_child(msg_box)
@@ -353,8 +354,8 @@ func mouse_over_ui(at := Vector2(-1.0, -1.0)) -> bool:
 
 func show_menu() -> void:
 	menu_layer = _dim_layer()
-	menu_layer.color = Color(0, 0, 0, 0.25)
-	var p = _center_panel(menu_layer, 640)
+	menu_layer.color = Color(0.016, 0.03, 0.055, 0.62)   # Abdunkelung: das Menü hebt sich klar von der Karte ab
+	var p = _center_panel(menu_layer, 700)
 	var v: VBoxContainer = p.get_child(0)
 	var title = _label("S T A H L F R O N T", 46, Color(1, 1, 1))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -373,14 +374,29 @@ func show_menu() -> void:
 	fdesc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	fdesc.custom_minimum_size = Vector2(600, 104)
 	var fbtns = {}
+	fh.alignment = BoxContainer.ALIGNMENT_CENTER
+	fh.add_theme_constant_override("separation", 14)
 	for fid in ["west", "red", "shadow"]:
 		var f: Dictionary = Defs.factions[fid]
 		var b = Button.new()
-		b.text = f["name"]
 		b.toggle_mode = true
-		b.custom_minimum_size = Vector2(198, 44)
+		b.custom_minimum_size = Vector2(200, 112)
 		b.focus_mode = Control.FOCUS_NONE
-		b.add_theme_color_override("font_color", f["color"].lightened(0.35))
+		var cv = VBoxContainer.new()
+		cv.set_anchors_preset(Control.PRESET_FULL_RECT)
+		cv.alignment = BoxContainer.ALIGNMENT_CENTER
+		cv.add_theme_constant_override("separation", 4)
+		cv.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		b.add_child(cv)
+		var em = EmblemScript.new()
+		em.custom_minimum_size = Vector2(52, 52)
+		em.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		cv.add_child(em)
+		em.set_faction(fid, f["color"])
+		var nl = _label(String(f["name"]).to_upper(), 15, f["color"].lightened(0.45))
+		nl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		nl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		cv.add_child(nl)
 		fh.add_child(b)
 		fbtns[fid] = b
 	var pick_faction = func(fid: String):
@@ -407,7 +423,8 @@ func show_menu() -> void:
 	for i in [1, 2, 3]:
 		ob.add_item("%d KI-Gegner (jeder gegen jeden)" % i if i > 1 else "1 KI-Gegner")
 	ob.focus_mode = Control.FOCUS_NONE
-	ob.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ob.custom_minimum_size = Vector2(340, 36)
+	ob.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	ob.item_selected.connect(func(i): _cfg["enemies"] = i + 1)
 	grid2.add_child(ob)
 	grid2.add_child(_label("Schwierigkeit", 15))
@@ -416,7 +433,8 @@ func show_menu() -> void:
 		od.add_item(t)
 	od.select(1)
 	od.focus_mode = Control.FOCUS_NONE
-	od.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	od.custom_minimum_size = Vector2(340, 36)
+	od.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	od.item_selected.connect(func(i): _cfg["difficulty"] = i)
 	grid2.add_child(od)
 	_cfg["map"] = Game.map_spec.duplicate()
@@ -434,8 +452,8 @@ func show_menu() -> void:
 	var bh = HBoxContainer.new()
 	bh.add_theme_constant_override("separation", 10)
 	v.add_child(bh)
-	var start = _button("Gefecht starten", func(): _start(false), Vector2(300, 48))
-	start.add_theme_font_size_override("font_size", 18)
+	var start = _button("GEFECHT STARTEN", func(): _start(false), Vector2(300, 56))
+	start.theme_type_variation = "PrimaryButton"
 	bh.add_child(start)
 	bh.add_child(_button("KI gegen KI zuschauen", func(): _start(true), Vector2(190, 48)))
 	bh.add_child(_button("Kampagne und Tutorial …", func(): CampaignMenu.open(self), Vector2(220, 48)))
@@ -700,10 +718,23 @@ func on_match_started() -> void:
 # ---------------------------------------------------------------- Meldungen
 
 func add_message(text: String, col: Color) -> void:
-	var l = _label(text, 15, col)
-	l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
-	l.add_theme_constant_override("shadow_offset_x", 1)
-	l.add_theme_constant_override("shadow_offset_y", 1)
+	var l = PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.035, 0.055, 0.09, 0.8)
+	sb.border_color = col
+	sb.border_width_left = 3
+	sb.set_corner_radius_all(3)
+	sb.content_margin_left = 10
+	sb.content_margin_right = 12
+	sb.content_margin_top = 3
+	sb.content_margin_bottom = 4
+	l.add_theme_stylebox_override("panel", sb)
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var tl = _label(text, 15, col)
+	tl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+	tl.add_theme_constant_override("shadow_offset_x", 1)
+	tl.add_theme_constant_override("shadow_offset_y", 1)
+	l.add_child(tl)
 	msg_box.add_child(l)
 	while msg_box.get_child_count() > 7:
 		msg_box.get_child(0).free()
@@ -926,11 +957,17 @@ func _opening_hint(faction: String) -> String:
 		return "Unten „%s“ wählen%s." % [name_of_building, " und nahe einem Nachschubdepot bauen" if role == "supply" else ""]
 	return "%s auswählen (gelb markiert) und unten „%s“ wählen%s." % [builder_name, name_of_building, " (Bauplatz am blau markierten Nachschubdepot)" if role == "supply" else ""]
 
+var _hp_tier := -1
+
 func _set_hp(hp: float, mhp: float) -> void:
 	var f: float = clamp(hp / max(mhp, 1.0), 0.0, 1.0)
 	info_hp.value = f * 100.0
-	var sb = _sb(_hp_col(f), Color(0, 0, 0, 0), 3, 0, 0.0)
-	info_hp.add_theme_stylebox_override("fill", sb)
+	# Zellenbalken mit Verlauf; die Farbstufe wechselt nur, wenn sich die Stufe ändert
+	var tier := 0 if f > 0.6 else (1 if f > 0.3 else 2)
+	if tier != _hp_tier:
+		_hp_tier = tier
+		var g: Array = [[Color("4ade80"), Color("22c55e"), Color("15803d")], [Color("fde047"), Color("eab308"), Color("a16207")], [Color("f87171"), Color("dc2626"), Color("7f1d1d")]][tier]
+		info_hp.add_theme_stylebox_override("fill", UITheme.bar_fill(g[0], g[1], g[2]))
 	info_hp_lbl.text = "%d / %d" % [int(max(hp, 0)), int(mhp)]
 
 func _hp_col(f: float) -> Color:
@@ -1314,7 +1351,12 @@ func _draw_opening_marks(cam: Camera3D) -> void:
 		_ground_ring(cam, dpos, 24.0, Color(0.5, 1.0, 0.6, 0.8), true)
 
 func _mark_text(font, pos: Vector2, text: String, col: Color) -> void:
-	overlay.draw_string_outline(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 5, Color(0, 0, 0, 0.9))
+	# dunkle Plakette mit farbigem Rand hinter dem Text: auf jedem Gelände lesbar
+	var sz: Vector2 = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15)
+	var r := Rect2(pos + Vector2(-8, -sz.y + 2), sz + Vector2(16, 8))
+	overlay.draw_rect(r, Color(0.035, 0.05, 0.085, 0.85), true)
+	overlay.draw_rect(r, Color(col.r, col.g, col.b, 0.9), false, 1.0)
+	overlay.draw_string_outline(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, 4, Color(0, 0, 0, 0.8))
 	overlay.draw_string(font, pos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, col)
 
 func _ground_ring(cam: Camera3D, center: Vector3, radius: float, col: Color, dashed: bool) -> void:

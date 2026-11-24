@@ -88,104 +88,172 @@ static func _edge(fid: String, x: float, y: float, w: float, h: float, r: float)
 		return _chamfer(x, y, w, h, 1.0, r)
 	return -_sd_rr(x + 0.5, y + 0.5, 1.0, 1.0, w - 1.0, h - 1.0, r)
 
-static func _premium(fid: String, W: int, H: int, state: String, is_button: bool) -> Image:
+## Fassung einer Tafel oder eines Knopfes. Aufbau von außen nach innen:
+##   Schlagschatten (liegt außerhalb der Fläche, per expand_margin über den Rand hinaus) -> Rahmen der Fraktion ->
+##   schwarze Nut -> ruhige, dunkle Fläche (Materialbild stark abgedämpft, Abnutzung nur zu den Kanten hin).
+## kind: "panel", "button" oder "primary" (Hauptaktion, gefüllt in Fraktionsfarbe).
+const SHADOW_PAD := {"panel": 10, "button": 5, "primary": 6}
+
+static func _premium(fid: String, W: int, H: int, state: String, kind: String) -> Image:
+	var is_button := kind != "panel"
+	var pad := float(SHADOW_PAD[kind])
 	var img := Image.create(W, H, false, Image.FORMAT_RGBA8)
 	var m: Image = _mat(fid)
 	var mw := m.get_width()
 	var mh := m.get_height()
-	var r := 14.0 if fid == "west" else (16.0 if fid == "red" else 12.0)
-	if is_button:
-		r = 9.0 if fid == "west" else (10.0 if fid == "red" else 8.0)
-	var rim := Color(0.45, 0.88, 1.0)
-	var tint := Color(1.0, 1.0, 1.0)
-	var alpha := 0.92
+	var r := 4.0
+	var rim_w := 1.5
+	var rim := Color("22d3ee")
+	var base := Color(0.05, 0.07, 0.1)
+	var tint := Color(1, 1, 1)
+	var alpha := 0.96
+	if fid == "west":
+		r = 3.0 if is_button else 4.0
+		rim_w = 1.5
+	elif fid == "red":
+		r = 6.0 if is_button else 12.0
+		rim_w = 3.0 if is_button else 4.0
+		rim = Color("d97706")
+		base = Color(0.1, 0.095, 0.09)
+	else:
+		r = 5.0 if is_button else 8.0
+		rim_w = 2.0
+		rim = Color("b07a3a")
+		base = Color(0.11, 0.075, 0.05)
+		tint = Color(0.9, 0.78, 0.66)
+	var calm := 0.62
 	var light := 1.0
-	if fid == "red":
-		rim = Color(0.86, 0.66, 0.32)
-		tint = Color(1.05, 0.98, 0.95)
-		alpha = 0.96
-	elif fid == "shadow":
-		rim = Color(0.72, 0.52, 0.28)
-		tint = Color(1.12, 1.0, 0.9)
-		alpha = 0.96
+	var fill_top := Color(0, 0, 0, 0)
+	var fill_bot := Color(0, 0, 0, 0)
+	if kind == "primary":
+		calm = 0.82
+		if fid == "west":
+			fill_top = Color("0e7490")
+			fill_bot = Color("075985")
+			rim = Color("38bdf8")
+		elif fid == "red":
+			fill_top = Color("b91c1c")
+			fill_bot = Color("7f1d1d")
+			rim = Color("f59e0b")
+		else:
+			fill_top = Color("b45309")
+			fill_bot = Color("78350f")
+			rim = Color("fbbf24")
 	if is_button:
 		match state:
 			"hover":
-				light = 1.4
-				rim = rim.lightened(0.3)
+				light = 1.35
+				rim = rim.lightened(0.35)
 			"pressed":
-				# gedrückt und zugleich "ausgewählt" (Umschaltknöpfe): dunklere Fläche, aber hell leuchtende Fassung
-				light = 0.85
-				rim = rim.lightened(0.5)
+				light = 0.9
+				rim = rim.lightened(0.6)
 			"disabled":
-				light = 0.65
-				rim = Color(0.36, 0.36, 0.37)
+				light = 0.6
+				rim = Color(0.32, 0.33, 0.35)
 				alpha *= 0.85
-	var thread := Color(0.86, 0.74, 0.52) if state != "disabled" else Color(0.45, 0.42, 0.38)
-	var st_d := 5.5 if is_button else 9.0
+	var thread := Color("d6b88a") if state != "disabled" else Color(0.42, 0.39, 0.35)
+	var st_d := rim_w + 4.5 if is_button else rim_w + 7.0
 	for y in H:
-		var vy := float(y) / float(H)
 		for x in W:
-			var e := _edge(fid, x, y, W, H, r)
+			var e := _edge(fid, x - pad, y - pad, W - 2.0 * pad, H - 2.0 * pad, r)
 			if e <= -0.5:
-				img.set_pixel(x, y, Color(0, 0, 0, 0))
+				# Schlagschatten, leicht nach unten versetzt
+				var es := _edge(fid, x - pad, y - pad - 2.0, W - 2.0 * pad, H - 2.0 * pad, r)
+				var sh := _ss(-pad, 0.0, es) * 0.6
+				img.set_pixel(x, y, Color(0, 0, 0, sh * (0.7 if state == "disabled" else 1.0)))
 				continue
 			var cov := _ss(-0.5, 0.8, e)
+			var vy := clampf((float(y) - pad) / (float(H) - 2.0 * pad), 0.0, 1.0)
 			var mc: Color = m.get_pixel(x % mw, y % mh)
-			var c := Color(mc.r * tint.r * light, mc.g * tint.g * light, mc.b * tint.b * light)
-			# sanfte Wölbung: oben heller, unten dunkler, Rand abgedunkelt
-			c = Color(c.r * (1.08 - vy * 0.22), c.g * (1.08 - vy * 0.22), c.b * (1.08 - vy * 0.22))
-			c = c.darkened(0.35 * (1.0 - _ss(2.0, 14.0, e)))
+			# Fläche: Material stark abgedämpft, zur Kante hin kommt die Struktur durch
+			var edge_show := 1.0 - _ss(rim_w + 2.0, rim_w + 26.0, e)
+			var c := Color(mc.r * tint.r, mc.g * tint.g, mc.b * tint.b).lerp(base, calm * (1.0 - edge_show * 0.45))
+			if kind == "primary":
+				c = fill_top.lerp(fill_bot, vy).lerp(c, 0.18)
+			c = Color(c.r * light, c.g * light, c.b * light)
+			c = c * (1.06 - vy * 0.14)
 			if state == "pressed":
-				c = c.darkened(0.25 * (1.0 - _ss(2.0, 8.0, e)))
-			if fid == "west":
-				var k := 1.0 - _ss(0.0, 2.2, abs(e - 1.6))
-				c = c.lerp(rim, k * 0.95)
-				c = c.lerp(rim, (1.0 - _ss(2.0, 9.0, e)) * 0.12)
-			elif fid == "red":
-				var band := 1.0 - _ss(4.0, 5.5, e)
-				if band > 0.0:
-					var brass := rim.lightened(0.25 * (1.0 - vy)).darkened(0.25 * vy)
-					if e < 1.6:
-						brass = brass.darkened(0.45)
-					c = c.lerp(brass, band)
-				if not is_button:
-					c = c.lerp(Color(0.75, 0.14, 0.1), (1.0 - _ss(0.0, 0.9, abs(e - 7.0))) * 0.9)
-			else:
-				c = c.darkened(0.5 * (1.0 - _ss(0.0, 3.0, e)))
-				var on_line := 1.0 - _ss(0.0, 0.85, abs(e - st_d))
-				var horiz: bool = y < st_d + 3 or y > H - st_d - 4
-				var dash: bool = (int(x / 5.0) % 2 == 0) if horiz else (int(y / 5.0) % 2 == 0)
+				c = c.darkened(0.3 * (1.0 - _ss(rim_w + 1.0, rim_w + 9.0, e)))
+			# schwarze Nut direkt innerhalb des Rahmens
+			var groove := 1.0 - _ss(0.0, 0.9, abs(e - (rim_w + 1.0)))
+			c = c.lerp(Color(0, 0, 0), groove * 0.75)
+			# Rahmen der Fraktion
+			var on_rim := 1.0 - _ss(rim_w - 0.4, rim_w + 0.4, e)
+			if on_rim > 0.0:
+				var rc := rim
+				if fid == "red":
+					rc = Color("fde68a").lerp(rim, clampf(vy * 1.6, 0.0, 1.0)).darkened(0.35 * vy)
+					if e < 1.0:
+						rc = rc.darkened(0.5)
+				elif fid == "shadow":
+					rc = rim.darkened(0.25 + 0.2 * vy)
+				else:
+					rc = rim
+				c = c.lerp(rc, on_rim)
+			if fid == "west" and not is_button:
+				c = c.lerp(rim, (1.0 - _ss(rim_w, rim_w + 10.0, e)) * 0.08)
+			if fid == "red" and kind == "panel":
+				c = c.lerp(Color(0.72, 0.13, 0.1), (1.0 - _ss(0.0, 0.8, abs(e - (rim_w + 5.0)))) * 0.85)
+			if fid == "shadow":
+				var on_line := 1.0 - _ss(0.0, 0.8, abs(e - st_d))
+				var horiz: bool = (y - pad) < st_d + 3 or (y - pad) > (H - 2.0 * pad) - st_d - 4
+				var dash: bool = (int(x / 6.0) % 2 == 0) if horiz else (int(y / 6.0) % 2 == 0)
 				if on_line > 0.0 and dash:
-					c = c.lerp(thread, on_line * 0.85)
-				c = c.lightened((1.0 - _ss(0.0, 0.8, abs(e - (st_d - 2.2)))) * 0.08)
+					c = c.lerp(thread, on_line * 0.9)
+				var hole := 1.0 - _ss(0.0, 0.8, abs(e - (st_d + 1.3)))
+				if hole > 0.0 and dash:
+					c = c.darkened(hole * 0.5)
 			c.a = alpha * cov
 			img.set_pixel(x, y, c)
-	if not is_button:
-		var inset := 13.0
-		var pts := [Vector2(inset, inset), Vector2(W - inset - 1, inset), Vector2(inset, H - inset - 1), Vector2(W - inset - 1, H - inset - 1)]
-		if fid == "red":
-			for p in pts:
-				_rivet(img, p.x, p.y, 3.2, Color(0.62, 0.5, 0.3))
-		elif fid == "shadow":
-			for p in pts:
-				_rivet(img, p.x, p.y, 3.0, Color(0.58, 0.42, 0.22))
-		else:
-			for p in pts:
-				var sx := 1 if p.x < W * 0.5 else -1
-				var sy := 1 if p.y < H * 0.5 else -1
-				for i in range(0, 9):
-					for q in [Vector2(p.x - 6 * sx + i * sx, p.y - 6 * sy), Vector2(p.x - 6 * sx, p.y - 6 * sy + i * sy)]:
-						if q.x >= 0 and q.y >= 0 and q.x < W and q.y < H:
-							var o := img.get_pixel(int(q.x), int(q.y))
-							img.set_pixel(int(q.x), int(q.y), o.lerp(Color(0.6, 0.95, 1.0, o.a), 0.8))
+	if kind == "panel":
+		_panel_ornaments(img, fid, W, H, pad)
 	return img
 
+static func _px_over(img: Image, x: int, y: int, col: Color, a: float) -> void:
+	if x < 0 or y < 0 or x >= img.get_width() or y >= img.get_height():
+		return
+	var o := img.get_pixel(x, y)
+	if o.a < 0.3:
+		return
+	img.set_pixel(x, y, Color(o.r, o.g, o.b, o.a).lerp(Color(col.r, col.g, col.b, o.a), a))
+
+## Eckmarken (Westbund), Nietenreihen (Rot), dreieckige Bronzekappen (Schatten).
+static func _panel_ornaments(img: Image, fid: String, W: int, H: int, pad: float) -> void:
+	var x0 := int(pad)
+	var y0 := int(pad)
+	var x1 := W - int(pad) - 1
+	var y1 := H - int(pad) - 1
+	if fid == "west":
+		var col := Color("67e8f9")
+		for corner in [[x0, y0, 1, 1], [x1, y0, -1, 1], [x0, y1, 1, -1], [x1, y1, -1, -1]]:
+			for i in 16:
+				for t in 3:
+					_px_over(img, corner[0] + (i + 1) * corner[2], corner[1] + (t + 1) * corner[3], col, 0.95)
+					_px_over(img, corner[0] + (t + 1) * corner[2], corner[1] + (i + 1) * corner[3], col, 0.95)
+	elif fid == "red":
+		var y_top := y0 + 9
+		var y_bot := y1 - 9
+		var xs := [x0 + 14, x1 - 14, (x0 + x1) / 2]
+		for x in xs:
+			_rivet(img, x, y_top, 4.2, Color(0.66, 0.52, 0.3))
+			_rivet(img, x, y_bot, 4.2, Color(0.66, 0.52, 0.3))
+	else:
+		var cap := 14
+		for corner in [[x0, y0, 1, 1], [x1, y0, -1, 1], [x0, y1, 1, -1], [x1, y1, -1, -1]]:
+			for i in cap:
+				for j in cap - i:
+					var edge_px: bool = j == cap - i - 1 or i == 0 or j == 0
+					var col := Color("f59e0b") if edge_px else Color("92400e").lerp(Color("b45309"), float(j) / cap)
+					_px_over(img, corner[0] + (i + 1) * corner[2], corner[1] + (j + 1) * corner[3], col, 0.95)
+
 static func _premium_panel(fid: String) -> Image:
-	return _premium(fid, 256, 256, "normal", false)
+	return _premium(fid, 256 + 2 * SHADOW_PAD["panel"], 256 + 2 * SHADOW_PAD["panel"], "normal", "panel")
 
 static func _premium_button(fid: String, state: String) -> Image:
-	return _premium(fid, 220, 72, state, true)
+	return _premium(fid, 220 + 2 * SHADOW_PAD["button"], 72 + 2 * SHADOW_PAD["button"], state, "button")
+
+static func _primary_button(fid: String, state: String) -> Image:
+	return _premium(fid, 260 + 2 * SHADOW_PAD["primary"], 72 + 2 * SHADOW_PAD["primary"], state, "primary")
 
 # ---------------------------------------------------------------- Zusammenbau
 
@@ -194,13 +262,18 @@ static func _tex(key: String, img_fn: Callable) -> ImageTexture:
 		_cache[key] = ImageTexture.create_from_image(img_fn.call())
 	return _cache[key]
 
-static func _sbt(tex: Texture2D, margin: float, content: float) -> StyleBoxTexture:
+static func _sbt(tex: Texture2D, margin: float, content: float, shadow := 0.0) -> StyleBoxTexture:
 	var s = StyleBoxTexture.new()
 	s.texture = tex
-	s.texture_margin_left = margin
-	s.texture_margin_right = margin
-	s.texture_margin_top = margin
-	s.texture_margin_bottom = margin
+	s.texture_margin_left = margin + shadow
+	s.texture_margin_right = margin + shadow
+	s.texture_margin_top = margin + shadow
+	s.texture_margin_bottom = margin + shadow
+	# der Schatten liegt außerhalb der eigentlichen Fläche
+	s.expand_margin_left = shadow
+	s.expand_margin_right = shadow
+	s.expand_margin_top = shadow
+	s.expand_margin_bottom = shadow
 	s.content_margin_left = content
 	s.content_margin_right = content
 	s.content_margin_top = content * 0.7
@@ -234,7 +307,7 @@ static func font(fid: String) -> Font:
 			f.font_weight = 600
 		_:
 			f.font_names = PackedStringArray(["Bahnschrift", "Segoe UI", "Arial"])
-			f.font_weight = 400
+			f.font_weight = 600
 	return f
 
 static func build(fid: String) -> Theme:
@@ -256,9 +329,10 @@ static func build(fid: String) -> Theme:
 			btn_col = Color(0.96, 0.9, 0.78)
 			btn_hover = Color(1.0, 0.95, 0.7)
 			btn_dis = Color(0.66, 0.62, 0.54)
-			panel = _sbt(_tex("red_panel2", _premium_panel.bind("red")), 28, 18)
+			panel = _sbt(_tex("red_panel3", _premium_panel.bind("red")), 28, 18, SHADOW_PAD["panel"])
 			for s in states:
-				t.set_stylebox(s, "Button", _sbt(_tex("red_btn2_" + s, _premium_button.bind("red", s)), 14, 10))
+				t.set_stylebox(s, "Button", _sbt(_tex("red_btn3_" + s, _premium_button.bind("red", s)), 14, 10, SHADOW_PAD["button"]))
+				t.set_stylebox(s, "PrimaryButton", _sbt(_tex("red_pri_" + s, _primary_button.bind("red", s)), 16, 12, SHADOW_PAD["primary"]))
 			tip = _flat(Color(0.1, 0.09, 0.09, 0.97), Color(0.75, 0.58, 0.28), 2, 2, 10.0)
 		"shadow":
 			text_col = Color(0.95, 0.88, 0.74)
@@ -267,15 +341,17 @@ static func build(fid: String) -> Theme:
 			btn_dis = Color(0.55, 0.5, 0.44)
 			size = 15
 			bsize = 14
-			panel = _sbt(_tex("shadow_panel2", _premium_panel.bind("shadow")), 26, 18)
+			panel = _sbt(_tex("shadow_panel3", _premium_panel.bind("shadow")), 26, 18, SHADOW_PAD["panel"])
 			for s in states:
-				t.set_stylebox(s, "Button", _sbt(_tex("shadow_btn2_" + s, _premium_button.bind("shadow", s)), 12, 10))
+				t.set_stylebox(s, "Button", _sbt(_tex("shadow_btn3_" + s, _premium_button.bind("shadow", s)), 12, 10, SHADOW_PAD["button"]))
+				t.set_stylebox(s, "PrimaryButton", _sbt(_tex("shadow_pri_" + s, _primary_button.bind("shadow", s)), 16, 12, SHADOW_PAD["primary"]))
 			tip = _flat(Color(0.13, 0.09, 0.06, 0.97), Color(0.72, 0.52, 0.28), 6, 1, 10.0)
 			tip_col = Color(0.95, 0.88, 0.74)
 		_:
-			panel = _sbt(_tex("west_panel2", _premium_panel.bind("west")), 24, 18)
+			panel = _sbt(_tex("west_panel3", _premium_panel.bind("west")), 24, 18, SHADOW_PAD["panel"])
 			for s in states:
-				t.set_stylebox(s, "Button", _sbt(_tex("west_btn2_" + s, _premium_button.bind("west", s)), 12, 10))
+				t.set_stylebox(s, "Button", _sbt(_tex("west_btn3_" + s, _premium_button.bind("west", s)), 12, 10, SHADOW_PAD["button"]))
+				t.set_stylebox(s, "PrimaryButton", _sbt(_tex("west_pri_" + s, _primary_button.bind("west", s)), 16, 12, SHADOW_PAD["primary"]))
 			tip = _flat(Color(0.04, 0.09, 0.14, 0.97), Color(0.4, 0.85, 1.0), 10, 1, 10.0)
 	t.set_stylebox("panel", "PanelContainer", panel)
 	t.set_stylebox("focus", "Button", StyleBoxEmpty.new())
@@ -293,6 +369,18 @@ static func build(fid: String) -> Theme:
 	t.set_color("font_color", "Label", text_col)
 	t.set_font_size("font_size", "Label", size)
 	t.set_stylebox("panel", "TooltipPanel", tip)
+	# Lesbarkeit auf Material und Gelände: Schatten unter jeder Schrift
+	for typ in ["Label", "Button", "OptionButton"]:
+		t.set_color("font_shadow_color", typ, Color(0, 0, 0, 0.8))
+		t.set_constant("shadow_offset_x", typ, 1)
+		t.set_constant("shadow_offset_y", typ, 1)
+	# Hauptaktion (z. B. "Gefecht starten"): gefüllt in Fraktionsfarbe, größer, kräftiger
+	t.set_type_variation("PrimaryButton", "Button")
+	t.set_stylebox("focus", "PrimaryButton", StyleBoxEmpty.new())
+	t.set_color("font_color", "PrimaryButton", Color(1, 0.98, 0.92))
+	t.set_color("font_hover_color", "PrimaryButton", Color(1, 1, 1))
+	t.set_color("font_pressed_color", "PrimaryButton", Color(1, 1, 1))
+	t.set_font_size("font_size", "PrimaryButton", 19)
 	t.set_color("font_color", "TooltipLabel", tip_col)
 	t.set_font_size("font_size", "TooltipLabel", 13)
 	match fid:
@@ -307,3 +395,25 @@ static func build(fid: String) -> Theme:
 			t.set_stylebox("fill", "ProgressBar", _flat(Color(0.3, 0.8, 1.0), Color(0, 0, 0, 0), 6, 0, 0.0))
 	t.set_color("font_color", "ProgressBar", Color(1, 1, 1, 0))
 	return t
+
+## Füllung für Lebens- und Fortschrittsbalken: senkrechter Verlauf mit feinen Zellstrichen (alle 20 px).
+static func bar_fill(top: Color, mid: Color, bot: Color) -> StyleBoxTexture:
+	var key := "bar_%s_%s_%s" % [top.to_html(), mid.to_html(), bot.to_html()]
+	if not _cache.has(key):
+		var img := Image.create(20, 16, false, Image.FORMAT_RGBA8)
+		for y in 16:
+			var v := float(y) / 15.0
+			var c := top.lerp(mid, v * 2.0) if v < 0.5 else mid.lerp(bot, (v - 0.5) * 2.0)
+			if y == 1:
+				c = c.lightened(0.25)
+			for x in 20:
+				img.set_pixel(x, y, c.darkened(0.45) if x == 19 else c)
+		_cache[key] = ImageTexture.create_from_image(img)
+	var s := StyleBoxTexture.new()
+	s.texture = _cache[key]
+	s.axis_stretch_horizontal = StyleBoxTexture.AXIS_STRETCH_MODE_TILE
+	s.axis_stretch_vertical = StyleBoxTexture.AXIS_STRETCH_MODE_STRETCH
+	return s
+
+static func bar_back() -> StyleBoxFlat:
+	return _flat(Color("090d12"), Color("334155"), 2, 1, 0.0)
