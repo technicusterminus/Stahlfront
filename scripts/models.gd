@@ -508,10 +508,20 @@ static func _architecture_finish(source: BaseMaterial3D) -> BaseMaterial3D:
 		_painted_materials[key] = finish
 	return _painted_materials[key]
 
+const TRACKED := ["tank", "heavy_tank", "aa", "artillery", "dozer", "laser_tank", "flame_tank", "scorpion"]
+
 static func build_unit(model: String, col: Color, faction: String) -> Dictionary:
 	set_style(faction, col, false)
 	var out = _build_unit(model, col, faction)
 	clear_style()
+	# laufende Ketten für alle Kettenfahrzeuge ohne eigenes Kettenmodell (der Falke hat track_visual)
+	if model in TRACKED and not out.has("track_visual") and not OS.get_cmdline_user_args().has("--notrackbelt"):
+		var belt = load("res://scripts/track_belt.gd").new()
+		if belt.setup(out["root"]):
+			out["root"].add_child(belt)
+			out["track_belt"] = belt
+		else:
+			belt.free()
 	return out
 
 static func _build_unit(model: String, col: Color, faction: String) -> Dictionary:
@@ -607,7 +617,9 @@ static func _tank(r: Node3D, pc: Material, model: String, out: Dictionary) -> vo
 	var small = model == "scorpion"
 	var k = 0.82 if small else 1.0
 	for sx in [-1.0, 1.0]:
-		box(r, Vector3(0.7 * k, 0.8, 4.3 * k), Vector3(sx * 1.15 * k, 0.45, 0), dark())
+		var tr = box(r, Vector3(0.7 * k, 0.8, 4.3 * k), Vector3(sx * 1.15 * k, 0.45, 0), dark())
+		if tr != null:
+			tr.set_meta("track", true)
 		box(r, Vector3(0.74 * k, 0.12, 4.0 * k), Vector3(sx * 1.15 * k, 0.88, 0), pc)
 	box(r, Vector3(2.0 * k, 0.65, 3.8 * k), Vector3(0, 0.95, -0.1), pc)
 	box(r, Vector3(2.0 * k, 0.4, 0.9 * k), Vector3(0, 0.9, 1.95 * k), pc, Vector3(-0.45, 0, 0))

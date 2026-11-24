@@ -797,6 +797,7 @@ func _animate(delta: float) -> void:
 		var f = (fwd - tilt_n * fwd.dot(tilt_n)).normalized()
 		transform.basis = Basis(tilt_n.cross(f).normalized(), tilt_n, f)
 		_animate_chassis(delta)
+		_lay_marks(delta)
 	else:
 		transform.basis = Basis(Vector3.UP, heading)
 	if flying:
@@ -847,6 +848,39 @@ func _animate(delta: float) -> void:
 		else:
 			body.position.y = 0.0
 
+## Ketten- und Reifenspuren hinter dem Fahrzeug (verblassen nach gut 20 s).
+var _mark_d := 0.0
+func _lay_marks(delta: float) -> void:
+	if naval or speed_now < 0.3:
+		return
+	_mark_d += speed_now * delta
+	if _mark_d < 0.7:
+		return
+	_mark_d = 0.0
+	if OS.get_cmdline_user_args().has("--nomarks"):
+		return
+	var tm = load("res://scripts/trail_marks.gd").get_or_make()
+	if tm == null:
+		return
+	var sc: float = body.scale.x
+	var belt = model.get("track_belt")
+	var tracked: bool = belt != null or model.get("track_visual") != null
+	var off: float
+	var w: float
+	if belt != null:
+		off = belt.half_w * sc
+		w = belt.belt_w * sc * 0.9
+	elif tracked:
+		off = 1.3 * sc
+		w = 0.55 * sc
+	else:
+		off = radius * 0.5
+		w = 0.3 * sc
+	var right: Vector3 = transform.basis.x.normalized()
+	var back: Vector3 = -transform.basis.z.normalized() * float(radius) * 0.6
+	for sgn in [-1.0, 1.0]:
+		tm.add(position + right * off * sgn + back, heading, w, tracked)
+
 func _animate_chassis(delta: float) -> void:
 	var impulse := clampf((speed_now - _previous_visual_speed) * 0.055, -0.2, 0.2)
 	_previous_visual_speed = speed_now
@@ -861,6 +895,11 @@ func _animate_chassis(delta: float) -> void:
 		var camera: Camera3D = Game.cam.cam
 		var near_camera := visible and camera.global_position.distance_squared_to(global_position) < 110.0 * 110.0
 		tracks.advance(delta, speed_now * delta / body.scale.x, near_camera)
+	var belt = model.get("track_belt")
+	if belt != null and visible:
+		var cam3: Camera3D = Game.cam.cam
+		var near_cam := cam3.global_position.distance_squared_to(global_position) < 110.0 * 110.0
+		belt.advance(speed_now * delta / body.scale.x, heading, delta, near_cam)
 
 # ---------------------------------------------------------------- Schaden
 

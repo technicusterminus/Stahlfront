@@ -261,12 +261,19 @@ func _speed_test(delta: float) -> void:
 		var dir := (Vector3.ZERO - st).normalized()
 		_st_from = st + dir * 24.0
 		_st_from.y = Game.terrain.ground_y(_st_from.x, _st_from.z)
-		_st_unit = Game.spawn_unit(Game.players[0]["faction"] + "_tank", 0, _st_from)
+		_st_unit = Game.spawn_unit(String(args.get("speedunit", Game.players[0]["faction"] + "_tank")), 0, _st_from)
 		var goal := _st_from + dir * 50.0
 		_st_unit.cmd_move(goal)
 		_st_t = 0.0
 		print("SPEEDTEST start rain=%.2f strasse=%s" % [Game.rain, str(Game.on_road(_st_from))])
 		return
+	if args.has("follow") and is_instance_valid(_st_unit):
+		Game.cam.look_at_pos(_st_unit.position)
+		Game.cam.dist_target = float(args["follow"]) if String(args["follow"]) != "1" else 16.0
+		if args.has("pitch"):
+			Game.cam.pitch = deg_to_rad(float(args["pitch"]))
+		if args.has("yaw"):
+			Game.cam.yaw = deg_to_rad(float(args["yaw"]))
 	if _st_t < 0.0:
 		return
 	_st_t += delta
