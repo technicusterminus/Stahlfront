@@ -248,7 +248,7 @@ func _build_bottom() -> void:
 
 func _build_messages() -> void:
 	msg_box = VBoxContainer.new()
-	msg_box.position = Vector2(16, 78)
+	msg_box.position = Vector2(396, 78)   # rechts neben dem Zielfenster der Missionen
 	msg_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	msg_box.add_theme_constant_override("separation", 3)
 	root.add_child(msg_box)

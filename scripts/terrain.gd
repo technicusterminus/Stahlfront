@@ -295,7 +295,17 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	var forest = FastNoiseLite.new()
 	forest.seed = seed_val + 33
 	forest.frequency = 0.03
-	var fthr = lerp(0.75, 0.0, float(spec["forest"]))
+	# Schwelle: bei Waldanteil 0.5 liegt sie bei 0.18 (vorher 0.375, das Rauschen kam fast nie darüber -> kaum Bäume)
+	var fthr = lerp(0.5, -0.12, float(spec["forest"]))
+	var grove = FastNoiseLite.new()
+	grove.seed = seed_val + 71
+	grove.frequency = 0.11
+	var lone_p: float = 0.006 + 0.02 * float(spec["forest"])
+	# benannte Orte (Dörfer, Lager, Masten …) bleiben frei von Bäumen
+	var site_free: Array = []
+	var Settle = load("res://scripts/settlement.gd")
+	for sd in spec.get("sites", []):
+		site_free.append(Vector3(Settle.resolve(sd["at"], starts).x, Settle.resolve(sd["at"], starts).y, float(sd.get("r", 12.0)) + 8.0))
 	for cz in G:
 		for cx in G:
 			if blocked[cz * G + cx] == 1:
@@ -308,7 +318,25 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 					break
 			if near_flat:
 				continue
-			if forest.get_noise_2d(wp.x, wp.y) > fthr and rng.randf() < 0.55:
+			for sf in site_free:
+				if wp.distance_to(Vector2(sf.x, sf.y)) < sf.z:
+					near_flat = true
+					break
+			if near_flat:
+				continue
+			var fv: float = forest.get_noise_2d(wp.x, wp.y)
+			# im Wald dichter zur Mitte hin, am Waldrand lichter
+			var dens: float = clampf(0.35 + (fv - fthr) * 2.2, 0.35, 0.85)
+			var place := false
+			if fv > fthr:
+				place = rng.randf() < dens
+			elif fv > fthr - 0.12:
+				place = rng.randf() < 0.12   # lichter Waldsaum
+			elif grove.get_noise_2d(wp.x, wp.y) > 0.45:
+				place = rng.randf() < 0.3    # kleine Baumgruppen im offenen Land
+			else:
+				place = rng.randf() < lone_p  # Einzelbäume
+			if place and height_at(wp.x, wp.y) > WATER_Y + 0.8:
 				blocked[cz * G + cx] = 1
 				tree_cells.append(Vector2i(cx, cz))
 
@@ -609,6 +637,7 @@ func _build_water() -> void:
 	add_child(mi)
 
 func _build_props() -> void:
+	if OS.get_cmdline_user_args().has("--fauna"): print("BAEUME ", tree_cells.size(), " Zellen bei Raster ", Game.GRID)
 	load("res://scripts/vegetation.gd").build(self, seed_used)
 	load("res://scripts/doodads.gd").build(self, seed_used)
 

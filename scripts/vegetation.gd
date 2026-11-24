@@ -263,6 +263,8 @@ static func _trees(t, rng, kind) -> void:
 		for k in 2:
 			if tmul < 1.0 and rng.randf() > tmul:
 				continue
+			if k == 1 and rng.randf() > 0.35:
+				continue   # zweiter Baum je Zelle nur manchmal: Wald bleibt dicht, die Grafikkarte atmet
 			var x: float = c.x * 2.0 - Game.HALF + rng.randf_range(0.2, 1.8)
 			var z: float = c.y * 2.0 - Game.HALF + rng.randf_range(0.2, 1.8)
 			var y: float = t.height_at(x, z)
@@ -287,9 +289,9 @@ static func _trees(t, rng, kind) -> void:
 					g2 = Color(0.22, 0.18, 0.13)
 				var bl = b.scaled(Vector3(1.0, rng.randf_range(0.85, 1.15), 1.0))
 				leafs.append([Transform3D(bl, Vector3(x, y + 2.1 * s, z)), g2])
-	_emit_list(t, trunks, trunk, fog_trunk, true)
-	_emit_list(t, cons, conifer, conif_m, true)
-	_emit_list(t, leafs, leafy, leafy_m, true)
+	_emit_list(t, trunks, trunk, fog_trunk, false)   # Stämme werfen keinen eigenen Schatten (verschwindet ohnehin unter der Krone)
+	_emit_list(t, cons, conifer, conif_m, not OS.get_cmdline_user_args().has("--notreeshadow"))
+	_emit_list(t, leafs, leafy, leafy_m, not OS.get_cmdline_user_args().has("--notreeshadow"))
 
 static func _emit_list(t, arr: Array, mesh: Mesh, m: Material, shadows: bool) -> void:
 	var dict := {}
@@ -326,9 +328,12 @@ static func _rocks(t, rng) -> void:
 	var meshes = [_rock_mesh(rng), _rock_mesh(rng), _rock_mesh(rng)]
 	var lists = [[], [], []]
 	var rbio: Dictionary = load("res://scripts/biome.gd").of(t)
-	for i in int(1400 * float(rbio.get("rocks", 1.0))):
-		var x = rng.randf_range(-110, 110)
-		var z = rng.randf_range(-110, 110)
+	# Felsen über die ganze Karte streuen (früher fest ±110 m aus der Zeit der kleinen Karten)
+	var area_k: float = clampf(pow(Game.HALF / 120.0, 2.0), 1.0, 2.0)
+	var lim: float = Game.HALF * 0.94
+	for i in int(1400 * float(rbio.get("rocks", 1.0)) * area_k):
+		var x = rng.randf_range(-lim, lim)
+		var z = rng.randf_range(-lim, lim)
 		var n: Vector3 = t.normal_at(x, z)
 		var h: float = t.height_at(x, z)
 		if h < t.WATER_Y + 0.2:
