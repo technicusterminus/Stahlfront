@@ -58,6 +58,9 @@ func reset_input(force: bool) -> void:
 
 func _ready() -> void:
 	_parse_args()
+	if args.has("iconbake"):
+		add_child(load("res://scripts/icon_bake.gd").new())
+		return
 	Game.reset_match()
 	world = Node3D.new()
 	world.name = "World"
@@ -194,10 +197,13 @@ func _process(delta: float) -> void:
 		_hq_t += delta
 	if args.has("selecthq") and Game.running and not _hq_sel and _hq_t > 2.0:
 		# Testschalter: eigenes Hauptquartier auswählen (Bild der Befehlsleiste)
-		for b in Game.buildings:
-			if b.owner_id == Game.human and b.def["role"] == "hq":
+		var pool: Array = Game.units if String(args["selecthq"]) == "dozer" else Game.buildings
+		var role: String = "dozer" if String(args["selecthq"]) == "dozer" else "hq"
+		for b in pool:
+			if b.owner_id == Game.human and b.def["role"] == role:
 				Game.ctrl.set_selection([b])
 				Game.cam.look_at_pos(b.position)
+				break
 		_hq_sel = true
 	if args.has("speedtest") and Game.running:
 		_speed_test(delta)

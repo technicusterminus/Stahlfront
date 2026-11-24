@@ -242,8 +242,8 @@ func _build_bottom() -> void:
 	info.add_child(opening_hint)
 	grid = GridContainer.new()
 	grid.columns = 5
-	grid.add_theme_constant_override("h_separation", 6)
-	grid.add_theme_constant_override("v_separation", 6)
+	grid.add_theme_constant_override("h_separation", 5)
+	grid.add_theme_constant_override("v_separation", 5)
 	h.add_child(grid)
 
 func _build_messages() -> void:
@@ -994,17 +994,141 @@ func _good_vs(w: Dictionary) -> String:
 
 # ---------------------------------------------------------------- Befehlsraster
 
+## Befehlsraster wie in klassischen Echtzeitstrategiespielen: quadratische Knöpfe mit Symbol (aus den Spielmodellen
+## gerendert, models/icons/<id>.png, oder gezeichnete Zeichen für Befehle), Kostenstreifen unten, Zähler oben rechts,
+## Kurztaste oben links. Name und Beschreibung stehen im Tooltip.
+const SLOT := 76.0
+var _icon_cache := {}
+
+func _icon(kind: String, id: String) -> Texture2D:
+	var key := kind + ":" + id
+	if _icon_cache.has(key):
+		return _icon_cache[key]
+	var tex: Texture2D = null
+	var path := "res://models/icons/%s.png" % id
+	if (kind == "build" or kind == "train") and ResourceLoader.exists(path):
+		tex = load(path)
+	else:
+		tex = ImageTexture.create_from_image(_glyph(kind, id))
+	_icon_cache[key] = tex
+	return tex
+
+## Gezeichnete Befehlszeichen (weiß mit dunkler Kontur), 96 px.
+func _glyph(kind: String, id: String) -> Image:
+	var n := 96
+	var img := Image.create(n, n, false, Image.FORMAT_RGBA8)
+	var col := Color(0.93, 0.95, 0.98)
+	match kind:
+		"sell", "cancel_build":
+			col = Color(1.0, 0.82, 0.35)
+		"fire_super":
+			col = Color(1.0, 0.45, 0.3)
+		"harvest":
+			col = Defs.RES_COLORS.get(id, Color(0.9, 0.9, 0.9)).lightened(0.25)
+	var c := Vector2(n * 0.5, n * 0.5)
+	for y in n:
+		for x in n:
+			var p := Vector2(x + 0.5, y + 0.5)
+			var d := 99.0   # Abstand zur Form (<0 innen)
+			var q := p - c
+			match kind:
+				"stop":
+					d = max(abs(q.x), abs(q.y)) - 22.0
+				"attackmove":
+					var ring: float = abs(q.length() - 24.0) - 4.0
+					var cross: float = min(max(abs(q.x) - 3.0, abs(q.y) - 34.0), max(abs(q.y) - 3.0, abs(q.x) - 34.0))
+					d = min(ring, cross)
+				"same":
+					var a: float = (p - Vector2(34, 40)).length() - 11.0
+					var b2: float = (p - Vector2(62, 40)).length() - 11.0
+					var ba: float = max(abs(p.x - 34) - 13.0, abs(p.y - 66) - 12.0)
+					var bb: float = max(abs(p.x - 62) - 13.0, abs(p.y - 66) - 12.0)
+					d = min(min(a, b2), min(ba, bb))
+				"sell":
+					var coin: float = q.length() - 28.0
+					var hole: float = max(abs(q.x) - 5.0, abs(q.y) - 15.0)
+					d = max(coin, -hole)
+				"cancel_build":
+					var r1: float = abs((q.x + q.y) * 0.7071) - 5.0
+					var r2: float = abs((q.x - q.y) * 0.7071) - 5.0
+					d = max(min(r1, r2), q.length() - 32.0)
+				"fire_super":
+					var ang: float = atan2(q.y, q.x)
+					var blade: float = abs(fposmod(ang + PI / 6.0, TAU / 3.0) - TAU / 6.0)
+					var fan: float = max(q.length() - 32.0, max(10.0 - q.length(), blade * 30.0 - 12.0))
+					d = min(fan, q.length() - 6.0)
+				"harvest":
+					d = q.length() - 24.0
+				_:
+					d = q.length() - 20.0
+			var a_in: float = clampf(0.5 - d, 0.0, 1.0)
+			var a_out: float = clampf(0.5 - (d - 3.0), 0.0, 1.0)
+			if a_in > 0.0:
+				img.set_pixel(x, y, Color(col.r, col.g, col.b, a_in))
+			elif a_out > 0.0:
+				img.set_pixel(x, y, Color(0, 0, 0, a_out * 0.85))
+	if kind == "harvest":
+		pass
+	return img
+
 func _add_cmd(text: String, kind: String, id: String, ref = null) -> Button:
 	var b = Button.new()
-	b.text = text
-	b.custom_minimum_size = Vector2(128, 62)
+	b.custom_minimum_size = Vector2(SLOT, SLOT)
 	b.focus_mode = Control.FOCUS_NONE
-	b.add_theme_font_size_override("font_size", 12)
-	b.autowrap_mode = TextServer.AUTOWRAP_WORD
+	b.tooltip_text = text.replace("\n", " ")
 	b.pressed.connect(_on_cmd.bind(kind, id))
 	b.gui_input.connect(_on_cmd_input.bind(kind, id))
+	var ic := TextureRect.new()
+	ic.texture = _icon(kind, id)
+	ic.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	ic.set_anchors_preset(Control.PRESET_FULL_RECT)
+	ic.offset_left = 5
+	ic.offset_top = 4
+	ic.offset_right = -5
+	ic.offset_bottom = -6
+	ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	b.add_child(ic)
+	# Kostenstreifen
+	var cost := Label.new()
+	cost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cost.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	cost.add_theme_font_size_override("font_size", 12)
+	cost.add_theme_color_override("font_color", Color("ffd166"))
+	cost.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
+	cost.add_theme_constant_override("outline_size", 4)
+	cost.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	cost.offset_top = -19
+	cost.offset_bottom = -3
+	cost.offset_right = -6
+	cost.offset_left = 4
+	b.add_child(cost)
+	# Zähler oben rechts (Aufträge in der Warteschlange, Rückfrage beim Verkaufen)
+	var badge := Label.new()
+	badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	badge.add_theme_font_size_override("font_size", 14)
+	badge.add_theme_color_override("font_color", Color(1, 1, 1))
+	badge.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
+	badge.add_theme_constant_override("outline_size", 4)
+	badge.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	badge.offset_top = 2
+	badge.offset_right = -6
+	b.add_child(badge)
+	# Kurztaste oben links
+	var hk := {"stop": "S", "attackmove": "A"}
+	if hk.has(kind):
+		var k := Label.new()
+		k.text = hk[kind]
+		k.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		k.add_theme_font_size_override("font_size", 12)
+		k.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
+		k.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
+		k.add_theme_constant_override("outline_size", 4)
+		k.position = Vector2(7, 3)
+		b.add_child(k)
 	grid.add_child(b)
-	_btns.append({"btn": b, "kind": kind, "id": id, "ref": ref})
+	_btns.append({"btn": b, "kind": kind, "id": id, "ref": ref, "cost": cost, "badge": badge, "icon": ic})
 	return b
 
 func _rebuild_grid() -> void:
@@ -1020,7 +1144,7 @@ func _rebuild_grid() -> void:
 	if dz != null:
 		for id in Defs.build_list(fac):
 			var d: Dictionary = Defs.buildings[id]
-			_add_cmd("%s\n%s" % [d["name"], _fmt(d["cost"])], "build", id)
+			_add_cmd(d["name"], "build", id)
 		_add_cmd("Stopp (S)", "stop", "")
 	elif b != null:
 		if not b.complete:
@@ -1028,7 +1152,7 @@ func _rebuild_grid() -> void:
 		else:
 			for uid in b.def["produces"]:
 				var ud: Dictionary = Defs.units[uid]
-				_add_cmd("%s\n%s" % [ud["name"], _fmt(ud["cost"])], "train", uid)
+				_add_cmd(ud["name"], "train", uid)
 			if b.def["role"] == "super":
 				_add_cmd("ABFEUERN", "fire_super", "")
 			_add_cmd("Verkaufen\n(+50 %)", "sell", "")
@@ -1042,7 +1166,8 @@ func _rebuild_grid() -> void:
 				has_h = true
 		if has_h:
 			for k in ["supply", "wood", "iron", "oil", "gold"]:
-				_add_cmd("%s\nsammeln" % Defs.RES_NAMES[k], "harvest", k)
+				var hb := _add_cmd("%s sammeln" % Defs.RES_NAMES[k], "harvest", k)
+				(_btns[-1]["badge"] as Label).text = String(Defs.RES_NAMES[k]).substr(0, 1)
 	_refresh_grid()
 
 func _res_tip(k: String) -> String:
@@ -1069,6 +1194,7 @@ func _refresh_grid() -> void:
 				if why == "":
 					why = Game.afford_why(Game.human, d)
 				btn.disabled = why != ""
+				(e["cost"] as Label).text = _fmt(d["cost"])
 				var pw = ""
 				if d["power"] != 0 and Defs.factions[d["faction"]]["uses_power"]:
 					pw = "\nStrom: %+d" % d["power"]
@@ -1079,7 +1205,8 @@ func _refresh_grid() -> void:
 				var ud: Dictionary = Defs.units[e["id"]]
 				var why2: String = b.can_queue(e["id"])
 				var n = b.queue.count(e["id"])
-				btn.text = "%s%s\n%s" % [ud["name"], (" ×%d" % n) if n > 0 else "", _fmt(ud["cost"])]
+				(e["cost"] as Label).text = _fmt(ud["cost"])
+				(e["badge"] as Label).text = ("%d" % n) if n > 0 else ""
 				btn.disabled = why2 != "" and why2 != "Warteschlange ist voll"
 				var w = ud["weapon"]
 				var wtxt = ""
@@ -1091,10 +1218,15 @@ func _refresh_grid() -> void:
 				btn.disabled = b == null or not b.super_ready or not Game.has_power(Game.human)
 				btn.tooltip_text = "Superwaffe abfeuern, danach Ziel anklicken." if not btn.disabled else "Superwaffe lädt noch oder es fehlt Strom."
 			"sell":
-				btn.text = "Wirklich\nverkaufen?" if _sell_armed > 0.0 else "Verkaufen\n(+50 %)"
+				(e["badge"] as Label).text = "OK?" if _sell_armed > 0.0 else ""
+				(e["cost"] as Label).text = "+50 %"
 				btn.tooltip_text = "Gebäude abreißen und die Hälfte der Kosten zurückerhalten. Zweimal klicken zum Bestätigen."
 			"cancel_build":
 				btn.tooltip_text = "Baustelle aufgeben. Du bekommst die vollen Kosten zurück."
+		# nicht verfügbar: Symbol abgedunkelt und entsättigt, Kosten rot
+		var dis: bool = btn.disabled
+		(e["icon"] as TextureRect).modulate = Color(0.42, 0.42, 0.46, 0.8) if dis else Color(1, 1, 1)
+		(e["cost"] as Label).add_theme_color_override("font_color", Color("f87171") if dis else Color("ffd166"))
 
 func _on_cmd(kind: String, id: String) -> void:
 	var c = Game.ctrl
