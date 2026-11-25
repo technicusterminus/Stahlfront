@@ -526,6 +526,32 @@ func start_match(cfg: Dictionary) -> void:
 		cam.look_at_pos(base + Vector3(0, 0, 4))
 		cam.dist_target = float(args.get("camdist", "34"))
 		Game.explore(base, 30.0)
+	if args.has("bldshow"):
+		# Testaufstellung: alle Gebäude einer Fraktion fertig gebaut in zwei Reihen vor der eigenen Basis
+		var fac2: String = String(args["bldshow"])
+		var roles := ["hq", "power", "supply", "barracks", "factory", "airfield", "tech", "defense", "super"]
+		if args.has("bldroles"):
+			roles = String(args["bldroles"]).split(",")
+		var c0: Vector2i = Game.world_to_cell(st)
+		var k2 := 0
+		for r in roles:
+			var bid: String = fac2 + "_" + String(r)
+			if not Defs.buildings.has(bid):
+				continue
+			var cc := c0 + Vector2i(-16 + (k2 % 5) * 9, 12 + (k2 / 5) * 10)
+			for cell in Game.footprint(cc, Defs.buildings[bid]["size"]):
+				if Game.in_grid(cell):
+					Game.terrain.blocked[cell.y * Game.GRID + cell.x] = 0
+					Game.astar.set_point_solid(cell, false)
+			var bb = Game.spawn_building(bid, 0, cc, true)
+			bb.finish(true)
+			k2 += 1
+		var mid3: Vector3 = Game.cell_center(c0 + Vector2i(2, 16))
+		cam.look_at_pos(mid3)
+		cam.dist_target = float(args.get("camdist", "60"))
+		if args.has("pitch"):
+			cam.pitch = deg_to_rad(float(args["pitch"]))
+		Game.explore(mid3, 80.0)
 	if args.has("seashow"):
 		# Testaufstellung: Werft und alle Schiffe in der Heimatbucht jedes Spielers
 		for pl in Game.players.size():
