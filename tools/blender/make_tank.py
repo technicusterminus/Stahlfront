@@ -208,7 +208,13 @@ for child in (evac, brake):
     mw = child.matrix_world.copy()
     child.parent = barrel
     child.matrix_world = mw
-barrel_group = [barrel, evac, brake]
+# Seelenbohrung: dunkler Lauf, der an der Mündungsbremse vorn offen endet (Rohre sind hohl)
+M_BORE = material("Bore", (0.01, 0.01, 0.01), 0.2, 0.9)
+bore = cyl("Bore", 0.062, 0.6, (0, -4.495, 0.32), M_BORE, parent=turret, axis="Y", verts=14)
+mw = bore.matrix_world.copy()
+bore.parent = barrel
+bore.matrix_world = mw
+barrel_group = [barrel, evac, brake, bore]
 cyl("Cupola", 0.3, 0.22, (0.45, 0.25, 0.72), M_TEAM, parent=turret, verts=16, bevel=0.02)
 cyl("Hatch", 0.24, 0.06, (0.45, 0.25, 0.86), M_HULL, parent=turret, verts=16)
 box("Periscope", (0.18, 0.1, 0.1), (0.45, -0.02, 0.8), M_GLASS, parent=turret, bevel=0.0)
@@ -462,7 +468,7 @@ bake_object(hull, 2048)
 bake_object(turret, 1024)
 
 bpy.ops.object.select_all(action="DESELECT")
-for ob in (hull, turret, muzzle, barrel, evac, brake):
+for ob in (hull, turret, muzzle, barrel, evac, brake, bore):
     ob.select_set(True)
 glb = os.path.join(root_dir, "models", "units", "tank.glb")
 bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB", use_selection=True, export_apply=True, export_yup=True)

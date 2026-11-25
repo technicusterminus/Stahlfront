@@ -63,20 +63,33 @@ static func _puffquad(additive := false, lit := false) -> QuadMesh:
 	_c[key] = q
 	return q
 
+## Brandfleck: dunkler Kern (Krater), ausgefranster Rand und Rußstrahlen, die von der Mitte weglaufen.
 static func _scorch_tex() -> Texture2D:
 	if _c.has("scorch"):
 		return _c["scorch"]
-	var g = Gradient.new()
-	g.set_color(0, Color(0.02, 0.02, 0.02, 0.9))
-	g.set_color(1, Color(0.05, 0.04, 0.03, 0.0))
-	g.add_point(0.55, Color(0.05, 0.04, 0.03, 0.6))
-	var t = GradientTexture2D.new()
-	t.gradient = g
-	t.fill = GradientTexture2D.FILL_RADIAL
-	t.fill_from = Vector2(0.5, 0.5)
-	t.fill_to = Vector2(1.0, 0.5)
-	t.width = 128
-	t.height = 128
+	var res := 192
+	var img := Image.create(res, res, false, Image.FORMAT_RGBA8)
+	var n := FastNoiseLite.new()
+	n.seed = 41
+	n.frequency = 0.035
+	n.fractal_octaves = 4
+	var spokes := FastNoiseLite.new()
+	spokes.seed = 77
+	spokes.frequency = 2.2
+	for y in res:
+		for x in res:
+			var dx := (x + 0.5) / res * 2.0 - 1.0
+			var dy := (y + 0.5) / res * 2.0 - 1.0
+			var r := sqrt(dx * dx + dy * dy)
+			var ang := atan2(dy, dx)
+			var rim := n.get_noise_2d(x, y) * 0.22
+			var ray := maxf(spokes.get_noise_1d(ang * 3.0), 0.0) * 0.55   # Strahlen
+			var a := clampf(1.0 - smoothstep(0.25 + rim, 0.62 + rim + ray, r), 0.0, 1.0)
+			var core := 1.0 - smoothstep(0.0, 0.28, r)
+			var c := Color(0.05, 0.04, 0.03).lerp(Color(0.015, 0.012, 0.01), core)
+			img.set_pixel(x, y, Color(c.r, c.g, c.b, a * (0.75 + 0.2 * core)))
+	img.generate_mipmaps()
+	var t := ImageTexture.create_from_image(img)
 	_c["scorch"] = t
 	return t
 
@@ -243,7 +256,7 @@ static func explosion(pos: Vector3, size := 1.0, toxic := false) -> void:
 	var b = _bucket(size)
 	var s = b / 2.0
 	# Feuerball: große, sich überlappende Wolken, die kaum auseinanderfliegen, nach oben aufsteigen und dabei dunkler werden
-	var fire_cols = [Color(1, 0.7, 0.3, 0.0), Color(1, 0.55, 0.14, 0.9), Color(0.92, 0.3, 0.06, 0.85), Color(0.45, 0.11, 0.04, 0.75), Color(0.13, 0.07, 0.05, 0.45), Color(0.08, 0.06, 0.05, 0)]
+	var fire_cols = [Color(1, 0.55, 0.15, 0.0), Color(0.98, 0.45, 0.08, 0.9), Color(0.85, 0.24, 0.04, 0.85), Color(0.4, 0.1, 0.03, 0.75), Color(0.12, 0.07, 0.05, 0.45), Color(0.08, 0.06, 0.05, 0)]
 	if toxic:
 		fire_cols = [Color(0.85, 1, 0.6, 0.0), Color(0.6, 1, 0.3, 0.95), Color(0.3, 0.85, 0.12, 0.9), Color(0.12, 0.45, 0.06, 0.7), Color(0.05, 0.18, 0.04, 0.35), Color(0.02, 0.08, 0.02, 0)]
 	var fire = _pm("fire3_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 40.0, "vmin": 0.3 * s, "vmax": 1.7 * s, "smin": 2.6 * s, "smax": 4.4 * s,
@@ -251,8 +264,8 @@ static func explosion(pos: Vector3, size := 1.0, toxic := false) -> void:
 		"curve": [Vector2(0, 0.35), Vector2(0.3, 0.9), Vector2(1, 1.2)]})
 	_emit(pos + Vector3(0, 0.55 * s, 0), fire, _puffquad(false), int(9 + 5 * s), 1.0 + 0.18 * s, true, 0.85, 6.0 * s + 4.0)
 	# greller Kern: kurzer additiver Blitz
-	var core = _pm("core3_%d%s" % [b, toxic], {"vmin": 0.0, "vmax": 0.5 * s, "smin": 1.1 * s, "smax": 1.8 * s, "erad": 0.15 * s,
-		"ramp": [Color(1, 0.95, 0.75, 0.9), Color(1, 0.6, 0.2, 0.35), Color(1, 0.3, 0.05, 0)] if not toxic else [Color(0.9, 1, 0.7, 0.9), Color(0.5, 1, 0.3, 0.35), Color(0.2, 0.6, 0.05, 0)]})
+	var core = _pm("core4_%d%s" % [b, toxic], {"vmin": 0.0, "vmax": 0.4 * s, "smin": 0.7 * s, "smax": 1.1 * s, "erad": 0.12 * s,
+		"ramp": [Color(1, 0.85, 0.55, 0.7), Color(1, 0.5, 0.15, 0.25), Color(1, 0.3, 0.05, 0)] if not toxic else [Color(0.9, 1, 0.7, 0.9), Color(0.5, 1, 0.3, 0.35), Color(0.2, 0.6, 0.05, 0)]})
 	_emit(pos + Vector3(0, 0.5 * s, 0), core, _puffquad(true), 2, 0.14, true, 1.0, 4.0 * s + 3.0)
 	# Rauchpilz: dunkel, dick, steigt langsam und breitet sich aus
 	var smoke = _pm("smoke3_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 28.0, "vmin": 0.5 * s, "vmax": 1.7 * s, "smin": 3.0 * s, "smax": 5.6 * s, "damp": 0.8,
@@ -266,19 +279,51 @@ static func explosion(pos: Vector3, size := 1.0, toxic := false) -> void:
 		"ramp": [Color(0.22, 0.17, 0.12, 1), Color(0.12, 0.09, 0.07, 1), Color(0.08, 0.07, 0.06, 0)]})
 	_emit(pos + Vector3(0, 0.4, 0), debris, _quad(false), int(5 + 3 * s), 1.2, true, 1.0, 9.0 * s + 4.0)
 	# Staubwolke am Boden (Druckwelle)
-	var dust = _pm("dust3_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 88.0, "vmin": 2.5 * s, "vmax": 5.5 * s, "smin": 1.6 * s, "smax": 2.8 * s, "damp": 3.5 * s,
+	var dust = _pm("dust4_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 88.0, "vmin": 2.5 * s, "vmax": 5.5 * s, "smin": 1.6 * s, "smax": 2.8 * s, "damp": 3.5 * s,
 		"grav": Vector3(0, -1.2, 0), "erad": 0.5 * s, "curve": [Vector2(0, 0.5), Vector2(1, 1.4)],
-		"ramp": [Color(0.62, 0.52, 0.38, 0.0), Color(0.62, 0.52, 0.38, 0.45), Color(0.55, 0.48, 0.38, 0)] if not toxic else [Color(0.4, 0.6, 0.3, 0.0), Color(0.4, 0.65, 0.3, 0.45), Color(0.4, 0.55, 0.3, 0)]})
+		"ramp": [Color(0.42, 0.36, 0.27, 0.0), Color(0.45, 0.38, 0.28, 0.4), Color(0.5, 0.45, 0.36, 0)] if not toxic else [Color(0.4, 0.6, 0.3, 0.0), Color(0.4, 0.65, 0.3, 0.45), Color(0.4, 0.55, 0.3, 0)]})
 	_emit(pos + Vector3(0, 0.3, 0), dust, _puffquad(false, true), int(6 + 3 * s), 1.8 + 0.2 * s, true, 1.0, 8.0 * s + 4.0)
+	# Funkenregen: grelle, schnelle Splitter, die im Bogen fallen
+	var sparks = _pm("sparks4_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 75.0, "vmin": 5.0 * s, "vmax": 12.0 * s, "smin": 0.07, "smax": 0.16,
+		"grav": Vector3(0, -13, 0), "damp": 0.6, "erad": 0.2 * s,
+		"ramp": [Color(1, 0.95, 0.7, 1), Color(1, 0.65, 0.2, 1), Color(0.9, 0.3, 0.05, 0)] if not toxic else [Color(0.85, 1, 0.6, 1), Color(0.5, 1, 0.3, 1), Color(0.2, 0.6, 0.1, 0)]})
+	_emit(pos + Vector3(0, 0.4 * s, 0), sparks, _quad(true), int(14 + 8 * s), 0.9, true, 1.0, 12.0 * s + 4.0)
+	# Glutreste: glimmen am Boden nach und steigen langsam auf
+	var embers = _pm("embers5_%d" % b, {"dir": Vector3.UP, "spread": 50.0, "vmin": 0.2, "vmax": 1.0 * s, "smin": 0.025, "smax": 0.05, "erad": 1.0 * s,
+		"grav": Vector3(0.25, 0.5, 0), "turb": 0.8, "turb_scale": 1.0, "turb_speed": 0.4,
+		"ramp": [Color(1, 0.55, 0.15, 0), Color(1, 0.5, 0.12, 0.8), Color(0.9, 0.25, 0.05, 0.5), Color(0.5, 0.1, 0.02, 0)]})
+	_emit(pos + Vector3(0, 0.2, 0), embers, _quad(true), int(6 + 5 * s), 2.2 + 0.3 * s, true, 0.4, 6.0 * s + 4.0)
+	# Erdklumpen: größere, dunkle Brocken mit kräftigem Wurf
+	if not toxic:
+		var clods = _pm("clods4_%d" % b, {"dir": Vector3.UP, "spread": 45.0, "vmin": 4.0 * s, "vmax": 8.5 * s, "smin": 0.25, "smax": 0.55, "grav": Vector3(0, -16, 0),
+			"ramp": [Color(0.32, 0.25, 0.17, 1), Color(0.24, 0.19, 0.13, 1), Color(0.2, 0.16, 0.11, 0)]})
+		_emit(pos + Vector3(0, 0.3, 0), clods, _puffquad(false, true), int(5 + 3 * s), 1.4, true, 1.0, 10.0 * s + 4.0)
+	# Druckwelle: heller Ring, der sich flach über den Boden ausbreitet
+	if size >= 0.8:
+		shockwave(pos, Color(1.0, 0.88, 0.7) if not toxic else Color(0.7, 1.0, 0.5), 2.0 + 2.4 * s, 0.38 + 0.05 * s)
+	# Nachrauch: bleibt stehen und zieht mit dem Wind ab, bei großen Explosionen deutlich länger
+	if size >= 1.5:
+		var after = _pm("after4_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 20.0, "vmin": 0.3, "vmax": 0.9 * s, "smin": 2.4 * s, "smax": 4.2 * s, "damp": 0.3,
+			"erad": 0.6 * s, "grav": Vector3(0.6, 0.55, 0.2), "turb": 1.2, "turb_scale": 1.6, "turb_speed": 0.3,
+			"ramp": [Color(0.12, 0.11, 0.1, 0), Color(0.16, 0.15, 0.14, 0.55), Color(0.3, 0.3, 0.3, 0.3), Color(0.4, 0.4, 0.4, 0)] if not toxic
+				else [Color(0.2, 0.4, 0.1, 0), Color(0.25, 0.5, 0.15, 0.45), Color(0.3, 0.5, 0.2, 0)],
+			"curve": [Vector2(0, 0.6), Vector2(1, 1.8)]})
+		_emit(pos + Vector3(0, 1.2 * s, 0), after, _puffquad(false, true), int(5 + 2 * s), 7.0 + 1.2 * s, true, 0.15, 16.0 * s + 8.0)
 	_flash(pos + Vector3(0, 1.0 + s * 0.5, 0), Color(0.6, 1.0, 0.3) if toxic else Color(1.0, 0.6, 0.25), 3.5 + 3.5 * s, 5.0 + s, 0.22 + 0.06 * s)
-	if size >= 1.0:
+	if size >= 0.7:
 		scorch(pos, 1.6 * s + 1.0)
 	if Game.cam != null:
 		Game.cam.shake(clamp(size * 0.12, 0.0, 1.5), pos)
-## Treffer: kleine Staubfahne und zwei dunkle Splitter, kein Funkenregen.
+## Treffer: kurzer Blitz und Funkenspritzer (Farbe der Waffe), dazu Staubfahne und dunkle Splitter.
 static func impact(pos: Vector3, col := Color(1, 0.8, 0.4)) -> void:
 	if not _seen(pos):
 		return
+	var sp = _pm("impact_sp%s" % col.to_html(), {"dir": Vector3.UP, "spread": 85.0, "vmin": 3.0, "vmax": 7.5, "smin": 0.05, "smax": 0.1,
+		"grav": Vector3(0, -12, 0), "damp": 0.8, "ramp": [Color(1, 1, 0.9, 1), Color(col.r, col.g, col.b, 1), Color(col.r * 0.6, col.g * 0.4, col.b * 0.2, 0)]})
+	_emit(pos, sp, _quad(true), 7, 0.35, true, 1.0, 5.0)
+	var fl = _pm("impact_fl%s" % col.to_html(), {"vmin": 0.0, "vmax": 0.2, "smin": 0.45, "smax": 0.7, "erad": 0.02,
+		"ramp": [Color(1, 0.98, 0.9, 0.95), Color(col.r, col.g, col.b, 0)]})
+	_emit(pos, fl, _quad(true), 1, 0.07, true, 1.0, 2.0)
 	var puff = _pm("impact2", {"dir": Vector3.UP, "spread": 60.0, "vmin": 0.3, "vmax": 1.2, "smin": 0.35, "smax": 0.7, "damp": 1.5, "grav": Vector3(0, 0.6, 0),
 		"ramp": [Color(0.55, 0.48, 0.4, 0.0), Color(0.5, 0.44, 0.38, 0.55), Color(0.4, 0.38, 0.36, 0)], "curve": [Vector2(0, 0.5), Vector2(1, 1.4)]})
 	_emit(pos, puff, _quad(false, true), 3, 0.55)
@@ -292,8 +337,15 @@ static func muzzle(pos: Vector3, col := Color(1, 0.75, 0.35), size := 1.0) -> vo
 	var pm = _pm("muzzle%d" % _bucket(size), {"vmin": 0.0, "vmax": 0.6, "smin": 0.5 * size, "smax": 1.0 * size, "erad": 0.05,
 		"ramp": [Color(1, 0.95, 0.8, 1), Color(1, 0.6, 0.2, 0)]})
 	_emit(pos, pm, _quad(true), 3, 0.09, true, 1.0)
+	# Pulverdampf: graue Wolke, die aus der Mündung quillt und verweht
+	var gas = _pm("muzzle_gas%d" % _bucket(size), {"dir": Vector3.UP, "spread": 50.0, "vmin": 0.3, "vmax": 1.2 * size, "smin": 0.5 * size, "smax": 1.0 * size,
+		"damp": 2.0, "grav": Vector3(0.3, 0.5, 0), "erad": 0.08 * size, "curve": [Vector2(0, 0.5), Vector2(1, 1.6)],
+		"ramp": [Color(0.6, 0.58, 0.55, 0), Color(0.55, 0.53, 0.5, 0.45), Color(0.6, 0.6, 0.6, 0)]})
+	_emit(pos, gas, _puffquad(false, true), int(3 + 2 * size), 1.1 + 0.3 * size, true, 0.9, 4.0 * size + 2.0)
 	if size >= 1.0:
 		_flash(pos, col, 3.0, 4.0, 0.08)
+	if size >= 1.6:
+		dust(Vector3(pos.x, Game.terrain.height_at(pos.x, pos.z) if Game.terrain != null else pos.y - 2.0, pos.z), 0.8 * size)
 
 static func _flash(pos: Vector3, col: Color, energy: float, rng: float, dur: float) -> void:
 	var l = OmniLight3D.new()
@@ -510,6 +562,31 @@ static func weld(pos: Vector3) -> void:
 	var pm = _pm("weld", {"vmin": 2.0, "vmax": 5.0, "smin": 0.06, "smax": 0.14, "grav": Vector3(0, -10, 0), "spread": 60.0,
 		"ramp": [Color(0.8, 0.9, 1, 1), Color(1, 0.7, 0.3, 0)]})
 	_emit(pos, pm, _quad(true), 8, 0.5)
+
+## Druckwelle: dünner, flacher Ring am Boden, der sich schnell ausbreitet und dabei verblasst.
+static func shockwave(pos: Vector3, col: Color, radius: float, dur: float) -> void:
+	var mi = MeshInstance3D.new()
+	var tm = TorusMesh.new()
+	tm.inner_radius = 0.86
+	tm.outer_radius = 1.0
+	tm.rings = 48
+	tm.ring_segments = 4
+	mi.mesh = tm
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	m.albedo_color = Color(col.r, col.g, col.b, 0.18)
+	m.disable_receive_shadows = true
+	mi.material_override = m
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	Game.fx_root.add_child(mi)
+	mi.global_position = pos + Vector3(0, 0.25, 0)
+	mi.scale = Vector3(0.4, 0.06, 0.4)
+	var tw = mi.create_tween().set_parallel(true)
+	tw.tween_property(mi, "scale", Vector3(radius, 0.04, radius), dur).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tw.tween_property(m, "albedo_color:a", 0.0, dur).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(mi.queue_free)
 
 static func ring(pos: Vector3, col: Color, radius: float, dur: float) -> void:
 	var mi = MeshInstance3D.new()

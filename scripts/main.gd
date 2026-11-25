@@ -3,6 +3,7 @@ extends Node
 ## Testschalter (nach "--"): --autostart --demo --faction=red --enemies=2 --difficulty=2
 ##   --seed=N --speed=N --quit=SEK --shot=PFAD --shotdelay=SEK --camat=X,Z --revealall --rain=0..1
 
+const FX = preload("res://scripts/fx.gd")
 const AIScript = preload("res://scripts/ai.gd")
 const CameraScript = preload("res://scripts/camera_rts.gd")
 const ControllerScript = preload("res://scripts/controller.gd")
@@ -205,6 +206,27 @@ func _process(delta: float) -> void:
 				Game.cam.look_at_pos(b.position)
 				break
 		_hq_sel = true
+	if args.has("fxtest") and Game.running:
+		_fxt_t += delta
+		if _fxt_step == 0 and _fxt_t > 2.0:
+			var st: Vector3 = Game.players[0]["start"]
+			var dir := (Vector3.ZERO - st).normalized()
+			var c := st + dir * 30.0
+			Game.cam.look_at_pos(c)
+			Game.cam.dist_target = 34.0
+			_fxt_c = c
+			_fxt_step = 1
+		elif _fxt_step == 1 and _fxt_t > float(args.get("fxat", "4.0")):
+			var right := Vector3(-(_fxt_c.z), 0, _fxt_c.x).normalized() if _fxt_c.length() > 1.0 else Vector3.RIGHT
+			for i in 3:
+				var p: Vector3 = _fxt_c + right * (float(i) - 1.0) * 9.0
+				p.y = Game.terrain.height_at(p.x, p.z)
+				FX.explosion(p, [0.8, 1.8, 3.0][i])
+			for k in 6:
+				var q: Vector3 = _fxt_c + Vector3(randf_range(-4, 4), 0, 6.0 + randf_range(-1, 1))
+				q.y = Game.terrain.height_at(q.x, q.z) + 0.3
+				FX.impact(q)
+			_fxt_step = 2
 	if args.has("speedtest") and Game.running:
 		_speed_test(delta)
 	if args.has("autosell") and Game.running and not _sold:
@@ -226,6 +248,9 @@ func _process(delta: float) -> void:
 			Game.cam.dist_target = 48.0
 
 var _sold := false
+var _fxt_t := 0.0
+var _fxt_step := 0
+var _fxt_c := Vector3.ZERO
 var _hq_sel := false
 var _hq_t := 0.0
 var _env: Environment

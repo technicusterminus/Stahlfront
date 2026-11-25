@@ -53,12 +53,22 @@ def tracks(x, length, w=0.8, h=0.85):
         side = 1 if x > 0 else -1
         P.append(S.cyl("Sprocket", 0.42, 0.14, (x + side * (w / 2 + 0.03), ey * 0.94, 0.45), DK, 12, rot=(0, math.pi / 2, 0)))
 
+BORE = B.M("Bore", (0.01, 0.01, 0.01), 0.2, 0.9, 0.0, 0.0)
+
 def barrel_cyl(parts, p0, elev, length, r, mat, dx=0.0):
     """Zylinder entlang der Richtung (0, -cos e, sin e) ab p0 (Blender: vorne = -Y)."""
     d = (0.0, -math.cos(elev), math.sin(elev))
     c = (p0[0] + dx, p0[1] + d[1] * length / 2, p0[2] + d[2] * length / 2)
     parts.append(S.cyl("Tube", r, length, c, mat, 10, rot=(math.pi / 2 - elev, 0, 0)))
     return (p0[0] + dx, p0[1] + d[1] * length, p0[2] + d[2] * length)
+
+def bore(parts, tip, elev, r, ahead=0.0):
+    """Seelenbohrung: dunkler Lauf, dessen Vorderseite knapp vor der Rohr- bzw. Bremsenmündung liegt (Rohr wirkt hohl)."""
+    d = (0.0, -math.cos(elev), math.sin(elev))
+    L = 0.6
+    f = ahead + 0.006 - L / 2
+    c = (tip[0], tip[1] + d[1] * f, tip[2] + d[2] * f)
+    parts.append(S.cyl("Bore", r, L, c, BORE, 12, rot=(math.pi / 2 - elev, 0, 0)))
 
 def headlights(y, z, hw):
     for sx in (-1, 1):
@@ -138,6 +148,7 @@ elif which == "aa":
         for sz in (0.0, 0.3):
             tip = barrel_cyl(BR, (sx, -0.2, 2.15 + sz), e, 1.8, 0.055, ST)
             BR.append(S.cyl("Flash", 0.085, 0.22, (tip[0], tip[1] + 0.05, tip[2] - 0.02), DK, 8, rot=(math.pi / 2 - e, 0, 0)))
+            bore(BR, tip, e, 0.04, 0.06)
     turret = B.part("Turret", T, (0, 0.3, 1.7))
     barrel = B.part("Barrel", BR, (0, 0.0, 2.2), parent=turret)
     mz = S.empty("Muzzle", (0, tip[1] - 0.2, tip[2]), turret)
@@ -166,6 +177,7 @@ elif which == "artillery":
     tip = barrel_cyl(BR, (0, -0.9, 2.0), e, 4.4, 0.14, ST)
     BR.append(S.cyl("Evac", 0.22, 0.8, (0, -0.9 - math.cos(e) * 1.9, 2.0 + math.sin(e) * 1.9), DK, 12, rot=(math.pi / 2 - e, 0, 0)))
     BR.append(S.cyl("Brake", 0.24, 0.5, (tip[0], tip[1] + math.cos(e) * 0.2, tip[2] - math.sin(e) * 0.2), DK, 12, rot=(math.pi / 2 - e, 0, 0)))
+    bore(BR, tip, e, 0.1, 0.05)
     turret = B.part("Turret", T, (0, 0.5, 1.5))
     barrel = B.part("Barrel", BR, (0, -0.9, 2.0), parent=turret)
     mz = S.empty("Muzzle", (tip[0], tip[1] - 0.2, tip[2]), turret)
@@ -259,6 +271,7 @@ elif which == "heavy_tank":
     for sx in (-0.35, 0.35):
         barrel_cyl(BR, (sx, -1.2, 2.0), 0.0, 3.0, 0.11, ST)
         BR.append(S.cyl("Brake", 0.16, 0.35, (sx, -4.35, 2.0), DK, 10, rot=(math.pi / 2, 0, 0)))
+        bore(BR, (sx, -4.2, 2.0), 0.0, 0.075, 0.325)
         BR.append(S.cyl("Evac", 0.17, 0.7, (sx, -2.0, 2.0), DK, 10, rot=(math.pi / 2, 0, 0)))
     T.append(S.cyl("Mantlet", 0.36, 1.45, (0, -1.15, 2.0), CD, 24, 0.04, rot=(0, math.pi / 2, 0)))
     turret = B.part("Turret", T, (0, 0.3, 1.6))

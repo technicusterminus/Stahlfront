@@ -532,6 +532,7 @@ static func _build_unit(model: String, col: Color, faction: String) -> Dictionar
 			custom["root"].add_child(track_visual)
 			track_visual.setup(custom["root"])
 			custom["track_visual"] = track_visual
+			_add_bore_to_custom(custom["root"])
 			custom["chassis"] = custom["root"].find_child("Chassis", true, false)
 		if model in ["corvette", "cruiser", "gunboat", "battleship", "skiff", "frigate", "speedboat", "jetski", "submarine", "minisub", "carrier"]:
 			load("res://scripts/ships.gd").dress_custom(custom, model, faction)
@@ -613,6 +614,40 @@ static func _inf(r: Node3D, col: Color, faction: String, model: String, out: Dic
 		out["muzzle"] = Vector3(0.22, 1.43, 0.95)
 	out["height"] = 2.2
 
+## Rohre sind hohl: dunkle Seelenbohrung, deren Vorderseite knapp vor der Mündung liegt (Lauf entlang +Z des Knotens).
+static func bore(parent: Node3D, radius: float, front_z: float, y := 0.0, x := 0.0) -> void:
+	var m := MeshInstance3D.new()
+	var c := CylinderMesh.new()
+	c.top_radius = radius
+	c.bottom_radius = radius
+	c.height = 0.5
+	c.radial_segments = 14
+	c.rings = 1
+	m.mesh = c
+	var bm := StandardMaterial3D.new()
+	bm.albedo_color = Color(0.01, 0.01, 0.01)
+	bm.roughness = 0.95
+	m.material_override = bm
+	m.rotation = Vector3(PI / 2, 0, 0)
+	m.position = Vector3(x, y, front_z + 0.006 - 0.25)
+	m.name = "Bore"
+	m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(m)
+
+## Falke (eigenes GLB): Bohrung an das Rohrende setzen.
+static func _add_bore_to_custom(root: Node3D) -> void:
+	var br: Node3D = root.find_child("Barrel", true, false)
+	if br == null:
+		return
+	var zmax := -INF
+	var w := 0.0
+	for mi in br.find_children("*", "MeshInstance3D", true, false):
+		var a: AABB = (mi as MeshInstance3D).get_aabb()
+		zmax = max(zmax, a.end.z + (mi as Node3D).position.z)
+		w = max(w, a.size.x)
+	if zmax > -INF:
+		bore(br, w * 0.24, zmax)
+
 static func _tank(r: Node3D, pc: Material, model: String, out: Dictionary) -> void:
 	var small = model == "scorpion"
 	var k = 0.82 if small else 1.0
@@ -637,12 +672,14 @@ static func _tank(r: Node3D, pc: Material, model: String, out: Dictionary) -> vo
 			out["muzzle"] = Vector3(0, 0.3, 3.1)
 		"flame_tank":
 			cyl(br, 0.14, 0.2, 1.2, Vector3(0, 0.3, 1.4), steel(), Vector3(PI / 2, 0, 0))
+			bore(br, 0.08, 2.0, 0.3)
 			for sx in [-0.5, 0.5]:
 				cyl(r, 0.32, 0.32, 1.4, Vector3(sx, 1.45, -1.4), mat(Color(0.5, 0.18, 0.1), 0.4, 0.5), Vector3(PI / 2, 0, 0))
 			out["muzzle"] = Vector3(0, 0.3, 2.1)
 		_:
 			cyl(br, 0.09, 0.11, 2.6 * k, Vector3(0, 0.3, 1.9 * k), steel(), Vector3(PI / 2, 0, 0), 10)
 			cyl(br, 0.14, 0.14, 0.35, Vector3(0, 0.3, 3.1 * k), dark(), Vector3(PI / 2, 0, 0), 10)
+			bore(br, 0.06, 3.1 * k + 0.175, 0.3)
 			out["muzzle"] = Vector3(0, 0.3, 3.3 * k)
 	if small:
 		box(t, Vector3(0.4, 0.35, 0.9), Vector3(0.9, 0.35, -0.2), olive())
