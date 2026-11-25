@@ -70,6 +70,22 @@ static func clean(sp: Dictionary) -> Dictionary:
 	d["seed"] = int(d["seed"])
 	return d
 
+## Alle Ortsangaben ["me"|"en"|"mid", x, z] einer Mission (Ziele, Spawns, Kamerapunkte). Der Geländebau hält sie
+## von Bäumen frei, damit dichter Wald kein Ziel überdeckt oder einen Weg dorthin sperrt.
+static func mission_spots(node, out: Array = [], top := true) -> Array:
+	if node is Dictionary:
+		for k in node.keys():
+			if top and str(k) == "map":
+				continue
+			mission_spots(node[k], out, false)
+	elif node is Array:
+		if node.size() == 3 and node[0] is String and ["me", "en", "mid"].has(node[0]) and (node[1] is float or node[1] is int) and (node[2] is float or node[2] is int):
+			out.append([node[0], float(node[1]), float(node[2])])
+		else:
+			for v in node:
+				mission_spots(v, out, false)
+	return out
+
 ## Lage der Bucht vor einer Startbasis: halber Weg zur Kartenmitte.
 static func bay_center(start: Vector2) -> Vector2:
 	return start * 0.5
@@ -85,7 +101,7 @@ static func sea_ctx(sp: Dictionary, starts: Array) -> Dictionary:
 	var water: float = sp["water"]
 	var ctx = {"R": sea_radius(sp), "chw": lerp(3.2, 6.5, water) * (0.8 + 0.2 * k), "bayr": lerp(6.0, 9.0, water) * (0.5 + 0.5 * k),
 		"layout": int(sp.get("layout", 0)), "segs": [], "bays": [],
-		"dry": float(sp.get("dry_core", 0.0)) * k, "cw": float(sp.get("causeway", 0.0)),
+		"dry": float(sp.get("dry_core", 0.0)) * k, "cw": float(sp.get("causeway", 0.0)) * (0.6 + 0.4 * k),   # Dammbreite wächst mit der Karte wie die Ufer
 		"axis": Vector2(cos(deg_to_rad(float(sp.get("causeway_deg", 0.0)))), sin(deg_to_rad(float(sp.get("causeway_deg", 0.0)))))}
 	var order = [0, 2, 1, 3]
 	for i in starts.size():

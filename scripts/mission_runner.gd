@@ -138,7 +138,9 @@ func _audit_land(node, path: Array) -> void:
 							bd = r
 							best = [node[0], int(round(float(node[1]) + cos(a) * r)), int(round(float(node[2]) + sin(a) * r))]
 					r += 2.0
-				print("WASSER %s %s: %s liegt im Wasser oder auf Gebaeude, naechstes freies Land: %s" % [m["id"], "/".join(path), str(node), str(best)])
+				var pp := _anchor(node[0]) + Vector3(float(node[1]), 0, float(node[2]))
+				var why := "Wasser" if Game.terrain.height_at(pp.x, pp.z) <= Terrain_WATER_Y + 0.5 else ("Baum" if Game.terrain.tree_cells.has(Game.world_to_cell(pp)) else "Hang/Rand/unerreichbar")
+				print("WASSER %s %s: %s %s, naechstes freies Land: %s" % [m["id"], "/".join(path), str(node), why, str(best)])
 		else:
 			for i in node.size():
 				_audit_land(node[i], path + [str(i)])
@@ -461,7 +463,8 @@ func _autoplay() -> void:
 	elif m["id"] == "c2":
 		var wg = _alive("wing")
 		var legs = [[1.0, "mid", -34.0, 6.0], [25.0, "mid", 18.0, -30.0], [55.0, "en", -4.0, 4.0], [105.0, "me", 0.0, 10.0]]
-		if _play_step < legs.size() and t > float(legs[_play_step][0]):
+		# Heimflug sofort nach dem letzten Messpunkt, nicht erst nach Zeitplan (sonst kreisen die Jets über der Flak)
+		if _play_step < legs.size() and (t > float(legs[_play_step][0]) or (_play_step == 3 and done.has("p3"))):
 			print("AUTO c2 Etappe %d t=%d: Flieger %d" % [_play_step, int(t), wg.size()])
 			for u in wg:
 				u.cmd_move(_pos([legs[_play_step][1], legs[_play_step][2], legs[_play_step][3]]))
@@ -615,7 +618,10 @@ func _autoplay() -> void:
 		if _play_step < marks.size() and t > float(marks[_play_step][0]):
 			for bu in _alive("bridge"):
 				print("  Rest: %s bei %s (Abstand zur Mitte %d), naval=%s" % [bu.def["id"], str(bu.position), int(Game.flat_dist(bu.position, _anchor("mid"))), str(bu.naval)])
-			print("AUTO c4 Schritt %d t=%d: Brueckenverteidiger %d, eigene Bodeneinheiten %d, Gegner gesamt %d" % [_play_step, int(t), _alive("bridge").size(), gs.size(), Game.units.filter(func(u): return u.owner_id == 1 and u.alive).size()])
+			var avg := Vector3.ZERO
+			for u in gs:
+				avg += u.position / float(gs.size())
+			print("AUTO c4 Schritt %d t=%d: Brueckenverteidiger %d, eigene Bodeneinheiten %d (Mitte %s), Gegner gesamt %d" % [_play_step, int(t), _alive("bridge").size(), gs.size(), str(avg.round()), Game.units.filter(func(u): return u.owner_id == 1 and u.alive).size()])
 			for u in gs:
 				u.cmd_move(_pos(["mid", marks[_play_step][1], marks[_play_step][2]]) + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4)), true)
 			_play_step += 1
@@ -638,6 +644,8 @@ func _process(delta: float) -> void:
 	if main != null and main.args.has("missiondebug") and int(Game.time * 2.0) != _dbg_i and started and not finished and m["id"] == "c2":
 		_dbg_i = int(Game.time * 2.0)
 		for u in tags.get("wing", []):
+			if not is_instance_valid(u):
+				continue
 			print("  FLIEGER %s alive=%s hp=%s pos=%s" % [str(u.def["id"]), str(u.alive) if is_instance_valid(u) else "ungueltig", str(int(u.hp)) if is_instance_valid(u) else "-", str(u.position) if is_instance_valid(u) else "-"])
 	if main != null and main.args.has("missionplay") and started and not finished:
 		_autoplay()

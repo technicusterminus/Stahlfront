@@ -472,6 +472,7 @@ func start_mission(id: String) -> void:
 	_cfg["enemies"] = 1
 	_cfg["difficulty"] = int(m.get("difficulty", 1))
 	_cfg["map"] = Maps.clean(m["map"])
+	_cfg["map"]["keep_free"] = Maps.mission_spots(m)
 	_cfg["hour"] = float(m.get("hour", 9.0))
 	_cfg["rain"] = float(m.get("rain", 0.0))
 	_cfg["daycycle"] = 0.0

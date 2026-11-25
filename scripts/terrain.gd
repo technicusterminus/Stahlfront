@@ -306,6 +306,10 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 	var Settle = load("res://scripts/settlement.gd")
 	for sd in spec.get("sites", []):
 		site_free.append(Vector3(Settle.resolve(sd["at"], starts).x, Settle.resolve(sd["at"], starts).y, float(sd.get("r", 12.0)) + 8.0))
+	# Ortsangaben der Mission (Ziele, Spawns, Kamerapunkte) ebenfalls
+	for at in spec.get("keep_free", []):
+		var q: Vector2 = Settle.resolve(at, starts)
+		site_free.append(Vector3(q.x, q.y, 9.0))
 	for cz in G:
 		for cx in G:
 			if blocked[cz * G + cx] == 1:
@@ -324,6 +328,11 @@ func _try_generate(seed_val: int, starts: Array, depots: Array) -> bool:
 					break
 			if near_flat:
 				continue
+			# Damm über den Mittelsee bleibt frei: sonst sperrt dichter Wald den einzigen Übergang
+			if float(_ctx.get("cw", 0.0)) > 0.0:
+				var ax: Vector2 = _ctx["axis"]
+				if absf(wp.x * ax.y - wp.y * ax.x) < float(_ctx["cw"]) + 10.0 and absf(wp.dot(ax)) < float(_ctx["R"]) + 24.0:
+					continue
 			var fv: float = forest.get_noise_2d(wp.x, wp.y)
 			# im Wald dichter zur Mitte hin, am Waldrand lichter
 			var dens: float = clampf(0.35 + (fv - fthr) * 2.2, 0.35, 0.85)

@@ -1415,6 +1415,11 @@ static func build_construction(d: Dictionary, col: Color, w: float, h: float) ->
 	return _scaffold(w, h, false, mat(Color(0.38, 0.27, 0.15), 0.0, 0.9), mat(Color(0.5, 0.4, 0.25), 0.0, 0.95), true)
 
 static func _holo(n: Node, m: Material) -> void:
+	# Figuren (Skelett mit angehängter Ausrüstung) gehören nicht ins Hologramm; ein Ersatzmaterial auf ihren
+	# Knochen-Anhängen löst im Renderer „material is null“ aus.
+	if n is Skeleton3D:
+		(n as Node3D).visible = false
+		return
 	if n is MeshInstance3D:
 		(n as MeshInstance3D).material_override = m
 		(n as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

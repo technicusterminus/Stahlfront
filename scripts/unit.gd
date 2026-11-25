@@ -691,7 +691,8 @@ func _fly_fixed(delta: float) -> void:
 		goal = target.position
 	elif not path.is_empty():
 		goal = path[0]
-	if abs(position.x) > 104.0 or abs(position.z) > 104.0:
+	# am Kartenrand umkehren (Rand aus der tatsächlichen Kartengröße, nicht mehr fest 104 m)
+	if abs(position.x) > Game.HALF - 20.0 or abs(position.z) > Game.HALF - 20.0:
 		goal = Vector3.ZERO
 	var a = atan2(goal.x - position.x, goal.z - position.z)
 	var diff = wrapf(a - heading, -PI, PI)
