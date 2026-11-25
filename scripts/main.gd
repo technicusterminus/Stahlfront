@@ -59,6 +59,8 @@ func reset_input(force: bool) -> void:
 
 func _ready() -> void:
 	_parse_args()
+	if args.has("fxoff"):
+		Engine.set_meta("fxoff", String(args["fxoff"]))
 	if args.has("iconbake"):
 		add_child(load("res://scripts/icon_bake.gd").new())
 		return

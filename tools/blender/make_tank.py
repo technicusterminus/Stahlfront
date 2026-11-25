@@ -204,6 +204,7 @@ barrel = cyl("Barrel", 0.085, 3.1, (0, -3.15, 0.32), M_STEEL, parent=turret, axi
 evac = cyl("Evacuator", 0.13, 0.5, (0, -2.6, 0.32), M_DARK, parent=turret, axis="Y", verts=14)
 brake = cyl("MuzzleBrake", 0.12, 0.32, (0, -4.62, 0.32), M_DARK, parent=turret, axis="Y", verts=12, bevel=0.01)
 # Rücklaufendes Rohr: Evacuator und Mündungsbremse hängen am Rohr und bewegen sich mit
+bpy.context.view_layer.update()   # Weltlagen aktualisieren, sonst rutschen die Teile beim Umhängen ins Rohr
 for child in (evac, brake):
     mw = child.matrix_world.copy()
     child.parent = barrel
@@ -211,6 +212,7 @@ for child in (evac, brake):
 # Seelenbohrung: dunkler Lauf, der an der Mündungsbremse vorn offen endet (Rohre sind hohl)
 M_BORE = material("Bore", (0.01, 0.01, 0.01), 0.2, 0.9)
 bore = cyl("Bore", 0.062, 0.6, (0, -4.495, 0.32), M_BORE, parent=turret, axis="Y", verts=14)
+bpy.context.view_layer.update()
 mw = bore.matrix_world.copy()
 bore.parent = barrel
 bore.matrix_world = mw

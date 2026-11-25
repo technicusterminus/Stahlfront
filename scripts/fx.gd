@@ -189,6 +189,7 @@ static func _pm(key: String, cfg: Dictionary) -> ParticleProcessMaterial:
 	if _c.has(key):
 		return _c[key]
 	var m = ParticleProcessMaterial.new()
+	m.set_meta("key", key)
 	m.direction = cfg.get("dir", Vector3.UP)
 	m.spread = cfg.get("spread", 180.0)
 	m.initial_velocity_min = cfg.get("vmin", 1.0)
@@ -223,6 +224,11 @@ static func _pm(key: String, cfg: Dictionary) -> ParticleProcessMaterial:
 	return m
 
 static func _emit(pos: Vector3, pm: ParticleProcessMaterial, quad: QuadMesh, amount: int, life: float, one_shot := true, explos := 0.9, extent := 10.0) -> GPUParticles3D:
+	var _off := String(Engine.get_meta("fxoff", ""))
+	if _off != "":
+		for k in _off.split(","):
+			if k != "" and String(pm.get_meta("key", "")).begins_with(k):
+				return null
 	var p = GPUParticles3D.new()
 	p.process_material = pm
 	p.draw_pass_1 = quad
@@ -284,10 +290,11 @@ static func explosion(pos: Vector3, size := 1.0, toxic := false) -> void:
 		"ramp": [Color(0.42, 0.36, 0.27, 0.0), Color(0.45, 0.38, 0.28, 0.4), Color(0.5, 0.45, 0.36, 0)] if not toxic else [Color(0.4, 0.6, 0.3, 0.0), Color(0.4, 0.65, 0.3, 0.45), Color(0.4, 0.55, 0.3, 0)]})
 	_emit(pos + Vector3(0, 0.3, 0), dust, _puffquad(false, true), int(6 + 3 * s), 1.8 + 0.2 * s, true, 1.0, 8.0 * s + 4.0)
 	# Funkenregen: grelle, schnelle Splitter, die im Bogen fallen
-	var sparks = _pm("sparks4_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 75.0, "vmin": 5.0 * s, "vmax": 12.0 * s, "smin": 0.07, "smax": 0.16,
+	# (Helligkeit bewusst unter der Bloom-Schwelle: sonst blähen sich die Funken zu großen Leuchtkugeln auf)
+	var sparks = _pm("sparks5_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 75.0, "vmin": 5.0 * s, "vmax": 12.0 * s, "smin": 0.04, "smax": 0.08,
 		"grav": Vector3(0, -13, 0), "damp": 0.6, "erad": 0.2 * s,
-		"ramp": [Color(1, 0.95, 0.7, 1), Color(1, 0.65, 0.2, 1), Color(0.9, 0.3, 0.05, 0)] if not toxic else [Color(0.85, 1, 0.6, 1), Color(0.5, 1, 0.3, 1), Color(0.2, 0.6, 0.1, 0)]})
-	_emit(pos + Vector3(0, 0.4 * s, 0), sparks, _quad(true), int(14 + 8 * s), 0.9, true, 1.0, 12.0 * s + 4.0)
+		"ramp": [Color(0.9, 0.7, 0.4, 0.55), Color(0.85, 0.45, 0.12, 0.45), Color(0.6, 0.2, 0.04, 0)] if not toxic else [Color(0.6, 0.9, 0.4, 0.55), Color(0.4, 0.8, 0.2, 0.45), Color(0.2, 0.5, 0.1, 0)]})
+	_emit(pos + Vector3(0, 0.4 * s, 0), sparks, _quad(true), int(10 + 6 * s), 0.8, true, 1.0, 12.0 * s + 4.0)
 	# Glutreste: glimmen am Boden nach und steigen langsam auf
 	var embers = _pm("embers5_%d" % b, {"dir": Vector3.UP, "spread": 50.0, "vmin": 0.2, "vmax": 1.0 * s, "smin": 0.025, "smax": 0.05, "erad": 1.0 * s,
 		"grav": Vector3(0.25, 0.5, 0), "turb": 0.8, "turb_scale": 1.0, "turb_speed": 0.4,
@@ -295,9 +302,9 @@ static func explosion(pos: Vector3, size := 1.0, toxic := false) -> void:
 	_emit(pos + Vector3(0, 0.2, 0), embers, _quad(true), int(6 + 5 * s), 2.2 + 0.3 * s, true, 0.4, 6.0 * s + 4.0)
 	# Erdklumpen: größere, dunkle Brocken mit kräftigem Wurf
 	if not toxic:
-		var clods = _pm("clods4_%d" % b, {"dir": Vector3.UP, "spread": 45.0, "vmin": 4.0 * s, "vmax": 8.5 * s, "smin": 0.25, "smax": 0.55, "grav": Vector3(0, -16, 0),
-			"ramp": [Color(0.32, 0.25, 0.17, 1), Color(0.24, 0.19, 0.13, 1), Color(0.2, 0.16, 0.11, 0)]})
-		_emit(pos + Vector3(0, 0.3, 0), clods, _puffquad(false, true), int(5 + 3 * s), 1.4, true, 1.0, 10.0 * s + 4.0)
+		var clods = _pm("clods5_%d" % b, {"dir": Vector3.UP, "spread": 45.0, "vmin": 4.0 * s, "vmax": 8.5 * s, "smin": 0.18, "smax": 0.34, "grav": Vector3(0, -16, 0),
+			"ramp": [Color(0.16, 0.12, 0.08, 1), Color(0.12, 0.09, 0.06, 1), Color(0.1, 0.08, 0.05, 0)]})
+		_emit(pos + Vector3(0, 0.3, 0), clods, _quad(false), int(5 + 3 * s), 1.3, true, 1.0, 10.0 * s + 4.0)
 	# Druckwelle: heller Ring, der sich flach über den Boden ausbreitet
 	if size >= 0.8:
 		shockwave(pos, Color(1.0, 0.88, 0.7) if not toxic else Color(0.7, 1.0, 0.5), 2.0 + 2.4 * s, 0.38 + 0.05 * s)
@@ -318,9 +325,9 @@ static func explosion(pos: Vector3, size := 1.0, toxic := false) -> void:
 static func impact(pos: Vector3, col := Color(1, 0.8, 0.4)) -> void:
 	if not _seen(pos):
 		return
-	var sp = _pm("impact_sp%s" % col.to_html(), {"dir": Vector3.UP, "spread": 85.0, "vmin": 3.0, "vmax": 7.5, "smin": 0.05, "smax": 0.1,
-		"grav": Vector3(0, -12, 0), "damp": 0.8, "ramp": [Color(1, 1, 0.9, 1), Color(col.r, col.g, col.b, 1), Color(col.r * 0.6, col.g * 0.4, col.b * 0.2, 0)]})
-	_emit(pos, sp, _quad(true), 7, 0.35, true, 1.0, 5.0)
+	var sp = _pm("impact_sp2%s" % col.to_html(), {"dir": Vector3.UP, "spread": 85.0, "vmin": 3.0, "vmax": 7.5, "smin": 0.03, "smax": 0.06,
+		"grav": Vector3(0, -12, 0), "damp": 0.8, "ramp": [Color(0.9, 0.85, 0.75, 0.6), Color(col.r * 0.8, col.g * 0.8, col.b * 0.8, 0.5), Color(col.r * 0.5, col.g * 0.35, col.b * 0.2, 0)]})
+	_emit(pos, sp, _quad(true), 6, 0.35, true, 1.0, 5.0)
 	var fl = _pm("impact_fl%s" % col.to_html(), {"vmin": 0.0, "vmax": 0.2, "smin": 0.45, "smax": 0.7, "erad": 0.02,
 		"ramp": [Color(1, 0.98, 0.9, 0.95), Color(col.r, col.g, col.b, 0)]})
 	_emit(pos, fl, _quad(true), 1, 0.07, true, 1.0, 2.0)
