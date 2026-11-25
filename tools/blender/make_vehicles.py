@@ -115,7 +115,7 @@ if which == "truck":
 elif which == "aa":
     tracks(-1.1, 4.0)
     tracks(1.1, 4.0)
-    P.append(S.box("Hull", (2.0, 3.7, 0.8), (0, 0, 1.0), TP, 0.08))
+    P.append(S.box("Hull", (2.0, 3.7, 0.8), (0, 0, 1.0), TP, 0.18, segs=4))
     P.append(S.box("Glacis", (1.8, 0.8, 0.5), (0, -1.9, 1.1), TP, 0.05, rot=(0.4, 0, 0)))
     P.append(S.box("Engine", (1.6, 0.8, 0.3), (0, 1.5, 1.5), DK, 0.04))
     for k in range(5):
@@ -126,7 +126,7 @@ elif which == "aa":
         P.append(S.cyl("Smoke", 0.08, 0.35, (sx * 1.05, -1.5, 1.55), DK, 8, rot=(0, math.pi / 2, 0)))
     P.append(S.cyl("Antenna", 0.012, 2.0, (0.85, 1.7, 2.5), DK, 6))
     T.append(S.cyl("TBase", 0.75, 0.4, (0, 0.3, 1.65), TP, 20, 0.02))
-    T.append(S.box("TBody", (1.3, 1.1, 0.7), (0, 0.3, 2.1), TP, 0.08))
+    T.append(S.cast_body("TBody", 0.72, 0.62, 0.6, 0.72, (0, 0.3, 1.78), TP, top=0.74))
     T.append(S.box("TArmor", (1.5, 0.12, 0.7), (0, -0.35, 2.15), CD, 0.04, rot=(0.3, 0, 0)))
     T.append(S.box("Sight", (0.45, 0.5, 0.3), (0, 0.5, 2.6), DK, 0.04))
     T.append(S.sphere("SightEye", 0.07, (0, 0.2, 2.6), LR, segs=8, rings=5))
@@ -147,7 +147,7 @@ elif which == "aa":
 elif which == "artillery":
     tracks(-1.15, 4.4, 0.7, 0.8)
     tracks(1.15, 4.4, 0.7, 0.8)
-    P.append(S.box("Hull", (2.0, 4.2, 0.8), (0, 0, 1.0), TP, 0.08))
+    P.append(S.box("Hull", (2.0, 4.2, 0.8), (0, 0, 1.0), TP, 0.18, segs=4))
     P.append(S.box("Glacis", (1.8, 0.9, 0.5), (0, -2.0, 1.1), TP, 0.05, rot=(0.4, 0, 0)))
     for sx in (-1, 1):
         P.append(S.box("Stowage", (0.3, 1.4, 0.35), (sx * 0.95, 1.4, 1.55), OL, 0.04))
@@ -156,11 +156,10 @@ elif which == "artillery":
         P.append(S.box("SpadeArm", (0.14, 0.9, 0.14), (sx, 2.0, 1.0), ST, 0.02))
     headlights(-2.3, 1.15, 0.7)
     P.append(S.cyl("Antenna", 0.012, 2.4, (0.85, 1.6, 2.6), DK, 6))
-    T.append(S.box("TBody", (1.9, 2.4, 1.0), (0, 0.5, 1.9), TP, 0.1))
-    T.append(S.box("TTop", (1.6, 1.8, 0.1), (0, 0.6, 2.45), CD, 0.03))
+    T.append(S.cast_body("TBody", 0.98, 1.22, 1.22, 1.0, (0, 0.5, 1.4), TP, top=0.8, p=2.8))
     T.append(S.box("Cupola", (0.5, 0.5, 0.25), (-0.5, 1.0, 2.55), DK, 0.04))
     T.append(S.cyl("Hatch", 0.28, 0.08, (0.55, 1.0, 2.55), ST, 12))
-    T.append(S.box("Mantlet", (0.9, 0.5, 0.7), (0, -0.7, 2.0), CD, 0.06))
+    T.append(S.cyl("Mantlet", 0.36, 0.95, (0, -0.72, 2.0), CD, 24, 0.04, rot=(0, math.pi / 2, 0)))
     for sx in (-1, 1):
         T.append(S.box("Rack", (0.14, 0.9, 0.5), (sx * 1.0, 0.6, 1.9), OL, 0.04))
     e = 0.4
@@ -243,7 +242,7 @@ elif which == "scud":
 elif which == "heavy_tank":
     tracks(-1.5, 4.8, 0.9, 1.0)
     tracks(1.5, 4.8, 0.9, 1.0)
-    P.append(S.box("Hull", (2.6, 4.4, 0.85), (0, 0.1, 1.15), TP, 0.1))
+    P.append(S.box("Hull", (2.6, 4.4, 0.85), (0, 0.1, 1.15), TP, 0.2, segs=4))
     P.append(S.box("Glacis", (2.6, 1.0, 0.5), (0, -2.3, 1.05), TP, 0.06, rot=(0.45, 0, 0)))
     P.append(S.box("Engine", (2.0, 1.0, 0.35), (0, 1.8, 1.7), DK, 0.05))
     for k in range(6):
@@ -253,17 +252,15 @@ elif which == "heavy_tank":
         P.append(S.box("ERA", (0.1, 3.0, 0.5), (sx * 1.32, 0, 1.3), CD, 0.02))
     headlights(-2.5, 1.2, 0.9)
     P.append(S.box("Tow", (0.5, 0.2, 0.3), (0, -2.45, 0.8), ST, 0.03))
-    T.append(S.box("TBody", (2.1, 2.4, 0.75), (0, 0.3, 1.98), TP, 0.12))
-    T.append(S.box("TGlacis", (1.8, 0.7, 0.4), (0, -1.1, 1.95), TP, 0.06, rot=(0.5, 0, 0)))
-    T.append(S.box("TRoof", (1.9, 2.0, 0.08), (0, 0.4, 2.4), CD, 0.02))
+    T.append(S.cast_body("TBody", 1.12, 1.35, 1.3, 0.82, (0, 0.3, 1.6), TP, top=0.72))
     T.append(S.box("Cupola", (0.6, 0.6, 0.35), (-0.6, 0.4, 2.6), DK, 0.05))
     T.append(S.cyl("Hatch", 0.3, 0.08, (0.6, 0.6, 2.46), ST, 12))
-    T.append(S.box("Bustle", (1.8, 0.7, 0.6), (0, 1.8, 1.95), OL, 0.06))
+    T.append(S.box("Bustle", (1.6, 0.6, 0.5), (0, 1.75, 1.92), OL, 0.15, segs=3))
     for sx in (-0.35, 0.35):
         barrel_cyl(BR, (sx, -1.2, 2.0), 0.0, 3.0, 0.11, ST)
         BR.append(S.cyl("Brake", 0.16, 0.35, (sx, -4.35, 2.0), DK, 10, rot=(math.pi / 2, 0, 0)))
         BR.append(S.cyl("Evac", 0.17, 0.7, (sx, -2.0, 2.0), DK, 10, rot=(math.pi / 2, 0, 0)))
-    T.append(S.box("Mantlet", (1.5, 0.4, 0.7), (0, -1.2, 2.0), CD, 0.06))
+    T.append(S.cyl("Mantlet", 0.36, 1.45, (0, -1.15, 2.0), CD, 24, 0.04, rot=(0, math.pi / 2, 0)))
     turret = B.part("Turret", T, (0, 0.3, 1.6))
     barrel = B.part("Barrel", BR, (0, -1.2, 2.0), parent=turret)
     mz = S.empty("Muzzle", (0, -4.6, 2.0), turret)

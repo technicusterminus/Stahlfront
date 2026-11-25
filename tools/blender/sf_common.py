@@ -56,7 +56,7 @@ def _finish(ob, mat, bevel=0.0, segs=2, smooth=False):
     objects.append(ob)
     return ob
 
-def box(name, size, loc, mat, bevel=0.02, rot=(0, 0, 0)):
+def box(name, size, loc, mat, bevel=0.02, rot=(0, 0, 0), segs=2):
     bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0))
     ob = bpy.context.active_object
     ob.name = name
@@ -64,7 +64,46 @@ def box(name, size, loc, mat, bevel=0.02, rot=(0, 0, 0)):
     bpy.ops.object.transform_apply(scale=True)
     ob.location = loc
     ob.rotation_euler = rot
-    return _finish(ob, mat, bevel)
+    return _finish(ob, mat, bevel, segs)
+
+def _superellipse(rx, y_front, y_back, n=28, p=2.4):
+    pts = []
+    for i in range(n):
+        a = 2.0 * math.pi * i / n
+        c, s_ = math.cos(a), math.sin(a)
+        x = rx * math.copysign(abs(c) ** (2.0 / p), c)
+        ry = y_front if s_ < 0 else y_back
+        pts.append((x, ry * math.copysign(abs(s_) ** (2.0 / p), s_)))
+    return pts
+
+def cast_body(name, rx, y_front, y_back, h, loc, mat, top=0.72, p=2.4, bevel=0.05):
+    """Gegossener, gewölbter Körper (Panzerturm): abgerundeter Grundriss, nach oben eingezogen. Vorne = -Y, Boden bei loc.z."""
+    rings = [(0.0, 1.0), (0.5, 0.97), (0.82, 0.88), (1.0, top)]
+    n = 28
+    verts = []
+    for zf, k in rings:
+        for x, y in _superellipse(rx * k, y_front * k, y_back * k, n, p if zf < 0.9 else max(2.0, p - 0.4)):
+            verts.append((x, y, zf * h))
+    faces = [list(range(n))[::-1], list(range((len(rings) - 1) * n, len(rings) * n))]
+    for r in range(len(rings) - 1):
+        for i in range(n):
+            j = (i + 1) % n
+            faces.append([r * n + i, r * n + j, (r + 1) * n + j, (r + 1) * n + i])
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(verts, [], faces)
+    ob = bpy.data.objects.new(name, me)
+    scene.collection.objects.link(ob)
+    bm = bmesh.new()
+    bm.from_mesh(me)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    ctr = sum((v.co for v in bm.verts), Vector()) / max(1, len(bm.verts))
+    if sum((f.calc_center_median() - ctr).dot(f.normal) * f.calc_area() for f in bm.faces) < 0:
+        for f in bm.faces:
+            f.normal_flip()
+    bm.to_mesh(me)
+    bm.free()
+    ob.location = loc
+    return _finish(ob, mat, bevel, 3, smooth=False)
 
 def cyl(name, r, depth, loc, mat, verts=24, bevel=0.0, r2=None, rot=(0, 0, 0), smooth=True):
     if r2 is None:
