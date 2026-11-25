@@ -224,10 +224,29 @@ func _process(delta: float) -> void:
 			_fxt_step = 1
 		elif _fxt_step == 1 and _fxt_t > float(args.get("fxat", "4.0")):
 			var right := Vector3(-(_fxt_c.z), 0, _fxt_c.x).normalized() if _fxt_c.length() > 1.0 else Vector3.RIGHT
-			for i in 3:
-				var p: Vector3 = _fxt_c + right * (float(i) - 1.0) * 9.0
-				p.y = Game.terrain.height_at(p.x, p.z)
-				FX.explosion(p, [0.8, 1.8, 3.0][i])
+			var kind := String(args.get("fxkind", "boom"))
+			if kind == "burn":
+				# Gebäudebrand, Schornsteinrauch (hell und dunkel), Giftwolke nebeneinander
+				for i in 4:
+					var p2: Vector3 = _fxt_c + right * (float(i) - 1.5) * 8.0
+					p2.y = Game.terrain.height_at(p2.x, p2.z)
+					var holder := Node3D.new()
+					Game.fx_root.add_child(holder)
+					holder.global_position = p2
+					match i:
+						0: FX.fire_burn(holder, Vector3(0, 0.5, 0))
+						1: FX.flame(holder, Vector3(0, 0.5, 0), 1.0)
+						2: FX.smoke_column(holder, Vector3(0, 3.0, 0), true)
+						3: FX.toxin_cloud(p2, 5.0, 20.0)
+			elif kind == "nuke":
+				var pn: Vector3 = _fxt_c
+				pn.y = Game.terrain.height_at(pn.x, pn.z)
+				FX.nuke(pn)
+			else:
+				for i in 3:
+					var p: Vector3 = _fxt_c + right * (float(i) - 1.0) * 9.0
+					p.y = Game.terrain.height_at(p.x, p.z)
+					FX.explosion(p, [0.8, 1.8, 3.0][i])
 			for k in 6:
 				var q: Vector3 = _fxt_c + Vector3(randf_range(-4, 4), 0, 6.0 + randf_range(-1, 1))
 				q.y = Game.terrain.height_at(q.x, q.z) + 0.3

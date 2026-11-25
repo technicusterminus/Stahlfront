@@ -479,16 +479,16 @@ static func tracer(from: Vector3, to: Vector3, col := Color(1.0, 0.8, 0.4)) -> v
 # ---------------------------------------------------------------- Dauerhafte Emitter
 
 static func smoke_column(parent: Node3D, local_pos: Vector3, dark := false, lit := true) -> GPUParticles3D:
-	var pm = _pm("chimney2%s%s" % [dark, lit], {"vmin": 0.8, "vmax": 1.6, "smin": 1.0, "smax": 2.0, "dir": Vector3.UP, "spread": 12.0, "spin": 18.0,
+	var pm = _pm("chimney4%s%s" % [dark, lit], {"vmin": 0.6, "vmax": 1.2, "smin": 2.0, "smax": 3.4, "dir": Vector3.UP, "spread": 10.0, "spin": 18.0,
 		"grav": Vector3(0.5, 0.6, 0.2), "erad": 0.3,
-		"ramp": [Color(0.5, 0.5, 0.5, 0.0), Color(0.55, 0.55, 0.55, 0.4), Color(0.6, 0.6, 0.6, 0)] if not dark
-			else [Color(0.12, 0.11, 0.1, 0.0), Color(0.1, 0.09, 0.08, 0.35), Color(0.16, 0.15, 0.14, 0.2), Color(0.2, 0.2, 0.2, 0)],
-		"curve": [Vector2(0, 0.5), Vector2(1, 2.2)]})
+		"ramp": [Color(0.6, 0.6, 0.6, 0.0), Color(0.62, 0.62, 0.62, 0.55), Color(0.7, 0.7, 0.7, 0)] if not dark
+			else [Color(0.2, 0.18, 0.16, 0.0), Color(0.18, 0.16, 0.15, 0.75), Color(0.26, 0.25, 0.24, 0.45), Color(0.34, 0.34, 0.34, 0)],
+		"curve": [Vector2(0, 0.45), Vector2(1, 1.0)]})
 	var p = GPUParticles3D.new()
 	p.process_material = pm
-	p.draw_pass_1 = _quad(false, lit)
-	p.amount = 14
-	p.lifetime = 4.0
+	p.draw_pass_1 = _puffquad(false, lit)
+	p.amount = 26
+	p.lifetime = 4.5
 	p.local_coords = false
 	p.visibility_aabb = AABB(Vector3(-8, -2, -8), Vector3(16, 16, 16))
 	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -503,15 +503,15 @@ static func flame(parent: Node3D, local_pos: Vector3, size := 1.0, with_light :=
 	var s = clampf(size, 0.5, 4.0)
 	var key = int(round(s * 2.0))
 	# Flammen (aufsteigend, verjüngt, Farbverlauf weiß-gelb → orange → rot → klar)
-	var pm = _pm("flame%d" % key, {"vmin": 1.0 * s, "vmax": 2.2 * s, "smin": 1.3 * s, "smax": 2.0 * s, "dir": Vector3.UP, "spread": 12.0,
-		"grav": Vector3(0, 0.6, 0), "erad": 0.5 * s, "fixed_angle": true, "turb": 1.4, "turb_scale": 2.2, "turb_speed": 1.6,
-		"ramp": [Color(1, 1, 1, 0.0), Color(1, 1, 1, 0.92), Color(1.0, 0.82, 0.7, 0.8), Color(0.85, 0.45, 0.35, 0.45), Color(0.3, 0.1, 0.1, 0.0)],
-		"curve": [Vector2(0, 0.55), Vector2(0.25, 1.0), Vector2(0.7, 0.75), Vector2(1, 0.25)]})
+	var pm = _pm("flame2_%d" % key, {"vmin": 0.8 * s, "vmax": 1.8 * s, "smin": 0.7 * s, "smax": 1.25 * s, "dir": Vector3.UP, "spread": 14.0,
+		"grav": Vector3(0, 0.8, 0), "erad": 0.45 * s, "spin": 60.0, "turb": 1.4, "turb_scale": 2.2, "turb_speed": 1.6,
+		"ramp": [Color(1.3, 1.2, 1.0, 0.0), Color(1.35, 1.2, 1.0, 0.95), Color(1.1, 0.9, 0.8, 0.8), Color(0.6, 0.45, 0.4, 0.45), Color(0.25, 0.2, 0.2, 0.0)],
+		"curve": [Vector2(0, 0.55), Vector2(0.25, 1.0), Vector2(0.7, 0.8), Vector2(1, 0.35)]})
 	var p = GPUParticles3D.new()
 	p.process_material = pm
-	p.draw_pass_1 = _flame_quad()
-	p.amount = int(7 + 3 * s)
-	p.lifetime = 0.95
+	p.draw_pass_1 = _firequad()
+	p.amount = int(10 + 5 * s)
+	p.lifetime = 1.0
 	p.local_coords = false
 	p.visibility_aabb = AABB(Vector3(-4, -1, -4) * s, Vector3(8, 8, 8) * s)
 	p.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -552,7 +552,7 @@ static func flame(parent: Node3D, local_pos: Vector3, size := 1.0, with_light :=
 
 ## Brennender Schaden an Gebäuden und Wracks.
 static func fire_burn(parent: Node3D, local_pos: Vector3) -> GPUParticles3D:
-	return flame(parent, local_pos, 1.7, true)
+	return flame(parent, local_pos, 2.4, true)
 
 static func trail(parent: Node3D, toxic := false) -> GPUParticles3D:
 	var pm = _pm("trail%s" % toxic, {"vmin": 0.1, "vmax": 0.4, "smin": 0.4, "smax": 0.8, "grav": Vector3(0, 0.4, 0), "erad": 0.05,
@@ -597,10 +597,10 @@ static func toxin_spray(from: Vector3, to: Vector3) -> void:
 		p.rotate_object_local(Vector3.UP, PI)
 
 static func toxin_cloud(pos: Vector3, radius: float, dur: float) -> void:
-	var pm = _pm("toxcloud%d" % int(radius), {"vmin": 0.2, "vmax": 0.8, "smin": 2.5, "smax": 5.0, "erad": radius * 0.8,
-		"grav": Vector3(0, 0.15, 0),
-		"ramp": [Color(0.4, 0.9, 0.2, 0), Color(0.35, 0.8, 0.15, 0.35), Color(0.3, 0.7, 0.1, 0)], "curve": [Vector2(0, 0.6), Vector2(1, 1.3)]})
-	var p = _emit(pos + Vector3(0, 0.8, 0), pm, _quad(true), int(radius * 6), 3.0, false, 0.0, radius + 8.0)
+	var pm = _pm("toxcloud2_%d" % int(radius), {"vmin": 0.1, "vmax": 0.5, "smin": 2.8, "smax": 5.0, "erad": radius * 0.8, "spin": 10.0,
+		"grav": Vector3(0.15, 0.08, 0), "dir": Vector3.UP, "spread": 70.0,
+		"ramp": [Color(0.55, 0.85, 0.3, 0), Color(0.5, 0.8, 0.25, 0.6), Color(0.45, 0.7, 0.25, 0.4), Color(0.4, 0.6, 0.25, 0)], "curve": [Vector2(0, 0.6), Vector2(1, 1.0)]})
+	var p = _emit(pos + Vector3(0, 0.9, 0), pm, _puffquad(false, true), int(radius * 4), 3.4, false, 0.0, radius + 8.0)
 	var tw = p.create_tween()
 	tw.tween_interval(dur)
 	tw.tween_callback(func(): p.emitting = false)
@@ -695,16 +695,24 @@ static func nuke(pos: Vector3) -> void:
 	explosion(pos, 6.0)
 	ring(pos, Color(1.0, 0.6, 0.3), 26.0, 1.2)
 	_flash(pos + Vector3(0, 12, 0), Color(1.0, 0.85, 0.6), 40.0, 90.0, 2.5)
-	var stem = _pm("nukestem", {"dir": Vector3.UP, "spread": 8.0, "vmin": 6.0, "vmax": 10.0, "smin": 3.0, "smax": 5.0, "erad": 2.0,
-		"damp": 0.6, "ramp": [Color(1, 0.8, 0.4, 1), Color(0.9, 0.35, 0.1, 0.9), Color(0.3, 0.2, 0.15, 0.6), Color(0.3, 0.3, 0.3, 0)],
-		"curve": [Vector2(0, 0.6), Vector2(1, 1.6)]})
-	var s = _emit(pos, stem, _quad(true), 70, 3.5, false, 0.0, 40.0)
-	var cap = _pm("nukecap", {"dir": Vector3.UP, "spread": 180.0, "vmin": 2.0, "vmax": 7.0, "smin": 5.0, "smax": 9.0, "erad": 4.0,
-		"damp": 1.5, "grav": Vector3(0, 0.5, 0),
-		"ramp": [Color(1, 0.9, 0.6, 1), Color(1, 0.4, 0.1, 0.9), Color(0.35, 0.2, 0.15, 0.7), Color(0.25, 0.25, 0.25, 0)],
+	# Säule: dichter, von unten glühender Rauch, der aufsteigt; innen ein Feuerkern
+	var stem = _pm("nukestem2", {"dir": Vector3.UP, "spread": 6.0, "vmin": 7.0, "vmax": 11.0, "smin": 4.0, "smax": 7.0, "erad": 2.0, "spin": 20.0,
+		"damp": 0.5, "ramp": [Color(1, 0.7, 0.35, 1), Color(0.7, 0.35, 0.15, 0.95), Color(0.3, 0.24, 0.2, 0.8), Color(0.35, 0.33, 0.31, 0)],
+		"curve": [Vector2(0, 0.6), Vector2(1, 1.5)]})
+	var s = _emit(pos, stem, _puffquad(false, true), 80, 3.5, false, 0.0, 40.0)
+	var core = _pm("nukecore", {"dir": Vector3.UP, "spread": 5.0, "vmin": 8.0, "vmax": 12.0, "smin": 3.0, "smax": 5.0, "erad": 1.2, "spin": 40.0,
+		"damp": 0.5, "ramp": [Color(1, 0.9, 0.6, 1), Color(1, 0.5, 0.15, 0.9), Color(0.5, 0.15, 0.05, 0)]})
+	var k = _emit(pos, core, _firequad(), 40, 2.4, false, 0.0, 40.0)
+	# Pilzhut: wälzt sich nach außen, erst feurig, dann schwarzgrau
+	var cap = _pm("nukecap2", {"dir": Vector3.UP, "spread": 180.0, "vmin": 2.0, "vmax": 7.0, "smin": 7.0, "smax": 12.0, "erad": 5.0, "spin": 15.0,
+		"damp": 1.5, "grav": Vector3(0, 0.5, 0), "turb": 1.0, "turb_scale": 3.0, "turb_speed": 0.3,
+		"ramp": [Color(1, 0.75, 0.4, 1), Color(0.8, 0.35, 0.12, 0.95), Color(0.28, 0.22, 0.19, 0.85), Color(0.3, 0.29, 0.28, 0)],
 		"curve": [Vector2(0, 0.5), Vector2(1, 1.4)]})
-	var c = _emit(pos + Vector3(0, 22, 0), cap, _quad(true), 60, 4.0, false, 0.0, 40.0)
-	for e in [s, c]:
+	var c = _emit(pos + Vector3(0, 22, 0), cap, _puffquad(false, true), 70, 4.5, false, 0.0, 40.0)
+	var capfire = _pm("nukecapfire", {"dir": Vector3.UP, "spread": 180.0, "vmin": 1.0, "vmax": 5.0, "smin": 5.0, "smax": 8.0, "erad": 3.5, "spin": 30.0,
+		"damp": 1.5, "ramp": [Color(1, 0.9, 0.6, 1), Color(1, 0.45, 0.12, 0.8), Color(0.4, 0.1, 0.03, 0)]})
+	var f = _emit(pos + Vector3(0, 22, 0), capfire, _firequad(), 30, 1.8, false, 0.0, 40.0)
+	for e in [s, k, c, f]:
 		var tw: Tween = e.create_tween()
 		tw.tween_interval(3.0)
 		tw.tween_callback(func(): e.emitting = false)
