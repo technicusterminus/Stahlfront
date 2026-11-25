@@ -45,8 +45,19 @@ static func _puff_tex() -> Texture2D:
 	_c["puff"] = t
 	return t
 
+## Rauch, Staub, Dampf: fotorealistische Rauchballen aus models/fx/smoke_atlas.png (2×2, zufällige Variante je Teilchen),
+## weiche Kante, wo sie Boden oder Gebäude schneiden. Fehlt der Bogen, bleibt die alte gezeichnete Wolke.
+static func _atlas(name: String) -> Texture2D:
+	var key := "atlas_" + name
+	if OS.get_cmdline_user_args().has("--noatlas"):
+		return null
+	if not _c.has(key):
+		var path := "res://models/fx/%s_atlas.png" % name
+		_c[key] = load(path) if ResourceLoader.exists(path) else null
+	return _c[key]
+
 static func _puffquad(additive := false, lit := false) -> QuadMesh:
-	var key = "puffquad_%s_%s" % [additive, lit]
+	var key = "puffquad2_%s_%s" % [additive, lit]
 	if _c.has(key):
 		return _c[key]
 	var m = StandardMaterial3D.new()
@@ -55,7 +66,17 @@ static func _puffquad(additive := false, lit := false) -> QuadMesh:
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX if lit else BaseMaterial3D.SHADING_MODE_UNSHADED
 	m.vertex_color_use_as_albedo = true
 	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
-	m.albedo_texture = _puff_tex()
+	m.billboard_keep_scale = true
+	var at := _atlas("smoke")
+	if at != null:
+		m.albedo_texture = at
+		m.particles_anim_h_frames = 2
+		m.particles_anim_v_frames = 2
+		m.particles_anim_loop = false
+	else:
+		m.albedo_texture = _puff_tex()
+	m.proximity_fade_enabled = not OS.get_cmdline_user_args().has("--noprox")
+	m.proximity_fade_distance = 1.2
 	m.disable_receive_shadows = true
 	var q = QuadMesh.new()
 	q.size = Vector2(1, 1)
@@ -64,6 +85,34 @@ static func _puffquad(additive := false, lit := false) -> QuadMesh:
 	return q
 
 ## Brandfleck: dunkler Kern (Krater), ausgefranster Rand und Rußstrahlen, die von der Mitte weglaufen.
+## Feuerball: fotorealistische Flammen aus models/fx/fire_atlas.png; die Teilchenfarbe tönt nur und blendet aus.
+static func _firequad() -> QuadMesh:
+	if _c.has("firequad"):
+		return _c["firequad"]
+	var m = StandardMaterial3D.new()
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.blend_mode = BaseMaterial3D.BLEND_MODE_MIX
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	m.vertex_color_use_as_albedo = true
+	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	m.billboard_keep_scale = true
+	var at := _atlas("fire")
+	if at != null:
+		m.albedo_texture = at
+		m.particles_anim_h_frames = 2
+		m.particles_anim_v_frames = 2
+		m.particles_anim_loop = false
+	else:
+		m.albedo_texture = _puff_tex()
+	m.proximity_fade_enabled = not OS.get_cmdline_user_args().has("--noprox")
+	m.proximity_fade_distance = 0.8
+	m.disable_receive_shadows = true
+	var q = QuadMesh.new()
+	q.size = Vector2(1, 1)
+	q.material = m
+	_c["firequad"] = q
+	return q
+
 static func _scorch_tex() -> Texture2D:
 	if _c.has("scorch"):
 		return _c["scorch"]
@@ -136,6 +185,7 @@ static func _flame_quad() -> QuadMesh:
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	m.vertex_color_use_as_albedo = true
 	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	m.billboard_keep_scale = true
 	m.albedo_texture = _flame_tex()
 	m.albedo_color = Color(0.95, 0.95, 0.95, 1.0)
 	m.disable_receive_shadows = true
@@ -156,6 +206,7 @@ static func _quad(additive: bool, lit := false) -> QuadMesh:
 	m.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX if lit else BaseMaterial3D.SHADING_MODE_UNSHADED
 	m.vertex_color_use_as_albedo = true
 	m.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	m.billboard_keep_scale = true
 	m.albedo_texture = _soft_tex()
 	m.disable_receive_shadows = true
 	var q = QuadMesh.new()
@@ -201,6 +252,10 @@ static func _pm(key: String, cfg: Dictionary) -> ParticleProcessMaterial:
 	m.damping_max = cfg.get("damp", 0.0)
 	m.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
 	m.emission_sphere_radius = cfg.get("erad", 0.3)
+	m.anim_offset_min = 0.0
+	m.anim_offset_max = 1.0
+	m.anim_speed_min = 0.0
+	m.anim_speed_max = 0.0
 	if cfg.has("ramp"):
 		m.color_ramp = _ramp(cfg["ramp"])
 	if cfg.has("curve"):
@@ -218,6 +273,10 @@ static func _pm(key: String, cfg: Dictionary) -> ParticleProcessMaterial:
 		m.turbulence_noise_speed = Vector3(0, -cfg.get("turb_speed", 1.2), 0)
 		m.turbulence_influence_min = 0.04
 		m.turbulence_influence_max = 0.14
+	if cfg.has("spin"):
+		# Wolken drehen sich langsam beim Aufquellen, statt starr in der Luft zu stehen
+		m.angular_velocity_min = -float(cfg["spin"])
+		m.angular_velocity_max = float(cfg["spin"])
 	if cfg.get("flat_emit", false):
 		m.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
 	_c[key] = m
@@ -262,21 +321,21 @@ static func explosion(pos: Vector3, size := 1.0, toxic := false) -> void:
 	var b = _bucket(size)
 	var s = b / 2.0
 	# Feuerball: große, sich überlappende Wolken, die kaum auseinanderfliegen, nach oben aufsteigen und dabei dunkler werden
-	var fire_cols = [Color(1, 0.55, 0.15, 0.0), Color(0.98, 0.45, 0.08, 0.9), Color(0.85, 0.24, 0.04, 0.85), Color(0.4, 0.1, 0.03, 0.75), Color(0.12, 0.07, 0.05, 0.45), Color(0.08, 0.06, 0.05, 0)]
+	var fire_cols = [Color(1.4, 1.3, 1.1, 0.0), Color(1.4, 1.25, 1.05, 1.0), Color(1.1, 0.95, 0.85, 0.95), Color(0.55, 0.42, 0.38, 0.8), Color(0.18, 0.15, 0.14, 0.5), Color(0.1, 0.09, 0.08, 0)]
 	if toxic:
 		fire_cols = [Color(0.85, 1, 0.6, 0.0), Color(0.6, 1, 0.3, 0.95), Color(0.3, 0.85, 0.12, 0.9), Color(0.12, 0.45, 0.06, 0.7), Color(0.05, 0.18, 0.04, 0.35), Color(0.02, 0.08, 0.02, 0)]
-	var fire = _pm("fire3_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 40.0, "vmin": 0.3 * s, "vmax": 1.7 * s, "smin": 2.6 * s, "smax": 4.4 * s,
+	var fire = _pm("fire6_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 40.0, "vmin": 0.3 * s, "vmax": 1.7 * s, "smin": 3.4 * s, "smax": 5.4 * s, "spin": 40.0,
 		"damp": 1.6 * s, "erad": 0.45 * s, "grav": Vector3(0, 1.8, 0), "ramp": fire_cols, "turb": 1.8, "turb_scale": 1.6, "turb_speed": 0.7,
 		"curve": [Vector2(0, 0.35), Vector2(0.3, 0.9), Vector2(1, 1.2)]})
-	_emit(pos + Vector3(0, 0.55 * s, 0), fire, _puffquad(false), int(9 + 5 * s), 1.0 + 0.18 * s, true, 0.85, 6.0 * s + 4.0)
+	_emit(pos + Vector3(0, 0.55 * s, 0), fire, _puffquad(false) if toxic else _firequad(), int(9 + 5 * s), 1.0 + 0.18 * s, true, 0.85, 6.0 * s + 4.0)
 	# greller Kern: kurzer additiver Blitz
 	var core = _pm("core4_%d%s" % [b, toxic], {"vmin": 0.0, "vmax": 0.4 * s, "smin": 0.7 * s, "smax": 1.1 * s, "erad": 0.12 * s,
 		"ramp": [Color(1, 0.85, 0.55, 0.7), Color(1, 0.5, 0.15, 0.25), Color(1, 0.3, 0.05, 0)] if not toxic else [Color(0.9, 1, 0.7, 0.9), Color(0.5, 1, 0.3, 0.35), Color(0.2, 0.6, 0.05, 0)]})
 	_emit(pos + Vector3(0, 0.5 * s, 0), core, _puffquad(true), 2, 0.14, true, 1.0, 4.0 * s + 3.0)
 	# Rauchpilz: dunkel, dick, steigt langsam und breitet sich aus
-	var smoke = _pm("smoke3_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 28.0, "vmin": 0.5 * s, "vmax": 1.7 * s, "smin": 3.0 * s, "smax": 5.6 * s, "damp": 0.8,
+	var smoke = _pm("smoke5_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 28.0, "vmin": 0.5 * s, "vmax": 1.7 * s, "smin": 3.2 * s, "smax": 5.6 * s, "spin": 22.0, "damp": 0.8,
 		"erad": 0.8 * s, "grav": Vector3(0, 1.0, 0), "turb": 1.5, "turb_scale": 1.3, "turb_speed": 0.45,
-		"ramp": [Color(0.1, 0.08, 0.06, 0.0), Color(0.08, 0.065, 0.055, 0.85), Color(0.14, 0.13, 0.12, 0.6), Color(0.22, 0.22, 0.22, 0)] if not toxic
+		"ramp": [Color(0.3, 0.27, 0.24, 0.0), Color(0.32, 0.29, 0.26, 0.92), Color(0.46, 0.45, 0.44, 0.7), Color(0.6, 0.6, 0.6, 0)] if not toxic
 			else [Color(0.2, 0.4, 0.1, 0), Color(0.18, 0.42, 0.1, 0.75), Color(0.25, 0.5, 0.15, 0.45), Color(0.3, 0.5, 0.2, 0)],
 		"curve": [Vector2(0, 0.45), Vector2(1, 1.6)]})
 	_emit(pos + Vector3(0, 0.9 * s, 0), smoke, _puffquad(false, true), int(6 + 3 * s), 3.6 + 0.5 * s, true, 0.6, 10.0 * s + 6.0)
@@ -291,14 +350,14 @@ static func explosion(pos: Vector3, size := 1.0, toxic := false) -> void:
 	_emit(pos + Vector3(0, 0.3, 0), dust, _puffquad(false, true), int(6 + 3 * s), 1.8 + 0.2 * s, true, 1.0, 8.0 * s + 4.0)
 	# Funkenregen: grelle, schnelle Splitter, die im Bogen fallen
 	# (Helligkeit bewusst unter der Bloom-Schwelle: sonst blähen sich die Funken zu großen Leuchtkugeln auf)
-	var sparks = _pm("sparks5_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 75.0, "vmin": 5.0 * s, "vmax": 12.0 * s, "smin": 0.04, "smax": 0.08,
+	var sparks = _pm("sparks6_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 75.0, "vmin": 5.0 * s, "vmax": 12.0 * s, "smin": 0.07, "smax": 0.13,
 		"grav": Vector3(0, -13, 0), "damp": 0.6, "erad": 0.2 * s,
 		"ramp": [Color(0.9, 0.7, 0.4, 0.55), Color(0.85, 0.45, 0.12, 0.45), Color(0.6, 0.2, 0.04, 0)] if not toxic else [Color(0.6, 0.9, 0.4, 0.55), Color(0.4, 0.8, 0.2, 0.45), Color(0.2, 0.5, 0.1, 0)]})
 	_emit(pos + Vector3(0, 0.4 * s, 0), sparks, _quad(true), int(10 + 6 * s), 0.8, true, 1.0, 12.0 * s + 4.0)
 	# Glutreste: glimmen am Boden nach und steigen langsam auf
-	var embers = _pm("embers5_%d" % b, {"dir": Vector3.UP, "spread": 50.0, "vmin": 0.2, "vmax": 1.0 * s, "smin": 0.025, "smax": 0.05, "erad": 1.0 * s,
+	var embers = _pm("embers7_%d" % b, {"dir": Vector3.UP, "spread": 50.0, "vmin": 0.2, "vmax": 1.0 * s, "smin": 0.06, "smax": 0.11, "erad": 1.0 * s,
 		"grav": Vector3(0.25, 0.5, 0), "turb": 0.8, "turb_scale": 1.0, "turb_speed": 0.4,
-		"ramp": [Color(1, 0.55, 0.15, 0), Color(1, 0.5, 0.12, 0.8), Color(0.9, 0.25, 0.05, 0.5), Color(0.5, 0.1, 0.02, 0)]})
+		"ramp": [Color(0.8, 0.4, 0.1, 0), Color(0.75, 0.35, 0.08, 0.4), Color(0.6, 0.18, 0.04, 0.25), Color(0.4, 0.08, 0.02, 0)]})
 	_emit(pos + Vector3(0, 0.2, 0), embers, _quad(true), int(6 + 5 * s), 2.2 + 0.3 * s, true, 0.4, 6.0 * s + 4.0)
 	# Erdklumpen: größere, dunkle Brocken mit kräftigem Wurf
 	if not toxic:
@@ -310,9 +369,9 @@ static func explosion(pos: Vector3, size := 1.0, toxic := false) -> void:
 		shockwave(pos, Color(1.0, 0.88, 0.7) if not toxic else Color(0.7, 1.0, 0.5), 2.0 + 2.4 * s, 0.38 + 0.05 * s)
 	# Nachrauch: bleibt stehen und zieht mit dem Wind ab, bei großen Explosionen deutlich länger
 	if size >= 1.5:
-		var after = _pm("after4_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 20.0, "vmin": 0.3, "vmax": 0.9 * s, "smin": 2.4 * s, "smax": 4.2 * s, "damp": 0.3,
+		var after = _pm("after7_%d%s" % [b, toxic], {"dir": Vector3.UP, "spread": 20.0, "vmin": 0.3, "vmax": 0.9 * s, "smin": 2.8 * s, "smax": 4.6 * s, "spin": 14.0, "damp": 0.3,
 			"erad": 0.6 * s, "grav": Vector3(0.6, 0.55, 0.2), "turb": 1.2, "turb_scale": 1.6, "turb_speed": 0.3,
-			"ramp": [Color(0.12, 0.11, 0.1, 0), Color(0.16, 0.15, 0.14, 0.55), Color(0.3, 0.3, 0.3, 0.3), Color(0.4, 0.4, 0.4, 0)] if not toxic
+			"ramp": [Color(0.22, 0.2, 0.19, 0), Color(0.25, 0.24, 0.23, 0.55), Color(0.34, 0.34, 0.34, 0.3), Color(0.4, 0.4, 0.4, 0)] if not toxic
 				else [Color(0.2, 0.4, 0.1, 0), Color(0.25, 0.5, 0.15, 0.45), Color(0.3, 0.5, 0.2, 0)],
 			"curve": [Vector2(0, 0.6), Vector2(1, 1.8)]})
 		_emit(pos + Vector3(0, 1.2 * s, 0), after, _puffquad(false, true), int(5 + 2 * s), 7.0 + 1.2 * s, true, 0.15, 16.0 * s + 8.0)
@@ -420,7 +479,7 @@ static func tracer(from: Vector3, to: Vector3, col := Color(1.0, 0.8, 0.4)) -> v
 # ---------------------------------------------------------------- Dauerhafte Emitter
 
 static func smoke_column(parent: Node3D, local_pos: Vector3, dark := false, lit := true) -> GPUParticles3D:
-	var pm = _pm("chimney%s%s" % [dark, lit], {"vmin": 0.8, "vmax": 1.6, "smin": 1.0, "smax": 2.0, "dir": Vector3.UP, "spread": 12.0,
+	var pm = _pm("chimney2%s%s" % [dark, lit], {"vmin": 0.8, "vmax": 1.6, "smin": 1.0, "smax": 2.0, "dir": Vector3.UP, "spread": 12.0, "spin": 18.0,
 		"grav": Vector3(0.5, 0.6, 0.2), "erad": 0.3,
 		"ramp": [Color(0.5, 0.5, 0.5, 0.0), Color(0.55, 0.55, 0.55, 0.4), Color(0.6, 0.6, 0.6, 0)] if not dark
 			else [Color(0.12, 0.11, 0.1, 0.0), Color(0.1, 0.09, 0.08, 0.35), Color(0.16, 0.15, 0.14, 0.2), Color(0.2, 0.2, 0.2, 0)],

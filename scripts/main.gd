@@ -215,8 +215,12 @@ func _process(delta: float) -> void:
 			var dir := (Vector3.ZERO - st).normalized()
 			var c := st + dir * 30.0
 			Game.cam.look_at_pos(c)
-			Game.cam.dist_target = 34.0
+			Game.cam.dist_target = float(args.get("fxdist", "34"))
+			if args.has("pitch"):
+				Game.cam.pitch = deg_to_rad(float(args["pitch"]))
 			_fxt_c = c
+			Game.reveals.append({"pos": c, "radius": 40.0, "until": Game.time + 120.0, "pid": 0})
+			Game.update_fog()
 			_fxt_step = 1
 		elif _fxt_step == 1 and _fxt_t > float(args.get("fxat", "4.0")):
 			var right := Vector3(-(_fxt_c.z), 0, _fxt_c.x).normalized() if _fxt_c.length() > 1.0 else Vector3.RIGHT
@@ -229,6 +233,15 @@ func _process(delta: float) -> void:
 				q.y = Game.terrain.height_at(q.x, q.z) + 0.3
 				FX.impact(q)
 			_fxt_step = 2
+			get_tree().create_timer(1.0).timeout.connect(func():
+				for n in Game.fx_root.get_children():
+					if n is GPUParticles3D:
+						var pm: ParticleProcessMaterial = n.process_material
+						print("FXP ", pm.get_meta("key", "?"), " n=", n.amount, " emit=", n.emitting, " pos=", n.global_position, " vis=", n.visible, " scale=", pm.scale_min, "-", pm.scale_max))
+			if args.has("fxshots"):
+				var base := String(args.get("shotbase", "user://fx"))
+				for tt in String(args["fxshots"]).split(","):
+					_take_shot("%s_%s.png" % [base, tt], float(tt))
 	if args.has("speedtest") and Game.running:
 		_speed_test(delta)
 	if args.has("autosell") and Game.running and not _sold:
