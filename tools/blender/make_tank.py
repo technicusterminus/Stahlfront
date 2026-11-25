@@ -117,16 +117,55 @@ def loft_z(name, bottom, top, z0, z1, mat, parent=None, bevel=0.03):
     _fix_normals(ob)
     return finish(ob, mat, parent, bevel)
 
+def superellipse(rx, y_front, y_back, n=24, p=2.6):
+    """Abgerundeter Grundriss (x, y): vorn (y negativ) und hinten unterschiedlich lang, p steuert die Eckigkeit."""
+    pts = []
+    for i in range(n):
+        a = 2.0 * math.pi * i / n
+        c, s_ = math.cos(a), math.sin(a)
+        x = rx * math.copysign(abs(c) ** (2.0 / p), c)
+        ry = y_front if s_ < 0 else y_back
+        y = ry * math.copysign(abs(s_) ** (2.0 / p), s_)
+        pts.append((x, y))
+    return pts
+
+def loft_rings(name, rings, mat, parent=None, bevel=0.03, segs=2):
+    """Mehrere Grundrisse (z, [(x, y)]) gleicher Punktzahl zu einem gewölbten Körper verbinden (Gussturm)."""
+    n = len(rings[0][1])
+    verts = []
+    for z, pts in rings:
+        verts += [(x, y, z) for (x, y) in pts]
+    faces = [list(range(n))[::-1], list(range((len(rings) - 1) * n, len(rings) * n))]
+    for r in range(len(rings) - 1):
+        for i in range(n):
+            j = (i + 1) % n
+            faces.append([r * n + i, r * n + j, (r + 1) * n + j, (r + 1) * n + i])
+    ob = mesh_from(name, verts, faces)
+    _fix_normals(ob)
+    return finish(ob, mat, parent, bevel, segs)
+
 def _fix_normals(ob):
     bm = bmesh.new()
     bm.from_mesh(ob.data)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.0005)
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    # Sicherheitsprüfung: Normalen müssen im Mittel von der Körpermitte weg zeigen
+    ctr = sum((v.co for v in bm.verts), Vector()) / max(1, len(bm.verts))
+    score = sum((f.calc_center_median() - ctr).dot(f.normal) * f.calc_area() for f in bm.faces)
+    if score < 0:
+        for f in bm.faces:
+            f.normal_flip()
     bm.to_mesh(ob.data)
     bm.free()
 
 # ------------------------------------------------------------------ Wanne
 # Seitenprofil: y nach hinten positiv, vorne = -y
-hull = prism_x("Hull", [(2.25, 0.5), (2.3, 1.12), (-1.45, 1.18), (-2.35, 0.78), (-2.05, 0.5)], 1.02, M_HULL, bevel=0.05)
+hull = prism_x("Hull", [(2.25, 0.5), (2.36, 0.86), (2.3, 1.08), (2.12, 1.17), (-1.3, 1.21), (-1.62, 1.15), (-2.28, 0.86),
+                        (-2.34, 0.72), (-2.05, 0.5)], 1.02, M_HULL, bevel=0.0)
+_hb = hull.modifiers.new("Bevel", "BEVEL")
+_hb.width = 0.11
+_hb.segments = 3
+_hb.limit_method = "ANGLE"
 box("HullTop", (2.1, 3.5, 0.06), (0, 0.35, 1.19), M_TEAM, bevel=0.01)
 box("Glacis", (2.0, 0.95, 0.05), (0, -1.88, 1.0), M_TEAM, bevel=0.01, rot=(math.radians(-25), 0, 0))
 box("EngineDeck", (1.6, 1.0, 0.12), (0, 1.55, 1.22), M_DARK, bevel=0.02)
@@ -146,19 +185,21 @@ for sx in (-1, 1):
         cyl("Hub%s%d" % ("L" if sx < 0 else "R", k), 0.12, 0.14, (x + sx * 0.3, -1.55 + k * 0.62, 0.42), M_STEEL, axis="X", verts=10)
     cyl("Sprocket%s" % sx, 0.3, 0.2, (x + sx * 0.2, -2.15, 0.7), M_STEEL, axis="X", verts=12)
     cyl("Idler%s" % sx, 0.28, 0.2, (x + sx * 0.2, 2.1, 0.68), M_DARK, axis="X", verts=12)
-    box("Skirt%s" % sx, (0.07, 4.2, 0.42), (sx * 1.55, -0.05, 0.86), M_TEAM, bevel=0.015)
+    box("Skirt%s" % sx, (0.07, 4.2, 0.42), (sx * 1.55, -0.05, 0.86), M_TEAM, bevel=0.03)
     box("Fender%s" % sx, (0.62, 4.7, 0.05), (x, -0.05, 1.12), M_HULL, bevel=0.01)
     for k in range(3):
-        box("Box%s%d" % (sx, k), (0.35, 0.55, 0.28), (x, 0.2 + k * 0.62, 1.29), M_HULL, bevel=0.02)
+        box("Box%s%d" % (sx, k), (0.35, 0.55, 0.28), (x, 0.2 + k * 0.62, 1.29), M_HULL, bevel=0.05)
     cyl("Headlight%s" % sx, 0.07, 0.08, (sx * 0.8, -2.3, 0.95), M_LIGHT, axis="Y", verts=10)
 
 # ------------------------------------------------------------------ Turm (dreht sich)
-turret = loft_z("Turret",
-                [(-0.42, -1.45), (0.42, -1.45), (1.05, -0.65), (1.05, 0.95), (0.75, 1.35), (-0.75, 1.35), (-1.05, 0.95), (-1.05, -0.65)],
-                [(-0.32, -1.25), (0.32, -1.25), (0.9, -0.55), (0.9, 0.85), (0.62, 1.15), (-0.62, 1.15), (-0.9, 0.85), (-0.9, -0.55)],
-                0.0, 0.62, M_TEAM, bevel=0.03)
+turret = loft_rings("Turret", [
+    (0.0, superellipse(1.06, 1.42, 1.34, 28, 2.4)),
+    (0.34, superellipse(1.02, 1.36, 1.3, 28, 2.4)),
+    (0.56, superellipse(0.9, 1.16, 1.18, 28, 2.2)),
+    (0.66, superellipse(0.72, 0.9, 1.02, 28, 2.0)),
+], M_TEAM, bevel=0.05, segs=3)
 turret.location = (0, 0.15, 1.22)
-box("Mantlet", (0.6, 0.45, 0.42), (0, -1.48, 0.3), M_HULL, parent=turret, bevel=0.04)
+cyl("Mantlet", 0.26, 0.62, (0, -1.42, 0.32), M_HULL, parent=turret, axis="X", verts=20, bevel=0.04)
 barrel = cyl("Barrel", 0.085, 3.1, (0, -3.15, 0.32), M_STEEL, parent=turret, axis="Y", verts=14, r2=0.075)
 evac = cyl("Evacuator", 0.13, 0.5, (0, -2.6, 0.32), M_DARK, parent=turret, axis="Y", verts=14)
 brake = cyl("MuzzleBrake", 0.12, 0.32, (0, -4.62, 0.32), M_DARK, parent=turret, axis="Y", verts=12, bevel=0.01)
