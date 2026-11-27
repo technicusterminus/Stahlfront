@@ -413,6 +413,8 @@ func _raids() -> void:
 	for u in ready.slice(0, 5):
 		raiders.append(u)
 		u.cmd_attack(t)
+	if OS.get_cmdline_user_args().has("--verbose"):
+		print("KI %d: Beutezug mit %d Plaenklern auf %s (Spieler %d) bei %.0f s" % [pid, mini(ready.size(), 5), t.def["id"], t.owner_id, Game.time])
 
 ## Beute für Plänkler: gegnerische Nachschubfahrzeuge und Bautrupps am Boden, nah und möglichst fern von Abwehrstellungen.
 func _raid_target(from: Vector3):

@@ -117,7 +117,7 @@ func _west() -> void:
 		"weapon": W("bullet", 10.0, 14.0, 0.5), "desc": "Gut gegen Infanterie."})
 	U("west_at", {"name": "Panzerjäger", "cost": 300, "time": 6.0, "hp": 110.0, "speed": 4.3, "armor": "inf", "model": "inf_at", "built_at": "barracks",
 		"weapon": W("rocket", 42.0, 17.0, 2.2, {"air": true}), "desc": "Raketen gegen Fahrzeuge und Luft."})
-	U("west_dunebuggy", {"name": "Sandviper-Buggy", "cost": 600, "time": 6.0, "hp": 280.0, "speed": 13.0, "model": "dunebuggy", "built_at": "factory", "scale": 1.3, "sight": 30.0,
+	U("west_dunebuggy", {"name": "Sandviper-Buggy", "cost": 600, "time": 6.0, "hp": 300.0, "speed": 13.0, "model": "dunebuggy", "built_at": "factory", "scale": 1.3, "sight": 30.0,
 		"radius": 1.5, "steer": 3.6, "offroad": true, "raider": true,
 		"weapon": W("bullet", 12.0, 16.0, 0.25), "desc": "Dünenbuggy mit Überrollkäfig und schwerem MG im Drehring. Schnell, weitsichtig, mit Schild: Aufklärer und Jäger von Nachschub, Bautrupps und Infanterie."})
 	U("west_tank", {"name": "Falke-Kampfpanzer", "cost": 815, "time": 9.5, "hp": 650.0, "speed": 6.6, "armor": "heavy", "model": "tank", "built_at": "factory",
@@ -208,7 +208,7 @@ func _shadow() -> void:
 		"weapon": W("rocket", 40.0, 16.0, 2.2, {"air": true}), "desc": "Raketen gegen Fahrzeuge und Luft."})
 	U("shadow_tech", {"name": "Technical", "cost": 500, "time": 6.0, "hp": 280.0, "speed": 10.5, "model": "technical", "built_at": "factory",
 		"weapon": W("bullet", 13.0, 16.0, 0.3), "desc": "Pickup mit MG. Billig und schnell."})
-	U("shadow_bike", {"name": "Kradräuber", "cost": 350, "time": 4.5, "hp": 190.0, "speed": 15.0, "model": "bike", "built_at": "factory", "scale": 1.3, "sight": 24.0,
+	U("shadow_bike", {"name": "Kradräuber", "cost": 350, "time": 4.5, "hp": 180.0, "speed": 15.0, "model": "bike", "built_at": "factory", "scale": 1.3, "sight": 24.0,
 		"radius": 1.0, "steer": 4.5, "bike": true, "raider": true,
 		"weapon": W("bullet", 10.0, 15.0, 0.28), "desc": "Geländemotorrad, der Sozius schießt im Fahren. Billig, rasend schnell und zerbrechlich: überfällt Nachschub-Lkw, Bautrupps und Infanterie."})
 	U("shadow_buggy", {"name": "Raketenbuggy", "cost": 900, "time": 9.0, "hp": 220.0, "speed": 11.5, "model": "buggy", "built_at": "factory",

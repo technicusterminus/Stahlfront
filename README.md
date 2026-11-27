@@ -371,7 +371,9 @@ Schalter folgen auf `--` hinter dem Godot-Aufruf, z. B. `godot --path . -- --aut
 | `--firetest=GRÖSSE` | Einzelnes Feuer vor der Kamera |
 | `--animalcam` | Kamera auf eine Hirschherde |
 | `--uitest` | Automatisierter Bedientest mit simulierten Mausklicks (`--nowarp`: echte Maus bleibt unbewegt, prüft den Betrieb ohne Fensterfokus) |
-| `--verbose` | Meldet u.a. jede KI-Generalsfähigkeit mit Zeit und Ziel |
+| `--verbose` | Meldet u.a. jede KI-Generalsfähigkeit und jeden Beutezug der Plänkler mit Zeit und Ziel |
+| `--duel="A*n/B*m,…"` | Gefechtsmessung ohne KI auf freiem Feld, z. B. `shadow_bike*6/shadow_tech*4`; mehrere Truppen je Seite mit `+`. Ausgabe je Paarung: Sieger, Dauer, Überlebende, verlorener Wert, Wirkungsgrad, FPS. `--duelcam=ABSTAND --duelyaw=GRAD` lässt die Kamera Seite A folgen, `--duelshot=NAME` speichert Bilder nach 1,5/4/7 s |
+| `--iconbake[=ID,ID]` | Rendert die Symbole des Baurasters aus den Spielmodellen neu (alle oder nur die genannten Kennungen) |
 
 **Balance-Messreihe:** `tools/balance_test.ps1` simuliert KI-Gefechte ohne Fenster, rotiert Fraktionen und Startpositionen über mehrere Karten und fasst Überlebensquote, Abschüsse, Verluste und Skriptfehler je Fraktion zusammen:
 
