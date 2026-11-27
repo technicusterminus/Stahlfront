@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://rs2dqn4rypbb"
-path="res://.godot/imported/red_dock_Hull_rough.png-0b4b2ffedda040daaed5ff8a2a8fd27b.ctex"
+path.s3tc="res://.godot/imported/red_dock_Hull_rough.png-0b4b2ffedda040daaed5ff8a2a8fd27b.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "c61284250c221987c0f22ae0f99969a4"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/red_dock_Hull_rough.png"
-dest_files=["res://.godot/imported/red_dock_Hull_rough.png-0b4b2ffedda040daaed5ff8a2a8fd27b.ctex"]
+dest_files=["res://.godot/imported/red_dock_Hull_rough.png-0b4b2ffedda040daaed5ff8a2a8fd27b.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

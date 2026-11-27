@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://csxs650hcxew4"
-path="res://.godot/imported/shadow_airfield_Hull_rough.png-26e73782bb2a2cbbb6e6687df1c8d02a.ctex"
+path.s3tc="res://.godot/imported/shadow_airfield_Hull_rough.png-26e73782bb2a2cbbb6e6687df1c8d02a.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "1850c503f2a4dc71d6d0cf422f88d8e6"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/shadow_airfield_Hull_rough.png"
-dest_files=["res://.godot/imported/shadow_airfield_Hull_rough.png-26e73782bb2a2cbbb6e6687df1c8d02a.ctex"]
+dest_files=["res://.godot/imported/shadow_airfield_Hull_rough.png-26e73782bb2a2cbbb6e6687df1c8d02a.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

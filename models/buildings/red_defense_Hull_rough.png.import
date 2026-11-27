@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ul2d10guf7c7"
-path="res://.godot/imported/red_defense_Hull_rough.png-6128205143393d38e409cee4a046fe23.ctex"
+path.s3tc="res://.godot/imported/red_defense_Hull_rough.png-6128205143393d38e409cee4a046fe23.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "a614fab54f8d911831b5c1766074fb60"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/red_defense_Hull_rough.png"
-dest_files=["res://.godot/imported/red_defense_Hull_rough.png-6128205143393d38e409cee4a046fe23.ctex"]
+dest_files=["res://.godot/imported/red_defense_Hull_rough.png-6128205143393d38e409cee4a046fe23.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

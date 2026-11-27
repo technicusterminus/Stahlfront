@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cbpmanfykknv8"
-path="res://.godot/imported/west_barracks_Hull_rough.png-a949cb64723df1ce16a621d6269a0aef.ctex"
+path.s3tc="res://.godot/imported/west_barracks_Hull_rough.png-a949cb64723df1ce16a621d6269a0aef.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "9e326193f7a317fddd90390db3a5f6af"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/west_barracks_Hull_rough.png"
-dest_files=["res://.godot/imported/west_barracks_Hull_rough.png-a949cb64723df1ce16a621d6269a0aef.ctex"]
+dest_files=["res://.godot/imported/west_barracks_Hull_rough.png-a949cb64723df1ce16a621d6269a0aef.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

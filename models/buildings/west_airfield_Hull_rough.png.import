@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b7ee2xo0xpi4l"
-path="res://.godot/imported/west_airfield_Hull_rough.png-2b58683e607af6817ceba3db973a4425.ctex"
+path.s3tc="res://.godot/imported/west_airfield_Hull_rough.png-2b58683e607af6817ceba3db973a4425.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "14eb102d3a09cb9c3c8262615c9309ac"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/west_airfield_Hull_rough.png"
-dest_files=["res://.godot/imported/west_airfield_Hull_rough.png-2b58683e607af6817ceba3db973a4425.ctex"]
+dest_files=["res://.godot/imported/west_airfield_Hull_rough.png-2b58683e607af6817ceba3db973a4425.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

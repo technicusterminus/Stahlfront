@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bghl8jx4k4b0f"
-path="res://.godot/imported/shadow_super_Hull_color.png-d99b47298df2502f0bcc660b2c216aba.ctex"
+path.s3tc="res://.godot/imported/shadow_super_Hull_color.png-d99b47298df2502f0bcc660b2c216aba.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "a4704937da338631e5aa3ea0def891e4"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/shadow_super_Hull_color.png"
-dest_files=["res://.godot/imported/shadow_super_Hull_color.png-d99b47298df2502f0bcc660b2c216aba.ctex"]
+dest_files=["res://.godot/imported/shadow_super_Hull_color.png-d99b47298df2502f0bcc660b2c216aba.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

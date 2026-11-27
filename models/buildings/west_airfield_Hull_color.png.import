@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://d3k5bmy2b16x7"
-path="res://.godot/imported/west_airfield_Hull_color.png-2f072f679e04616ec1f512839238579f.ctex"
+path.s3tc="res://.godot/imported/west_airfield_Hull_color.png-2f072f679e04616ec1f512839238579f.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "d9fd7d00b2bc62264e018060e4dd9f8f"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/west_airfield_Hull_color.png"
-dest_files=["res://.godot/imported/west_airfield_Hull_color.png-2f072f679e04616ec1f512839238579f.ctex"]
+dest_files=["res://.godot/imported/west_airfield_Hull_color.png-2f072f679e04616ec1f512839238579f.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

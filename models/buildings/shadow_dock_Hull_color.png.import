@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bnrer14t2uie3"
-path="res://.godot/imported/shadow_dock_Hull_color.png-4d46de1ac0a882dd38efb0ca1e978233.ctex"
+path.s3tc="res://.godot/imported/shadow_dock_Hull_color.png-4d46de1ac0a882dd38efb0ca1e978233.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "839236f90a34964dcce8077bdf7b0f65"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/shadow_dock_Hull_color.png"
-dest_files=["res://.godot/imported/shadow_dock_Hull_color.png-4d46de1ac0a882dd38efb0ca1e978233.ctex"]
+dest_files=["res://.godot/imported/shadow_dock_Hull_color.png-4d46de1ac0a882dd38efb0ca1e978233.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

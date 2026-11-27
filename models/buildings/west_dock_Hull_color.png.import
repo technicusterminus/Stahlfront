@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bxtg8fw02tvvl"
-path="res://.godot/imported/west_dock_Hull_color.png-f9292dfbc4319b0faca4d016ec7c9b23.ctex"
+path.s3tc="res://.godot/imported/west_dock_Hull_color.png-f9292dfbc4319b0faca4d016ec7c9b23.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "5401dd1824cc729374ae9a9abb77effc"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/west_dock_Hull_color.png"
-dest_files=["res://.godot/imported/west_dock_Hull_color.png-f9292dfbc4319b0faca4d016ec7c9b23.ctex"]
+dest_files=["res://.godot/imported/west_dock_Hull_color.png-f9292dfbc4319b0faca4d016ec7c9b23.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

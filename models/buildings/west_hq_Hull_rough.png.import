@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bnytb2ddcdw5t"
-path="res://.godot/imported/west_hq_Hull_rough.png-6d74bba0bedd909a9c8572d668aed589.ctex"
+path.s3tc="res://.godot/imported/west_hq_Hull_rough.png-6d74bba0bedd909a9c8572d668aed589.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "eaa2abedce05ddb1ea3c5939d78db09a"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/west_hq_Hull_rough.png"
-dest_files=["res://.godot/imported/west_hq_Hull_rough.png-6d74bba0bedd909a9c8572d668aed589.ctex"]
+dest_files=["res://.godot/imported/west_hq_Hull_rough.png-6d74bba0bedd909a9c8572d668aed589.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

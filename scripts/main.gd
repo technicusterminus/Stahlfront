@@ -538,26 +538,61 @@ func start_match(cfg: Dictionary) -> void:
 		var roles := ["hq", "power", "supply", "barracks", "factory", "airfield", "tech", "defense", "super"]
 		if args.has("bldroles"):
 			roles = String(args["bldroles"]).split(",")
-		var c0: Vector2i = Game.world_to_cell(st)
-		var k2 := 0
+		var ids: Array = []
 		for r in roles:
-			var bid: String = fac2 + "_" + String(r)
-			if not Defs.buildings.has(bid):
+			if Defs.buildings.has(fac2 + "_" + String(r)):
+				ids.append(fac2 + "_" + String(r))
+		# freie, trockene, ebene Plätze rund um die Basis suchen (kein Wasser, Wald, Hang, Lager), dicht beieinander
+		var placed: Array = []
+		var avg := Vector3.ZERO
+		var anchor: Vector3 = st
+		for bid in ids:
+			var sz: int = int(Defs.buildings[bid]["size"])
+			var best := Vector3.INF
+			var bd := INF
+			for gx in range(-24, 25):
+				for gz in range(-24, 25):
+					var p: Vector3 = st + Vector3(gx * 4.0, 0, gz * 4.0)
+					if Game.flat_dist(p, st) < 22.0:
+						continue
+					var ok := true
+					for q in placed:
+						if Game.flat_dist(p, q) < 17.0:
+							ok = false
+							break
+					if ok:
+						for dp in Game.depots:
+							if is_instance_valid(dp) and Game.flat_dist(dp.position, p) < 13.0:
+								ok = false
+								break
+					if ok:
+						var cc0: Vector2i = Game.world_to_cell(p)
+						for cell in Game.footprint(cc0, sz + 2):
+							if not Game.in_grid(cell) or Game.terrain.blocked[cell.y * Game.GRID + cell.x] == 1 or not Game.is_free(cell):
+								ok = false
+								break
+					if ok:
+						var dist: float = Game.flat_dist(p, anchor)
+						if dist < bd:
+							bd = dist
+							best = p
+			if best == Vector3.INF:
 				continue
-			var cc := c0 + Vector2i(-16 + (k2 % 5) * 9, 12 + (k2 / 5) * 10)
-			for cell in Game.footprint(cc, Defs.buildings[bid]["size"]):
-				if Game.in_grid(cell):
-					Game.terrain.blocked[cell.y * Game.GRID + cell.x] = 0
-					Game.astar.set_point_solid(cell, false)
-			var bb = Game.spawn_building(bid, 0, cc, true)
+			var bb = Game.spawn_building(bid, 0, Game.world_to_cell(best), true)
 			bb.finish(true)
-			k2 += 1
-		var mid3: Vector3 = Game.cell_center(c0 + Vector2i(2, 16))
-		cam.look_at_pos(mid3)
+			placed.append(best)
+			anchor = Vector3.ZERO
+			for q in placed:
+				anchor += q / float(placed.size())
+		for q in placed:
+			avg += q / float(maxi(1, placed.size()))
+		cam.look_at_pos(avg)
 		cam.dist_target = float(args.get("camdist", "60"))
 		if args.has("pitch"):
 			cam.pitch = deg_to_rad(float(args["pitch"]))
-		Game.explore(mid3, 80.0)
+		if args.has("yaw"):
+			cam.yaw = deg_to_rad(float(args["yaw"]))
+		Game.explore(avg, 90.0)
 	if args.has("seashow"):
 		# Testaufstellung: Werft und alle Schiffe in der Heimatbucht jedes Spielers
 		for pl in Game.players.size():

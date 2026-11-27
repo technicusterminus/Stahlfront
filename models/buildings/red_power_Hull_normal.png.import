@@ -3,28 +3,29 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dth1rnnb60lv"
-path="res://.godot/imported/red_power_Hull_normal.png-e990e6f028f454fe88b6ea4451be777a.ctex"
+path.s3tc="res://.godot/imported/red_power_Hull_normal.png-e990e6f028f454fe88b6ea4451be777a.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
-"md5": "18a088be7524d8562df04b69f12d7188"
+"md5": "4a238045cc3075e07d48989d8a217141"
 }
 
 [deps]
 
 source_file="res://models/buildings/red_power_Hull_normal.png"
-dest_files=["res://.godot/imported/red_power_Hull_normal.png-e990e6f028f454fe88b6ea4451be777a.ctex"]
+dest_files=["res://.godot/imported/red_power_Hull_normal.png-e990e6f028f454fe88b6ea4451be777a.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=1
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1

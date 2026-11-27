@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bx21gphmunmp"
-path="res://.godot/imported/west_power_Hull_color.png-5a2cba7cf25a92cf826e27567c48b4ea.ctex"
+path.s3tc="res://.godot/imported/west_power_Hull_color.png-5a2cba7cf25a92cf826e27567c48b4ea.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "8a1e4951081ed4ba66cc75a65114436f"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/west_power_Hull_color.png"
-dest_files=["res://.godot/imported/west_power_Hull_color.png-5a2cba7cf25a92cf826e27567c48b4ea.ctex"]
+dest_files=["res://.godot/imported/west_power_Hull_color.png-5a2cba7cf25a92cf826e27567c48b4ea.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

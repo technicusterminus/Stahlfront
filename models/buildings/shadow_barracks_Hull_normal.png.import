@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dx2bln5drq2o7"
-path="res://.godot/imported/shadow_barracks_Hull_normal.png-6aa711da1f8fa60ee50e4b1b532e264c.ctex"
+path.s3tc="res://.godot/imported/shadow_barracks_Hull_normal.png-6aa711da1f8fa60ee50e4b1b532e264c.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "7839070b5a99f1a77bb1336545b95638"
@@ -14,17 +15,17 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/shadow_barracks_Hull_normal.png"
-dest_files=["res://.godot/imported/shadow_barracks_Hull_normal.png-6aa711da1f8fa60ee50e4b1b532e264c.ctex"]
+dest_files=["res://.godot/imported/shadow_barracks_Hull_normal.png-6aa711da1f8fa60ee50e4b1b532e264c.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=1
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1

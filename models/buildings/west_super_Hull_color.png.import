@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://w3yl0x66h72i"
-path="res://.godot/imported/west_super_Hull_color.png-6a16d994805d3421132c6b4ee0e85e74.ctex"
+path.s3tc="res://.godot/imported/west_super_Hull_color.png-6a16d994805d3421132c6b4ee0e85e74.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "b6ba496300ee57f7ec4b359d018a36ca"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://models/buildings/west_super_Hull_color.png"
-dest_files=["res://.godot/imported/west_super_Hull_color.png-6a16d994805d3421132c6b4ee0e85e74.ctex"]
+dest_files=["res://.godot/imported/west_super_Hull_color.png-6a16d994805d3421132c6b4ee0e85e74.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
