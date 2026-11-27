@@ -48,7 +48,8 @@ func U(id: String, d: Dictionary) -> void:
 	d.merge({"sight": 18.0, "armor": "light", "speed": 6.0, "flying": false, "role": "combat",
 		"scale": 1.0, "weapon": null, "prereq": [], "desc": "", "horde": false, "cargo": 0,
 		"shield": 0.0, "stealth": false, "pair": false, "salvage": false, "built_at": "",
-		"fixed_wing": false, "turn": 1.3, "naval": false, "submerged": false, "carrier": false}, false)
+		"fixed_wing": false, "turn": 1.3, "naval": false, "submerged": false, "carrier": false,
+		"steer": 0.0, "radius": 0.0, "bike": false, "offroad": false, "raider": false}, false)
 	units[id] = d
 
 func B(id: String, d: Dictionary) -> void:
@@ -116,6 +117,9 @@ func _west() -> void:
 		"weapon": W("bullet", 10.0, 14.0, 0.5), "desc": "Gut gegen Infanterie."})
 	U("west_at", {"name": "Panzerjäger", "cost": 300, "time": 6.0, "hp": 110.0, "speed": 4.3, "armor": "inf", "model": "inf_at", "built_at": "barracks",
 		"weapon": W("rocket", 42.0, 17.0, 2.2, {"air": true}), "desc": "Raketen gegen Fahrzeuge und Luft."})
+	U("west_dunebuggy", {"name": "Sandviper-Buggy", "cost": 600, "time": 6.0, "hp": 280.0, "speed": 13.0, "model": "dunebuggy", "built_at": "factory", "scale": 1.3, "sight": 30.0,
+		"radius": 1.5, "steer": 3.6, "offroad": true, "raider": true,
+		"weapon": W("bullet", 12.0, 16.0, 0.25), "desc": "Dünenbuggy mit Überrollkäfig und schwerem MG im Drehring. Schnell, weitsichtig, mit Schild: Aufklärer und Jäger von Nachschub, Bautrupps und Infanterie."})
 	U("west_tank", {"name": "Falke-Kampfpanzer", "cost": 815, "time": 9.5, "hp": 650.0, "speed": 6.6, "armor": "heavy", "model": "tank", "built_at": "factory",
 		"weapon": W("shell", 64.0, 18.0, 1.95, {"splash": 1.5}), "prereq": [], "desc": "Rückgrat der Panzertruppe."})
 	U("west_aa", {"name": "Hornet-Flakwagen", "cost": 700, "time": 8.0, "hp": 300.0, "speed": 8.8, "model": "aa", "built_at": "factory",
@@ -144,7 +148,7 @@ func _west() -> void:
 	B("west_power", {"name": "Fusionsreaktor", "cost": 800, "time": 12.0, "hp": 900.0, "power": 10, "desc": "Liefert 10 Strom."})
 	B("west_supply", {"name": "Nachschubzentrum", "cost": 1500, "time": 15.0, "hp": 1500.0, "power": -1, "produces": ["west_harv"], "desc": "Lager für Nachschub. Liefert einen Lkw mit."})
 	B("west_barracks", {"name": "Kaserne", "cost": 500, "time": 10.0, "hp": 1100.0, "power": -1, "produces": ["west_inf", "west_at"], "prereq": ["power"], "desc": "Bildet Infanterie aus."})
-	B("west_factory", {"name": "Waffenfabrik", "cost": 2000, "time": 20.0, "hp": 2000.0, "size": 5, "power": -2, "produces": ["west_drone", "west_tank", "west_aa", "west_arty", "west_laser"], "prereq": ["supply", "barracks"], "desc": "Produziert Fahrzeuge."})
+	B("west_factory", {"name": "Waffenfabrik", "cost": 2000, "time": 20.0, "hp": 2000.0, "size": 5, "power": -2, "produces": ["west_drone", "west_dunebuggy", "west_tank", "west_aa", "west_arty", "west_laser"], "prereq": ["supply", "barracks"], "desc": "Produziert Fahrzeuge."})
 	B("west_airfield", {"name": "Flugfeld", "cost": 1000, "time": 16.0, "hp": 1500.0, "size": 5, "power": -2, "produces": ["west_heli", "west_jet", "west_bomber"], "prereq": ["factory"], "desc": "Startplatz für Kampfhubschrauber."})
 	B("west_defense", {"name": "Patriot-Batterie", "cost": 1000, "time": 12.0, "hp": 1300.0, "power": -2, "prereq": ["barracks"], "sight": 26.0,
 		"weapon": W("rocket", 46.0, 26.0, 1.4, {"air": true, "burst": 2}), "desc": "Raketenabwehr gegen Boden- und Luftziele. Braucht Strom."})
@@ -204,6 +208,9 @@ func _shadow() -> void:
 		"weapon": W("rocket", 40.0, 16.0, 2.2, {"air": true}), "desc": "Raketen gegen Fahrzeuge und Luft."})
 	U("shadow_tech", {"name": "Technical", "cost": 500, "time": 6.0, "hp": 280.0, "speed": 10.5, "model": "technical", "built_at": "factory",
 		"weapon": W("bullet", 13.0, 16.0, 0.3), "desc": "Pickup mit MG. Billig und schnell."})
+	U("shadow_bike", {"name": "Kradräuber", "cost": 350, "time": 4.5, "hp": 190.0, "speed": 15.0, "model": "bike", "built_at": "factory", "scale": 1.3, "sight": 24.0,
+		"radius": 1.0, "steer": 4.5, "bike": true, "raider": true,
+		"weapon": W("bullet", 10.0, 15.0, 0.28), "desc": "Geländemotorrad, der Sozius schießt im Fahren. Billig, rasend schnell und zerbrechlich: überfällt Nachschub-Lkw, Bautrupps und Infanterie."})
 	U("shadow_buggy", {"name": "Raketenbuggy", "cost": 900, "time": 9.0, "hp": 220.0, "speed": 11.5, "model": "buggy", "built_at": "factory",
 		"weapon": W("rocket", 30.0, 27.0, 3.0, {"burst": 3, "splash": 1.5}), "desc": "Raketensalven auf große Distanz."})
 	U("shadow_tank", {"name": "Skorpion", "cost": 700, "time": 9.0, "hp": 430.0, "speed": 7.2, "armor": "heavy", "model": "scorpion", "built_at": "factory",
@@ -231,7 +238,7 @@ func _shadow() -> void:
 	B("shadow_hq", {"name": "Versteck", "cost": 2000, "time": 35.0, "hp": 3000.0, "size": 5, "produces": ["shadow_dozer"], "sight": 24.0, "desc": "Herz der Basis. Bildet Arbeiter aus."})
 	B("shadow_supply", {"name": "Umschlagplatz", "cost": 1500, "time": 15.0, "hp": 1300.0, "produces": ["shadow_harv"], "desc": "Lager für Nachschub. Liefert einen Pickup mit."})
 	B("shadow_barracks", {"name": "Ausbildungslager", "cost": 500, "time": 10.0, "hp": 1000.0, "produces": ["shadow_inf", "shadow_at"], "desc": "Bildet Kämpfer aus."})
-	B("shadow_factory", {"name": "Schrottwerkstatt", "cost": 2000, "time": 20.0, "hp": 1800.0, "size": 5, "produces": ["shadow_tech", "shadow_buggy", "shadow_tank", "shadow_toxin", "shadow_bomb", "shadow_aa", "shadow_arty"], "prereq": ["supply", "barracks"], "desc": "Schweißt Fahrzeuge zusammen."})
+	B("shadow_factory", {"name": "Schrottwerkstatt", "cost": 2000, "time": 20.0, "hp": 1800.0, "size": 5, "produces": ["shadow_bike", "shadow_tech", "shadow_buggy", "shadow_tank", "shadow_toxin", "shadow_bomb", "shadow_aa", "shadow_arty"], "prereq": ["supply", "barracks"], "desc": "Schweißt Fahrzeuge zusammen."})
 	B("shadow_airfield", {"name": "Schotterpiste", "cost": 1200, "time": 14.0, "hp": 1100.0, "size": 5, "produces": ["shadow_glider", "shadow_sprayer"], "prereq": ["factory"], "desc": "Provisorische Startbahn für Ultraleichtflieger und Sprühflugzeuge."})
 	B("shadow_defense", {"name": "Stinger-Stellung", "cost": 900, "time": 12.0, "hp": 1100.0, "prereq": ["barracks"], "sight": 24.0,
 		"weapon": W("rocket", 36.0, 24.0, 1.2, {"air": true, "burst": 2}), "desc": "Raketen gegen Boden- und Luftziele."})

@@ -126,6 +126,12 @@ func _ready() -> void:
 		_take_shot(args["shot"], float(args.get("shotdelay", "6")))
 	if args.has("quit"):
 		_quit_after(float(args["quit"]))
+	if args.has("duel"):
+		# Gefechtstest: Paarungen gleich teurer Gruppen auf freiem Feld (scripts/duel_test.gd)
+		var duel = load("res://scripts/duel_test.gd").new()
+		duel.name = "DuelTest"
+		add_child(duel)
+		duel.setup(String(args["duel"]))
 
 func _spec_from_args() -> Dictionary:
 	var sp = Maps.default_spec()

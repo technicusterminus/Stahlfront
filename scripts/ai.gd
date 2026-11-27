@@ -14,6 +14,8 @@ const NON_OFFENSIVE_POWERS := ["cash", "heal_all", "reveal"]
 var _t_start := 0.0
 var next_attack = 0.0
 var attackers: Array = []
+var raiders: Array = []      # Plänkler auf Beutezug (Kradräuber, Sandviper)
+var next_raid = 0.0
 var rng = RandomNumberGenerator.new()
 var hq_pos = Vector3.ZERO
 var target_pid = -1
@@ -31,6 +33,7 @@ func setup(p: int) -> void:
 	if Game.difficulty == 0:
 		order_list.erase("super")
 	next_attack = [420.0, 300.0, 220.0][Game.difficulty]
+	next_raid = [360.0, 260.0, 180.0][Game.difficulty]
 	hq_pos = Game.players[p]["start"]
 
 func _physics_process(delta: float) -> void:
@@ -50,6 +53,7 @@ func _physics_process(delta: float) -> void:
 	_construction()
 	_production()
 	_military()
+	_raids()
 	_naval()
 	_powers()
 	_superweapon()
@@ -265,6 +269,11 @@ func _production() -> void:
 				wgt = 1.2
 			if ud["cost"] >= 1500:
 				wgt = 1.5
+			if ud["raider"]:
+				# Plänkler: eine Rotte genügt, sonst fehlt der Armee die Wucht
+				if _mine_units().filter(func(u): return u.def["raider"]).size() >= 6:
+					continue
+				wgt = 2.0
 			options.append([uid, wgt])
 		if options.is_empty():
 			continue
@@ -338,7 +347,7 @@ func _military() -> void:
 				if not attackers.has(u) and u.order == "idle" and Game.flat_dist(u.position, ap) < 70.0:
 					u.cmd_move(ap, true)
 	# Angriffswelle
-	var home: Array = army.filter(func(u): return not attackers.has(u))
+	var home: Array = army.filter(func(u): return not attackers.has(u) and not raiders.has(u))
 	var need: int = [5, 7, 9][Game.difficulty] + min(wave * 2, 14)
 	if Game.time >= next_attack and home.size() >= need:
 		_repick_target()
@@ -374,6 +383,54 @@ func _military() -> void:
 	for u in home:
 		if u.order == "idle" and Game.flat_dist(u.position, hq_pos) > 50.0 and u.target == null:
 			u.cmd_move(hq_pos + (Vector3.ZERO - hq_pos).normalized() * 22.0, true)
+
+## Plänkler (Kradräuber, Sandviper): ziehen in kleinen Rotten los und jagen Nachschub-Lkw und Bautrupps
+## abseits der gegnerischen Abwehr. Angeschlagene kehren zur Reparatur heim, ohne Beute schließen sie sich der Armee an.
+func _raids() -> void:
+	raiders = raiders.filter(func(u): return is_instance_valid(u) and u.alive)
+	for u in raiders.duplicate():
+		if u.hp < u.max_hp * 0.35:
+			raiders.erase(u)
+			u.cmd_move(hq_pos + (Vector3.ZERO - hq_pos).normalized() * 16.0)
+		elif u.order == "idle" and u.target == null:
+			var nxt = _raid_target(u.position)
+			if nxt != null:
+				u.cmd_attack(nxt)
+			else:
+				raiders.erase(u)
+	if Game.time < next_raid:
+		return
+	var ready: Array = _army().filter(func(u): return u.def["raider"] and not raiders.has(u) and not attackers.has(u) and u.hp > u.max_hp * 0.7)
+	if ready.size() < 2:
+		return
+	var center := Vector3.ZERO
+	for u in ready:
+		center += u.position / float(ready.size())
+	var t = _raid_target(center)
+	if t == null:
+		return
+	next_raid = Game.time + [110.0, 80.0, 55.0][Game.difficulty]
+	for u in ready.slice(0, 5):
+		raiders.append(u)
+		u.cmd_attack(t)
+
+## Beute für Plänkler: gegnerische Nachschubfahrzeuge und Bautrupps am Boden, nah und möglichst fern von Abwehrstellungen.
+func _raid_target(from: Vector3):
+	var best = null
+	var bs := 1e9
+	for u in Game.units:
+		if not u.alive or u.flying or u.naval or not Game.enemies(pid, u.owner_id):
+			continue
+		if u.def["role"] != "harvester" and u.def["role"] != "dozer":
+			continue
+		var s: float = Game.flat_dist(u.position, from)
+		for b in Game.buildings:
+			if b.alive and b.weapon != null and Game.enemies(pid, b.owner_id) and Game.flat_dist(b.position, u.position) < 26.0:
+				s += 120.0
+		if s < bs:
+			bs = s
+			best = u
+	return best
 
 ## Flotte: sammelt sich in der Heimatbucht und greift ab drei Schiffen die Bucht oder Küste des Gegners an.
 var next_fleet = 240.0

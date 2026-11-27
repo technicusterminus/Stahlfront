@@ -140,6 +140,7 @@ Kosten in Credits. *(T)* = braucht das Forschungsgebäude.
 | Baudrohne | 800 | Fliegender Baumeister, baut über jedes Gelände |
 | Logistik-Lkw | 600 | Sammler |
 | Marinesoldat / Panzerjäger | 150 / 300 | Infanterie / Raketen gegen Fahrzeuge und Luft |
+| Sandviper-Buggy | 600 | Dünenbuggy mit schwerem MG: Aufklärer, jagt Nachschub und Infanterie |
 | Falke-Kampfpanzer | 900 | Standardpanzer |
 | Hornet-Flakwagen | 700 | Flugabwehr |
 | Lanzen-Raketenwerfer *(T)* | 1.200 | Weitreichende Raketenartillerie |
@@ -176,6 +177,7 @@ Gebäude: Hauptquartier, Kohlekraftwerk, Versorgungsdepot, Kaserne, Panzerwerk, 
 | Arbeiter | 250 | Baumeister (schwach, billig) |
 | Sammler-Pickup | 500 | Sammler |
 | Rebell / RPG-Kämpfer | 150 / 300 | Infanterie, tarnt sich |
+| Kradräuber | 350 | Geländemotorrad, Sozius schießt: schnellster Überfall auf Nachschub |
 | Technical | 500 | Pickup mit MG |
 | Raketenbuggy | 900 | Raketensalven auf große Distanz |
 | Skorpion | 700 | Leichter Panzer |

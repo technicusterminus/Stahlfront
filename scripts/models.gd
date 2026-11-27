@@ -348,6 +348,19 @@ static func load_custom(dir: String, names: Array, col: Color) -> Dictionary:
 		for nd2 in inst.find_children("Rotor*", "Node3D", true, false):
 			rotors.append(nd2)
 		out["rotors"] = rotors
+		# Räder, die sich beim Fahren drehen (Motorrad, Dünenbuggy): [Knoten, Radius im Modell]
+		var wheels: Array = []
+		for wn in inst.find_children("Wheel*", "Node3D", true, false):
+			var vi := wn as VisualInstance3D
+			if vi == null:
+				var kids: Array = wn.find_children("*", "VisualInstance3D", true, false)
+				if kids.is_empty():
+					continue
+				vi = kids[0]
+			var wb: AABB = vi.get_aabb()
+			wheels.append([wn, maxf(wb.size.y, wb.size.z) * 0.5])
+		if not wheels.is_empty():
+			out["wheels"] = wheels
 		# Animierte Modelle (Soldaten): AnimationPlayer mitliefern, Schleifen setzen
 		var aps = inst.find_children("*", "AnimationPlayer", true, false)
 		if not aps.is_empty():

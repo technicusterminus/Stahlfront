@@ -1,6 +1,7 @@
 extends Node
 ## Symbole für das Befehlsraster aus den echten Spielmodellen rendern.
-## Aufruf:  godot --path . -- --iconbake
+## Aufruf:  godot --path . -- --iconbake            (alle)
+##          godot --path . -- --iconbake=west_dunebuggy,shadow_bike   (nur diese Kennungen)
 ## Für jede Einheit und jedes Gebäude: Modell in einer eigenen 3D-Welt aufstellen, schräg von vorn oben beleuchten,
 ## mit durchsichtigem Hintergrund aufnehmen und als models/icons/<id>.png (128 px) speichern. Danach einmal importieren.
 
@@ -48,10 +49,16 @@ func _ready() -> void:
 	stage = Node3D.new()
 	vp.add_child(stage)
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://models/icons"))
+	var only: Array = []
+	for a in OS.get_cmdline_user_args():
+		if a.begins_with("--iconbake="):
+			only = a.trim_prefix("--iconbake=").split(",", false)
 	for id in Defs.units:
-		jobs.append(["unit", id])
+		if only.is_empty() or only.has(id):
+			jobs.append(["unit", id])
 	for id in Defs.buildings:
-		jobs.append(["bldg", id])
+		if only.is_empty() or only.has(id):
+			jobs.append(["bldg", id])
 	_run()
 
 func _aabb(n: Node) -> AABB:

@@ -83,6 +83,9 @@ var _previous_visual_speed := 0.0
 var _suspension_pitch := 0.0
 var _suspension_velocity := 0.0
 var _previous_visual_heading := 0.0
+var _lean := 0.0              # Motorrad: Schräglage, Buggy: Wanken (rad)
+var _steer_heading := 0.0     # Kurs im letzten Bild (Kurvenlage am Boden)
+var _idle_turret_t := 0.0
 var salvage = 0           # Schattenfront: Schrottbergung (0..3)
 var aura = false          # Rote Allianz: Propaganda in Reichweite
 var _aura_t = 0.0
@@ -107,6 +110,8 @@ func setup(d: Dictionary, pid: int) -> void:
 	turret = model["turret"]
 	muzzle_local = model["muzzle"]
 	radius = (1.6 if is_vehicle else 0.55) * float(d["scale"])
+	if float(d["radius"]) > 0.0:
+		radius = float(d["radius"])
 	if flying:
 		radius = 2.0 if d["role"] != "combat" or weapon != null else 1.4
 	fixed_wing = d["fixed_wing"]
@@ -729,6 +734,8 @@ func _integrate(delta: float) -> void:
 			var th = atan2(want.x, want.z)
 			var diff = wrapf(th - heading, -PI, PI)
 			var turn = 1.2 if naval else (3.2 if def["scale"] < 1.3 else 2.0)
+			if float(def["steer"]) > 0.0:
+				turn = float(def["steer"])
 			heading += clamp(diff, -turn * delta, turn * delta)
 			var fwd = Vector3(sin(heading), 0, cos(heading))
 			var f: float = clamp(cos(diff), 0.0, 1.0) if abs(diff) < 1.3 else 0.0
@@ -794,11 +801,21 @@ func _animate(delta: float) -> void:
 			model["spin"].rotation.y += delta * 2.2
 	elif is_vehicle and not flying:
 		var n: Vector3 = Game.terrain.normal_at(position.x, position.z)
+		if def["bike"]:
+			# Einspurer kippt nicht mit dem Seitenhang, er hält sich selbst aufrecht
+			var side := Vector3(fwd.z, 0, -fwd.x)
+			n = (n - side * n.dot(side)).normalized()
 		tilt_n = tilt_n.lerp(n, min(1.0, 6.0 * delta)).normalized()
 		var f = (fwd - tilt_n * fwd.dot(tilt_n)).normalized()
 		transform.basis = Basis(tilt_n.cross(f).normalized(), tilt_n, f)
 		_animate_chassis(delta)
 		_lay_marks(delta)
+		if turret != null and target == null and burst_left == 0:
+			_idle_turret_t += delta
+			if _idle_turret_t > 2.5:
+				turret.rotation.y = rotate_toward(turret.rotation.y, 0.0, 1.6 * delta)
+		else:
+			_idle_turret_t = 0.0
 	else:
 		transform.basis = Basis(Vector3.UP, heading)
 	if flying:
@@ -879,6 +896,9 @@ func _lay_marks(delta: float) -> void:
 		w = 0.3 * sc
 	var right: Vector3 = transform.basis.x.normalized()
 	var back: Vector3 = -transform.basis.z.normalized() * float(radius) * 0.6
+	if def["bike"]:
+		tm.add(position + back, heading, 0.22 * sc, false)
+		return
 	for sgn in [-1.0, 1.0]:
 		tm.add(position + right * off * sgn + back, heading, w, tracked)
 
@@ -891,6 +911,30 @@ func _animate_chassis(delta: float) -> void:
 	_suspension_pitch = clampf(_suspension_pitch + _suspension_velocity * delta, -0.065, 0.065)
 	var chassis: Node3D = model.get("chassis", body)
 	chassis.rotation.x = _suspension_pitch
+	if def["bike"] or def["offroad"]:
+		var turn_rate := angle_difference(_steer_heading, heading) / maxf(delta, 0.001)
+		_steer_heading = heading
+		if absf(turn_rate) > 20.0:
+			turn_rate = 0.0   # erstes Bild oder Sprung (Aufstellung)
+		var pace := clampf(speed_now / maxf(float(def["speed"]), 1.0), 0.0, 1.0)
+		var want_lean: float
+		if def["bike"]:
+			# legt sich in die Kurve: je schneller und enger, desto tiefer
+			want_lean = clampf(-turn_rate * speed_now * 0.02, -0.5, 0.5)
+		else:
+			# weiche Langhubfederung: der Aufbau wankt nach außen
+			want_lean = clampf(turn_rate * pace * 0.05, -0.09, 0.09)
+		_lean = lerpf(_lean, want_lean, minf(1.0, 5.0 * delta))
+		chassis.rotation.z = _lean
+		if visible:
+			# Bodenwellen: leichtes Wippen bei Fahrt
+			var amp := 0.035 if def["offroad"] else 0.018
+			chassis.position.y = (sin(_anim_t * 11.0) * 0.6 + sin(_anim_t * 17.3 + 1.7) * 0.4) * amp * pace
+	var wheels: Array = model.get("wheels", [])
+	if visible and not wheels.is_empty():
+		var sc: float = body.scale.x
+		for w in wheels:
+			(w[0] as Node3D).rotation.x += speed_now * delta / maxf(float(w[1]) * sc, 0.05)
 	var tracks = model.get("track_visual")
 	if tracks != null:
 		var camera: Camera3D = Game.cam.cam
@@ -984,6 +1028,9 @@ func _make_wreck() -> void:
 	Game.fx_root.add_child(b)
 	b.global_transform = gt
 	_darken(b, wm)
+	if def["bike"]:
+		# Motorrad kippt zur Seite
+		b.create_tween().tween_property(b, "rotation:z", 1.35 if randf() < 0.5 else -1.35, 0.5).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
 	var tw = b.create_tween()
 	if flying:
 		var gy: float = Game.terrain.ground_y(b.global_position.x, b.global_position.z)

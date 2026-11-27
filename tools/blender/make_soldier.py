@@ -390,7 +390,7 @@ def gear(faction, variant, rig, M):
         objs.append((prim("sphere", "ScarfTail", (0.118, 0.097, 1.655), (0.055, 0.082, 0.19), M["scarf"], rot=(0.16, -0.36, 0)), "head"))
         for z, depth, tilt in ((1.563, 0.203, 0.15), (1.601, 0.224, -0.12), (1.629, 0.246, 0.095)):
             objs.append((prim("sphere", "FaceWrap", (0, -0.023, z), (0.214, depth, 0.09), M["scarf"], rot=(0, tilt, 0)), "head"))
-        if variant == "worker":
+        if variant in ("worker", "rider"):
             objs.append((prim("sphere", "GoggleStrap", (0, 0.01, 1.704), (0.245, 0.245, 0.034), M["gear"]), "head"))
             for sx in (-0.052, 0.052):
                 objs.append((prim("cube", "GoggleFrame", (sx, -0.113, 1.7), (0.101, 0.051, 0.074), M["gear"], bevel=0.02), "head"))
@@ -525,7 +525,7 @@ def gear(faction, variant, rig, M):
         objs.append((t, "chest"))
         objs.append((prim("cyl", "Warhead", (-0.16, -0.78, 1.5), (0.12, 0.12, 0.22), M["metal"], rot=(math.pi / 2, 0, 0), v=12), "chest"))
         objs.append((prim("cube", "Grip", (-0.16, -0.25, 1.4), (0.04, 0.06, 0.12), M["gun"]), "chest"))
-    else:
+    elif variant == "worker":
         objs.append((prim("cube", "Toolbox", (-0.15, -0.2, 0.95), (0.28, 0.12, 0.18), M["tool"], bevel=0.01), "hand.R"))
     # Schuhe und Hände mit allen Einzelheiten
     for side in ("L", "R"):
@@ -671,8 +671,8 @@ def make_anims(rig, variant):
     rig.animation_data.action = acts[0]
     return acts
 # ------------------------------------------------------------------ Aufbau je Fraktion/Variante
-def build(faction, variant):
-    reset()
+def soldier_materials(faction, variant):
+    """Materialsatz einer Figur (auch für Fahrer und Schützen auf Fahrzeugen). Gibt (M, Uniform) zurück."""
     team_col = {"west": (0.18, 0.22, 0.26), "red": (0.19, 0.22, 0.125), "shadow": (0.35, 0.28, 0.18)}[faction]
     M = {
         "team": material("TeamUniform", team_col, 0.0, 0.85),
@@ -716,6 +716,11 @@ def build(faction, variant):
     uniform = M["team"] if variant != "worker" else material("Overall", {"west": (0.72, 0.75, 0.8), "red": (0.27, 0.3, 0.22), "shadow": (0.44, 0.35, 0.24)}[faction], 0.0, 0.85)
     if variant == "worker":
         M["team"] = uniform   # Saum, Taschen, Manschetten in Arbeitskleidung, nicht in Teamfarbe
+    return M, uniform
+
+def build(faction, variant):
+    reset()
+    M, uniform = soldier_materials(faction, variant)
     body = build_body(uniform, M["boot"])
     rig = build_rig()
     skin_to(rig, body)
@@ -760,10 +765,11 @@ def preview(faction):
     os.makedirs(os.path.dirname(sc.render.filepath), exist_ok=True)
     bpy.ops.render.render(write_still=True)
 
-os.makedirs(os.path.join(root_dir, "models", "units"), exist_ok=True)
-for f in FACTIONS:
-    for v in VARIANTS:
-        build(f, v)
+if __name__ == "__main__":
+    os.makedirs(os.path.join(root_dir, "models", "units"), exist_ok=True)
+    for f in FACTIONS:
+        for v in VARIANTS:
+            build(f, v)
 def anim_sheet(faction):
     """Seitenansicht mehrerer Bilder je Animation nach shots/anim/."""
     rig = build(faction, "inf")
@@ -794,8 +800,9 @@ def anim_sheet(faction):
             sc.render.filepath = os.path.join(out, "%s_%02d.png" % (act, fr))
             bpy.ops.render.render(write_still=True)
 
-if "--sheet" in sys.argv:
-    anim_sheet("west")
-elif "--preview" in sys.argv:
-    for f in FACTIONS:
-        preview(f)
+if __name__ == "__main__":
+    if "--sheet" in sys.argv:
+        anim_sheet("west")
+    elif "--preview" in sys.argv:
+        for f in FACTIONS:
+            preview(f)
