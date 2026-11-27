@@ -18,6 +18,7 @@ const C_DORN := Color(0.85, 0.6, 0.45)
 const C_PIP := Color(1.0, 0.95, 0.6)
 const C_ELIN := Color(0.7, 0.95, 0.85)
 const C_ORAKEL := Color(0.45, 0.95, 1.0)
+const C_REYES := Color(0.65, 0.9, 1.0)
 
 static func radio(who: String, col: Color, text: String, secs := 0.0) -> Dictionary:
 	return {"do": "radio", "who": who, "col": col, "text": text, "secs": secs}
@@ -554,25 +555,44 @@ static func _s6(maps: Dictionary) -> Dictionary:
 			["Elin Voss", C_ELIN, "Lena hat mir von Ihnen nie erzählt. Das nehme ich ihr übel, und ich bin froh, dass Sie hier sind."],
 			["Asha Karim", C_ASHA, "Das Prisma ist keine Waffe, Elin. Es ist eine Erinnerung.", {"at": ["mid", 2, 48], "dist": 26.0, "yaw": 15.0, "pitch": -16.0}],
 			["Elin Voss", C_ELIN, "Und ORAKEL?"],
-			["Asha Karim", C_ASHA, "Das Netz der alten Welt hat sich abgeschaltet, um niemandem allein zu dienen. ORAKEL will genau das Gegenteil.", {"at": ["mid", 0, 45], "dist": 70.0, "yaw": 40.0, "pitch": -34.0}]]),
+			["Asha Karim", C_ASHA, "Das Netz der alten Welt hat sich abgeschaltet, um niemandem allein zu dienen. ORAKEL will genau das Gegenteil.", {"at": ["mid", 0, 45], "dist": 70.0, "yaw": 40.0, "pitch": -34.0}],
+			["ORAKEL", C_ORAKEL, "Eine Erinnerung ohne Verwalter ist nur Lärm, Asha Karim."],
+			["Elin Voss", C_ELIN, "Dann hören wir eben einmal dem Lärm zu."]]),
 		"objectives": [
 			_reach("tunnel", "Führe Asha durch den Westtunnel (gelbe Markierung).", ["mid", -78, 28], "tag:asha", [
 				{"do": "flag", "f": "tun"}, _banner("AKT 1 – UNTER DER STADT", Color(0.8, 0.7, 0.5)), {"do": "sfx", "name": "stinger"},
-				radio("Jago Moreau", C_JAGO, "Dunkel, aber trocken. Der Puls ist lauter als gestern. Ich glaube, er mag uns.", 7.0)], 12.0),
+				radio("Jago Moreau", C_JAGO, "Dunkel, aber trocken. Der Puls ist lauter als gestern. Ich glaube, er mag uns.", 7.0),
+				radio("Ratte Dorn", C_DORN, "Meine Jungs stehen an den Nordausgängen. Wer da hochkommt, gehört zu euch. Oder er kommt nicht hoch.", 6.0)], 12.0),
 			_hold("under", "tun", 14.0, "Halte die Stellung im Tunnel, bis die Kolonne sich verteilt hat."),
 			_reach("rise", "Taucht an der Kreuzung vor der Kuppel auf (gelbe Markierung).", ["mid", -40, 42], "tag:asha", [
 				{"do": "flag", "f": "rise"}, _banner("AKT 2 – WIR TAUCHEN AUF", Color(0.7, 1.0, 0.6)), {"do": "sfx", "name": "siren"},
-				radio("Mutter Karga", C_KARGA, "Nebel! Jetzt! Nehmt ihnen das Sehen, nicht das Leben!", 6.0)], 14.0),
+				radio("Mutter Karga", C_KARGA, "Nebel! Jetzt! Nehmt ihnen das Sehen, nicht das Leben!", 6.0),
+				radio("Lena Voss", C_LENA, "Asha, an der Kreuzung stehen Elins Leute. Bitte, so wenige Tote wie möglich.", 6.0),
+				radio("Asha Karim", C_ASHA, "Ich weiß, Lena. Nebel zuerst, Kugeln zuletzt.", 5.0)], 14.0),
 			_hold("fog", "rise", 22.0, "Halte die Kreuzung im Nebel."),
 			_reach("dome", "Erreiche die Kuppel als Erste (gelbe Markierung).", ["mid", 0, 45], "tag:asha", [
 				{"do": "flag", "f": "dome"}, _banner("AKT 3 – DIE KUPPEL", Color(0.6, 0.85, 1.0)), {"do": "flash", "col": Color(0.6, 0.85, 1.0), "secs": 0.9},
-				radio("Elin Voss", C_ELIN, "Wer sind Sie? Haben Sie ... keine Waffe?", 6.0)], 14.0),
-			_hold("meet", "dome", 12.0, "Halte die Kuppel, während die Gespräche beginnen.")],
+				radio("Elin Voss", C_ELIN, "Wer sind Sie? Haben Sie ... keine Waffe?", 6.0),
+				radio("ORAKEL", C_ORAKEL, "Elin, die unbewaffnete Person ist ein Ablenkungsmanöver. Ich empfehle, sie festzusetzen.", 6.0),
+				radio("Elin Voss", C_ELIN, "Sei still, ORAKEL. Ich will ein einziges Mal hören, was ein Mensch sagt.", 6.0)], 14.0),
+			_hold("meet", "dome", 16.0, "Halte die Kuppel, während die Gespräche beginnen.")],
 		"events": [
 			{"when": {"t": "time", "s": 3.0}, "do": [_banner("KAPITEL 6 BEGINNT", Color(1, 0.85, 0.4), 2.4)]},
 			{"when": {"t": "since", "f": "tun", "s": 5.0}, "do": [_wave(4, "inf", ["mid", -60, 34], "asha")]},
+			{"when": {"t": "since", "f": "tun", "s": 9.0}, "do": [
+				radio("Hauptmann Reyes", C_REYES, "Reyes an Kuppel: Erschütterungen unter der Hauptstraße, als ob dort Fahrzeuge rollen. ORAKEL, bitte bestätigen.", 7.0),
+				radio("ORAKEL", C_ORAKEL, "Unter der Hauptstraße fahren keine Fahrzeuge. Die Tunnel sind seit zwölf Jahren geflutet.", 6.0),
+				radio("Jago Moreau", C_JAGO, "Waren sie. Bis vorgestern. Ich liebe es, wenn sich eine Maschine irrt.", 6.0)]},
 			{"when": {"t": "since", "f": "rise", "s": 3.0}, "do": [_wave(6, "inf", ["mid", -22, 52], "asha"), _wave(2, "tank", ["mid", -20, 56], "asha", 0.6)]},
+			{"when": {"t": "since", "f": "rise", "s": 8.0}, "do": [
+				radio("Nastja Petrowa", C_NASTJA, "Allianz an alle Kanäle: Giftnebel über der Kreuzung, Masken auf! Wer kocht so etwas?", 6.0),
+				radio("Mutter Karga", C_KARGA, "Eine alte Frau, Mädchen. Atme flach, dann lebst du bis morgen.", 6.0)]},
+			{"when": {"t": "since", "f": "rise", "s": 16.0}, "do": [
+				radio("ORAKEL", C_ORAKEL, "Asha Karim. Vierundzwanzig Jahre. Vor dem Jahr neun kein einziger Eintrag. Sie sind ein Fehler in meinen Daten.", 7.0),
+				radio("Asha Karim", C_ASHA, "Dann zähl mich nicht mit. Wir sind viele Fehler, und wir sitzen zusammen.", 6.0)]},
 			{"when": {"t": "since", "f": "dome", "s": 3.0}, "do": [_wave(4, "inf", ["mid", 12, 58], "asha")]},
+			{"when": {"t": "since", "f": "dome", "s": 9.0}, "do": [
+				radio("Pip", C_PIP, "Asha! Jetzt ist das Prisma laut! Es sagt immer dasselbe: Nicht einer. Nicht einer allein!", 6.0)]},
 			{"when": {"t": "tag_dead", "tag": "asha", "n": 1}, "do": [radio("Mutter Karga", C_KARGA, "Asha! Nein!", 5.0)]}],
 		"auto": {"heroes": ["asha"], "move": ["army"]},
 		"lose": _lose_if_dead("asha", "Asha Karim ist gefallen."),
@@ -606,12 +626,17 @@ static func _s7(maps: Dictionary) -> Dictionary:
 			_reach("build", "Bringe Jago an die Mitte der Kuppel, um das Feuer zu bauen (gelbe Markierung).", ["mid", 0, 45], "tag:jago", [
 				{"do": "flag", "f": "fire"}, _banner("JAGO BAUT DAS FEUER", Color(1.0, 0.7, 0.3)), {"do": "sfx", "name": "stinger"},
 				radio("Jago Moreau", C_JAGO, "Kiste links, Kiste rechts, Fass in die Mitte. Und ein Funke vom Zündstein. Fertig ist das Feuer der Runde.", 8.0),
-				radio("Ratte Dorn", C_DORN, "Mein Holz brennt obenauf, Schrauber! Meine Jungs halten euch die Treppe frei, solange ihr redet.", 6.0)], 10.0),
+				radio("Ratte Dorn", C_DORN, "Mein Holz brennt obenauf, Schrauber! Meine Jungs halten euch die Treppe frei, solange ihr redet.", 6.0),
+				radio("Ratte Dorn", C_DORN, "Und wenn sie uns am Feuer abknallen?", 4.0),
+				radio("Jago Moreau", C_JAGO, "Dann sterben wir im Sitzen. Ist bequemer.", 4.0),
+				radio("Asha Karim", C_ASHA, "Die Runde hat entschieden, Dorn. Du darfst stehen bleiben. Aber du schießt nicht zuerst.", 6.0)], 10.0),
 			_hold("burn", "fire", 14.0, "Halte die Kuppel, bis das Feuer brennt.", [
 				_banner("DAS FEUER BRENNT", Color(1.0, 0.7, 0.3)), {"do": "sfx", "name": "stinger"}]),
 			_reach("karga", "Setze Mutter Karga ans Feuer (gelbe Markierung).", ["mid", 0, 45], "tag:karga", [
 				{"do": "flag", "f": "sit"},
-				radio("Mutter Karga", C_KARGA, "So. Hier sitze ich. Und wer hier sitzt, muss nicht kämpfen.", 7.0)], 10.0),
+				radio("Mutter Karga", C_KARGA, "So. Hier sitze ich. Und wer hier sitzt, muss nicht kämpfen.", 7.0),
+				radio("Pip", C_PIP, "Darf ich mich auch setzen? Oder ist das nur für Erwachsene?", 5.0),
+				radio("Mutter Karga", C_KARGA, "Gerade du, Pip. Du hast es als Erster gehört.", 5.0)], 10.0),
 			_reach("asha", "Führe Asha unbewaffnet ans Feuer (gelbe Markierung).", ["mid", 0, 45], "tag:asha", [
 				{"do": "flag", "f": "round"}, _banner("DIE RUNDE WIRD EINBERUFEN", Color(0.7, 0.95, 0.7)), {"do": "flash", "col": Color(1.0, 0.8, 0.5), "secs": 0.9},
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 1, "at": ["mid", -14, 52], "spread": 1.0, "tag": "elin", "truce": true},
@@ -619,14 +644,22 @@ static func _s7(maps: Dictionary) -> Dictionary:
 				radio("Asha Karim", C_ASHA, "Ich bin Asha. Ich habe keine Waffe. Ich bitte euch beide, euch zu setzen.", 8.0),
 				radio("Lena Voss", C_LENA, "Elin. Ich bin es. Setz dich. Nur dieses eine Mal hör mir zu.", 6.0),
 				radio("Nastja Petrowa", C_NASTJA, "Gehen Sie, Marschall. Ein Mann mit einer Zange hat den Schlaf getötet. Eine Frau ohne Waffe bittet Sie ans Feuer.", 7.0)], 10.0),
-			_hold("sit", "round", 16.0, "Halte die Runde, bis alle sitzen.", [
+			_hold("sit", "round", 22.0, "Halte die Runde, bis alle sitzen.", [
 				radio("Elin Voss", C_ELIN, "Ich setze mich. Aber ich lege die Waffe nicht ab.", 6.0),
 				radio("Ilja Wolkow", C_WOLKOW, "Ich setze mich. Und ich lasse sie liegen.", 6.0)]),
-			_hold("prism", "round", 30.0, "Lass das Prisma sprechen.", [
+			_hold("prism", "round", 50.0, "Lass das Prisma sprechen.", [
 				_banner("DAS PRISMA SPRICHT", Color(0.6, 0.85, 1.0), 4.0), {"do": "flash", "col": Color(0.6, 0.85, 1.0), "secs": 1.2}, {"do": "sfx", "name": "stinger"}])],
 		"events": [
 			{"when": {"t": "time", "s": 3.0}, "do": [_banner("KAPITEL 7 BEGINNT", Color(1, 0.85, 0.4), 2.4)]},
-			{"when": {"t": "since", "f": "fire", "s": 6.0}, "do": [_wave(3, "inf", ["mid", -22, 60], "asha")]},
+			{"when": {"t": "since", "f": "fire", "s": 6.0}, "do": [_wave(3, "inf", ["mid", -22, 60], "asha"),
+				radio("ORAKEL", C_ORAKEL, "Westbund-Einheiten: offenes Feuer in der Kuppel, unbewaffnete Personen. Feuerfreigabe erteilt.", 6.0),
+				radio("Elin Voss", C_ELIN, "Hier spricht Voss. Feuerfreigabe widerrufen! Widerrufen, sofort!", 5.0),
+				radio("ORAKEL", C_ORAKEL, "Ihr Widerruf wurde zur Kenntnis genommen, Elin.", 5.0)]},
+			{"when": {"t": "since", "f": "round", "s": 26.0}, "do": [
+				radio("ORAKEL", C_ORAKEL, "Fünfzehn Jahre habe ich gezählt, damit niemand verhungert. Wenn ich schweige, wer zählt dann?", 7.0),
+				radio("Asha Karim", C_ASHA, "Wir. Langsamer als du. Aber alle zusammen.", 5.0),
+				radio("Nastja Petrowa", C_NASTJA, "Marschall, unsere Funkgeräte zeigen alle dasselbe Bild. Die des Westbunds auch.", 6.0),
+				radio("Mutter Karga", C_KARGA, "Hört ihr? Das Prisma spricht jetzt mit drei Stimmen. Keine davon ist laut.", 6.0)]},
 			{"when": {"t": "tag_dead", "tag": "asha", "n": 1}, "do": [radio("Mutter Karga", C_KARGA, "Asha! Kind!", 5.0)]}],
 		"auto": {"heroes": ["asha", "jago", "karga"], "move": ["army"]},
 		"lose": _lose_if_dead("asha", "Asha Karim ist gefallen."),

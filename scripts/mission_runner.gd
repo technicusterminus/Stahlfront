@@ -40,6 +40,7 @@ const PORTRAITS := {
 }
 var _radio_queue: Array = []
 var _radio_left := 0.0
+var _win_since := -1.0   # alle Ziele erfüllt: Sieg erst, wenn der Funk ausgesprochen hat (höchstens 60 s)
 var _briefing: Control = null
 # Filmsequenzen (Intro, Outro): Zeitleiste aus Aktionen mit "t", Letterbox, Kamerafahrt, Titel
 var _cine := false
@@ -700,6 +701,10 @@ func _process(delta: float) -> void:
 		if not done.has(o["id"]) and not o.get("optional", false):
 			open_required = true
 	if not open_required:
+		if _win_since < 0.0:
+			_win_since = Game.time
+		if (not _radio_queue.is_empty() or _radio_left > 0.0) and Game.time - _win_since < 60.0:
+			return
 		_finish(true, "")
 
 func _visible(o: Dictionary) -> bool:
