@@ -41,6 +41,7 @@ CHARACTERS = {
     "Tobias Wehn": ("fable", "Hagerer Kartograf in den Fünfzigern, leise, schuldbewusst, gebildet, zögernd."),
     "Ratte Dorn": ("onyx", "Bandenführer der Pässe, rau, misstrauisch, polternd, aber darunter ein müder Mann."),
     "Hauptmann Reyes": ("echo", "Energischer Küstenwache-Hauptmann, funkt über Motorenlärm, zuversichtlich und knapp."),
+    "Funker Sorin": ("fable", "Junger Funker von Lasarews Männern, nervös, gehetzt, hält sich an Befehlen fest; Funkrauschen."),
 }
 
 # Stichwort im Text -> Regieanweisung (erste Übereinstimmung gewinnt)

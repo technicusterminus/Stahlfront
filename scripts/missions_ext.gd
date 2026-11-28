@@ -229,21 +229,42 @@ static func _r6(maps: Dictionary) -> Dictionary:
 		"objectives": [
 			_reach("bridge", "Rücke mit dem Marschall über die Hauptbrücke vor (gelbe Markierung).", ["mid", -30, 45], "tag:ilja", [
 				{"do": "flag", "f": "bridge"}, _banner("AKT 1 – DIE HAUPTBRÜCKE", Color(1.0, 0.85, 0.4)),
-				radio("Dmitri Karpow", C_FUNKE, "Die Brücke hält. Wer sie gebaut hat, war ein Mann mit Sinn für Stahl.", 6.0)], 16.0),
+				radio("Dmitri Karpow", C_FUNKE, "Die Brücke hält. Wer sie gebaut hat, war ein Mann mit Sinn für Stahl.", 6.0),
+				radio("Nastja Petrowa", C_NASTJA, "Lautsprecher an. Niemand geht allein! Niemand geht allein!", 5.0)], 16.0),
 			_reach("glass", "Räume das Glasviertel und erreiche die Kreuzung davor (gelbe Markierung).", ["mid", -10, 50], "tag:ilja", [
 				{"do": "flag", "f": "gas"}, _banner("AKT 2 – GAS UND SCHATTEN", Color(0.6, 1.0, 0.5)), {"do": "sfx", "name": "siren"},
 				radio("Nastja Petrowa", C_NASTJA, "Marschall, die Schattenfront ist unter uns. Sie kommen aus den Tunneln. Giftwolken über den Kreuzungen.", 7.0)], 14.0),
-			_hold("gas", "gas", 24.0, "Halte die Stellung gegen den Nebelangriff.", [
+			_hold("gas", "gas", 46.0, "Halte die Stellung gegen den Nebelangriff.", [
 				radio("Ilja Wolkow", C_WOLKOW, "Haltet die Linie. Niemand geht allein, Genossen.", 5.0)]),
 			_reach("dome", "Erreiche die Kuppel mit dem Marschall (gelbe Markierung).", ["mid", 0, 45], "tag:ilja", [
 				{"do": "flag", "f": "lasarew"}, _banner("AKT 3 – LASAREW", Color(1.0, 0.45, 0.35)), {"do": "flash", "col": Color(0.9, 0.6, 0.5), "secs": 0.9},
 				radio("Oberst Lasarew", C_LASAREW, "Marschall. Ich hatte gehofft, Sie kämen nicht so schnell.", 7.0)], 14.0),
-			_hold("confront", "lasarew", 14.0, "Halte die Stellung, solange der Oberst spricht.")],
+			_hold("confront", "lasarew", 50.0, "Halte die Stellung, solange der Oberst spricht.")],
 		"events": [
 			{"when": {"t": "time", "s": 3.0}, "do": [_banner("KAPITEL 6 BEGINNT", Color(1, 0.85, 0.4), 2.4)]},
 			{"when": {"t": "flag", "f": "bridge"}, "do": [_wave(6, "inf", ["mid", -30, 62], "army"), _wave(2, "tank", ["mid", -28, 66], "army", 0.7)]},
+			{"when": {"t": "since", "f": "bridge", "s": 12.0}, "do": [
+				radio("Hauptmann Reyes", C_REYES, "Reyes an Kuppel: rote Panzer auf der Hauptbrücke! Einer davon so groß wie ein Haus!", 6.0),
+				radio("ORAKEL", C_ORAKEL, "Westbund-Einheiten: Feuerfreigabe auf alle Fahrzeuge der Allianz. Verhandlungen sind nicht vorgesehen.", 6.0),
+				radio("Nastja Petrowa", C_NASTJA, "Marschall, auf Lasarews Kanal spricht jemand. Westbund-Code. Aber die Stimme atmet nicht.", 7.0),
+				radio("Unbekannte Stimme", C_ORAKEL, "Oberst. Der Rat erwartet, dass Sie handeln, sobald der Marschall zögert.", 6.0),
+				radio("Ilja Wolkow", C_WOLKOW, "Schreib alles mit, Nastja. Jedes Wort.", 4.0)]},
 			{"when": {"t": "since", "f": "gas", "s": 4.0}, "do": [_wave(6, "inf", ["mid", 6, 52], "ilja"), _wave(2, "at", ["mid", 10, 54], "ilja")]},
+			{"when": {"t": "since", "f": "gas", "s": 8.0}, "do": [
+				radio("Nastja Petrowa", C_NASTJA, "Allianz an alle Kanäle: Giftnebel über der Kreuzung, Masken auf! Wer kocht so etwas?", 6.0),
+				radio("Mutter Karga", C_KARGA, "Eine alte Frau, Mädchen. Atme flach, dann lebst du bis morgen.", 6.0),
+				radio("Dmitri Karpow", C_FUNKE, "Chef, das Zeug brennt in den Augen, aber keiner fällt um. Die wollen uns blind, nicht tot.", 6.0),
+				radio("Ilja Wolkow", C_WOLKOW, "Feuer nur auf Bewaffnete. Wer im Nebel ohne Gewehr steht, lasst vorbei.", 6.0)]},
+			{"when": {"t": "since", "f": "gas", "s": 30.0}, "do": [_wave(4, "inf", ["mid", -4, 56], "ilja"),
+				radio("Asha Karim", C_ASHA, "Marschall Wolkow. Wir wollen nicht euch. Wir wollen zur Kuppel, wie ihr.", 6.0),
+				radio("Ilja Wolkow", C_WOLKOW, "Dann geht vor uns, Mädchen. Wer zuerst ankommt, redet zuerst.", 6.0)]},
 			{"when": {"t": "since", "f": "lasarew", "s": 3.0}, "do": [_wave(4, "inf", ["mid", 12, 58], "ilja"), _wave(1, "tank", ["mid", 16, 60], "ilja", 0.6)]},
+			{"when": {"t": "since", "f": "lasarew", "s": 8.0}, "do": [
+				radio("Oberst Lasarew", C_LASAREW, "Ihr Vater hat es auch nicht verstanden, Ilja. Man gewinnt keinen Krieg, indem man wartet.", 7.0),
+				radio("Ilja Wolkow", C_WOLKOW, "Mein Vater hat mir einen Umschlag hinterlassen, Gregor. Einen einzigen Satz. Das Dritte Bataillon.", 7.0),
+				radio("Oberst Lasarew", C_LASAREW, "Ich habe getan, was der Rat verlangt hat.", 5.0),
+				radio("Irina Zeljenko", C_ZELJENKO, "Welcher Rat, Gregor? Ich sitze im Rat. Ich habe nichts verlangt.", 6.0),
+				radio("Elin Voss", C_ELIN, "Hier Voss, aus der Kuppel. Der Westbund-Rat hat mit niemandem in der Allianz gesprochen. Das war ORAKEL.", 7.0)]},
 			{"when": {"t": "tag_dead", "tag": "ilja", "n": 1}, "do": [radio("Nastja Petrowa", C_NASTJA, "Marschall! Marschall, antworten Sie!", 5.0)]}],
 		"auto": {"heroes": ["ilja"], "move": ["army"]},
 		"lose": _lose_if_dead("ilja", "Marschall Wolkow ist gefallen."),
@@ -275,21 +296,40 @@ static func _r7(maps: Dictionary) -> Dictionary:
 			_reach("tunnel1", "Führe Funke durch den ersten Tunnelabschnitt (gelbe Markierung).", ["mid", -78, 28], "tag:funke", [
 				{"do": "flag", "f": "t1"}, _banner("AKT 1 – DER SCHACHT", Color(0.8, 0.7, 0.5)), {"do": "sfx", "name": "stinger"},
 				radio("Nastja Petrowa", C_NASTJA, "Links, Dmitri. Noch zehn Meter. Niemand geht allein.", 6.0)], 12.0),
-			_hold("fire", "t1", 16.0, "Halte den Marschall am Prisma, während Funke sich durch die Röhren schiebt.", [
+			_hold("fire", "t1", 40.0, "Halte den Marschall am Prisma, während Funke sich durch die Röhren schiebt.", [
 				_banner("HINTER IHM BRENNT DER EINGANG", Color(1.0, 0.5, 0.3)), {"do": "shake", "n": 1.8},
 				radio("Dmitri Karpow", C_FUNKE, "Sie haben den Schacht hinter mir angesteckt. Wenigstens spare ich mir jetzt die Taschenlampe.", 7.0)]),
 			_reach("tunnel2", "Weiter zum zweiten Abschnitt (gelbe Markierung).", ["mid", -60, 36], "tag:funke", [
 				{"do": "flag", "f": "t2"}, radio("Nastja Petrowa", C_NASTJA, "Gut. Rechts, Dmitri. Es wird enger.", 5.0)], 12.0),
-			_hold("squeeze", "t2", 18.0, "Halte die Stellung, solange Funke die Kontrollkammer sucht."),
+			_hold("squeeze", "t2", 74.0, "Halte die Stellung, solange Funke die Kontrollkammer sucht."),
 			_reach("chamber", "Bringe Funke in die Kontrollkammer (gelbe Markierung).", ["mid", -40, 42], "tag:funke", [
 				{"do": "flag", "f": "cut"}, _banner("DIE KONTROLLKAMMER", Color(1.0, 0.7, 0.4)), {"do": "flash", "col": Color(1.0, 0.6, 0.3), "secs": 0.9},
-				radio("Dmitri Karpow", C_FUNKE, "Da ist sie. Die Hauptleitung, dick wie mein Arm. Ich reiße sie raus. Jetzt.", 7.0)], 12.0),
-			_hold("done", "cut", 8.0, "Halte, bis der Schlaf für immer abgeschaltet ist.", [
+				radio("Dmitri Karpow", C_FUNKE, "Da ist sie. Die Hauptleitung, dick wie mein Arm. Ich reiße sie raus. Jetzt.", 7.0),
+				radio("Nastja Petrowa", C_NASTJA, "Dmitri, die ist heiß! Deine Hände!", 4.0),
+				radio("Dmitri Karpow", C_FUNKE, "Die sind noch dran. Zähl nach, wenn ich rauskomme.", 5.0)], 12.0),
+			_hold("done", "cut", 14.0, "Halte, bis der Schlaf für immer abgeschaltet ist.", [
 				_banner("DER SCHLAF IST ABGESCHALTET", Color(0.6, 1.0, 0.7)), {"do": "sfx", "name": "stinger"}])],
 		"events": [
 			{"when": {"t": "time", "s": 3.0}, "do": [_banner("KAPITEL 7 BEGINNT", Color(1, 0.85, 0.4), 2.4)]},
 			{"when": {"t": "since", "f": "t1", "s": 4.0}, "do": [_wave(5, "inf", ["mid", 12, 56], "army"), _wave(2, "tank", ["mid", 16, 58], "army", 0.7)]},
+			{"when": {"t": "since", "f": "t1", "s": 10.0}, "do": [
+				radio("Funker Sorin", C_LASAREW, "Hier Hochbahnhof. Der Oberst antwortet nicht. Wir zünden, sobald der Bär fällt. So war der Befehl.", 7.0),
+				radio("Ilja Wolkow", C_WOLKOW, "Hier Wolkow, offener Kanal. Gregor ist tot. Wer jetzt noch zündet, tut es für niemanden.", 7.0),
+				radio("Irina Zeljenko", C_ZELJENKO, "Hier Zeljenko. Ich habe ihn erschossen. Wer den Schlaf weckt, dem gilt der zweite Schuss.", 7.0)]},
 			{"when": {"t": "since", "f": "t2", "s": 4.0}, "do": [_wave(4, "inf", ["mid", -46, 52], "funke"), _wave(1, "at", ["mid", -44, 54], "funke")]},
+			{"when": {"t": "since", "f": "t2", "s": 8.0}, "do": [
+				radio("Nastja Petrowa", C_NASTJA, "Dmitri? Du lachst nicht mehr.", 4.0),
+				radio("Dmitri Karpow", C_FUNKE, "Hier unten ist es zu eng zum Lachen. Erzähl mir was.", 5.0),
+				radio("Nastja Petrowa", C_NASTJA, "Mischa hat gestern gefragt, ob Brücken auch schlafen.", 5.0),
+				radio("Dmitri Karpow", C_FUNKE, "Und? Was hast du ihm gesagt?", 4.0),
+				radio("Nastja Petrowa", C_NASTJA, "Dass sie nur warten, bis jemand rübergeht.", 5.0),
+				radio("Dmitri Karpow", C_FUNKE, "Ha! Der Junge wird Pionier. Ich hab's immer gewusst.", 5.0)]},
+			{"when": {"t": "since", "f": "t2", "s": 52.0}, "do": [_wave(3, "inf", ["mid", -10, 60], "army"), _wave(1, "tank", ["mid", -6, 62], "army", 0.6)]},
+			{"when": {"t": "since", "f": "t2", "s": 30.0}, "do": [_wave(4, "inf", ["mid", 14, 58], "army"),
+				radio("Nastja Petrowa", C_NASTJA, "Marschall, unsere Funkgeräte zeigen alle dasselbe Bild. Die des Westbunds auch.", 6.0),
+				radio("Ilja Wolkow", C_WOLKOW, "Ich sehe es, Nastja. Unsere alte Halle. Und ein Feuer, an dem eine alte Frau sitzt und zuhört.", 7.0),
+				radio("ORAKEL", C_ORAKEL, "Marschall Wolkow. Das Silo ist die einzige Garantie für Ihren Frieden. Lassen Sie es wach.", 6.0),
+				radio("Ilja Wolkow", C_WOLKOW, "Du hast schon einmal für einen Rat gesprochen, der nichts wusste. Einmal reicht.", 6.0)]},
 			{"when": {"t": "tag_dead", "tag": "funke", "n": 1}, "do": [radio("Nastja Petrowa", C_NASTJA, "Dmitri? Dmitri, sag etwas!", 5.0)]}],
 		"auto": {"heroes": ["funke"], "move": ["army"]},
 		"lose": _lose_if_dead("funke", "Funke ist gefallen."),
