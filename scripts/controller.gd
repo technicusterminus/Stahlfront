@@ -451,7 +451,11 @@ func _formation_move(us: Array, g: Vector3, attack: bool) -> void:
 	dir = dir.normalized()
 	var right = Vector3(dir.z, 0, -dir.x)
 	var cols = int(ceil(sqrt(n * 1.5)))
-	var spacing = 3.4
+	# Abstand nach der größten Einheit der Gruppe: Soldaten eng, Panzer mit Luft dazwischen
+	var biggest := 0.0
+	for u in us:
+		biggest = maxf(biggest, float(u.radius))
+	var spacing := maxf(2.6, biggest * 2.0 + 1.6)
 	# Sortieren: Einheiten links/rechts passend zu ihrem Platz
 	us.sort_custom(func(a, b): return (a.position - centroid).dot(right) < (b.position - centroid).dot(right))
 	for i in n:

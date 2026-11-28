@@ -15,6 +15,8 @@ var max_hp = 100.0
 var alive = true
 var selected = false
 var radius = 0.8
+var ring_r := 0.8         # Halbmesser des Auswahlrings quer (umschließt bei Fahrzeugen den Rumpf)
+var ring_rz := -1.0       # längs, nur bei Fahrzeugen (ovaler Ring)
 var flying = false
 var weapon = null
 var is_vehicle = true
@@ -110,8 +112,17 @@ func setup(d: Dictionary, pid: int) -> void:
 	turret = model["turret"]
 	muzzle_local = model["muzzle"]
 	radius = (1.6 if is_vehicle else 0.55) * float(d["scale"])
+	# Fahrzeuge: Abstand nach der echten Grundfläche des Modells, damit sie nicht ineinander stehen
+	var foot: Vector2 = model.get("foot", Vector2.ZERO) * float(d["scale"])
 	if float(d["radius"]) > 0.0:
 		radius = float(d["radius"])
+	if is_vehicle and not flying and not naval and foot.x > 0.0:
+		radius = maxf(radius, (foot.x + foot.y) * 0.5 * 0.9)
+	ring_r = radius * 0.92
+	if is_vehicle and not flying and foot.x > 0.0:
+		# oval eng um den Rumpf; ein langes Rohr ragt vorn ein Stück hinaus
+		ring_r = foot.x * 1.05 + 0.2
+		ring_rz = maxf(ring_r, foot.y * 0.78 + 0.2)
 	if flying:
 		radius = 2.0 if d["role"] != "combat" or weapon != null else 1.4
 	fixed_wing = d["fixed_wing"]
@@ -121,22 +132,8 @@ func setup(d: Dictionary, pid: int) -> void:
 	_anim_t = randf() * 10.0
 
 func _make_ring() -> void:
-	ring = MeshInstance3D.new()
-	var tm = TorusMesh.new()
-	tm.inner_radius = radius * 1.0
-	tm.outer_radius = radius * 1.14
-	tm.rings = 32
-	tm.ring_segments = 4
-	ring.mesh = tm
-	var m = StandardMaterial3D.new()
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.albedo_color = Color(0.35, 1.0, 0.45) if owner_id == Game.human else Color(1.0, 0.35, 0.3)
-	m.no_depth_test = true
-	m.render_priority = 1
-	ring.material_override = m
-	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	ring.position.y = 0.15
-	ring.visible = false
+	var col := Color(0.4, 1.0, 0.5) if owner_id == Game.human else Color(1.0, 0.38, 0.32)
+	ring = SelRing.make(ring_r, col, false, ring_rz)
 	add_child(ring)
 
 func place_at(p: Vector3) -> void:
@@ -717,12 +714,12 @@ func _integrate(delta: float) -> void:
 		_fly_fixed(delta)
 		return
 	var sep = Vector3.ZERO
-	for o in Game.units_near(position, radius + 2.6):
+	for o in Game.units_near(position, radius + 3.5):
 		if o == self or o.flying != flying:
 			continue
 		var dv = Vector3(position.x - o.position.x, 0, position.z - o.position.z)
 		var dist = dv.length()
-		var minsep: float = (radius + o.radius) * (0.85 if not flying else 1.2)
+		var minsep: float = (radius + o.radius) * (1.2 if flying else (1.0 if is_vehicle and o.is_vehicle else 0.85))
 		if dist < minsep:
 			if dist < 0.01:
 				dv = Vector3(randf() - 0.5, 0, randf() - 0.5)

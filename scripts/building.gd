@@ -77,22 +77,9 @@ func setup(d: Dictionary, pid: int, center: Vector2i, c: Array) -> void:
 	_make_ring()
 
 func _make_ring() -> void:
-	ring = MeshInstance3D.new()
-	var tm = TorusMesh.new()
-	tm.inner_radius = half * 1.25
-	tm.outer_radius = half * 1.32
-	tm.rings = 4
-	tm.ring_segments = 3
-	ring.mesh = tm
-	ring.rotation.y = PI / 4
-	var m = StandardMaterial3D.new()
-	m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	m.albedo_color = Color(0.35, 1.0, 0.45) if owner_id == Game.human else Color(1.0, 0.35, 0.3)
-	m.no_depth_test = true
-	ring.material_override = m
-	ring.position.y = 0.4
-	ring.visible = false
-	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var col := Color(0.4, 1.0, 0.5) if owner_id == Game.human else Color(1.0, 0.38, 0.32)
+	ring = SelRing.make(half * 1.08, col, true)
+	ring.position.y = 0.25
 	add_child(ring)
 
 func set_selected(v: bool) -> void:

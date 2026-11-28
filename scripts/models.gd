@@ -374,10 +374,14 @@ static func load_custom(dir: String, names: Array, col: Color) -> Dictionary:
 			if m == null:
 				out["muzzle"] = Vector3(-0.07, 1.45, 1.15)
 		var top = 0.0
+		var foot := Vector2.ZERO   # halbe Breite (x) und halbe Länge (z) der Grundfläche, ungeskaliert
 		for mi in inst.find_children("*", "MeshInstance3D", true, false):
 			var aabb: AABB = _rel(mi, root) * (mi as MeshInstance3D).get_aabb()
 			top = max(top, aabb.end.y)
+			foot.x = maxf(foot.x, maxf(absf(aabb.position.x), absf(aabb.end.x)))
+			foot.y = maxf(foot.y, maxf(absf(aabb.position.z), absf(aabb.end.z)))
 		out["height"] = max(top, 0.5)
+		out["foot"] = foot
 		return out
 	return {}
 

@@ -7,6 +7,7 @@ extends Node
 ##   Wirkungsgrad (zerstörter durch verlorenen Wert) und die Bildrate während des Gefechts.
 ## Danach eine Übersicht, dann beendet sich das Spiel.
 ## --duelcam=<abstand>: Kamera folgt der Seite A in diesem Abstand, --duelyaw=<grad> dreht sie.
+## --duelselect: Seite A ist ausgewählt (zeigt die Auswahlkreise auf den Bildern).
 ## --duelshot=<name>: Bildschirmfotos nach 1,5 / 4 / 7 s jeder Paarung als shots/<name>_<paarung>_<s>.png.
 
 const MAX_T := 120.0
@@ -30,6 +31,7 @@ var cam_dist := 0.0
 var cam_yaw := 0.0
 var shot_name := ""
 var shots_left: Array = []
+var select_a := false
 
 func setup(spec: String) -> void:
 	for a in OS.get_cmdline_user_args():
@@ -37,6 +39,8 @@ func setup(spec: String) -> void:
 			cam_dist = float(a.trim_prefix("--duelcam="))
 		elif a.begins_with("--duelyaw="):
 			cam_yaw = deg_to_rad(float(a.trim_prefix("--duelyaw=")))
+		elif a == "--duelselect":
+			select_a = true
 		elif a.begins_with("--duelshot="):
 			shot_name = a.trim_prefix("--duelshot=")
 	for m in spec.split(",", false):
@@ -117,6 +121,8 @@ func _start_next() -> void:
 	side_b = all_b.duplicate()
 	total_a = _value(all_a)
 	total_b = _value(all_b)
+	if select_a:
+		Game.ctrl.set_selection(all_a)
 	for u in side_a:
 		u.cmd_move(spot + Vector3(32, 0, 0), true)
 	for u in side_b:
