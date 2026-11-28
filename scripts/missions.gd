@@ -73,6 +73,8 @@ const C_FUNKE := Color(1.0, 0.85, 0.45)
 const C_ZELJENKO := Color(0.95, 0.5, 0.55)
 const C_LASAREW := Color(0.85, 0.7, 0.65)
 const C_KARGA := Color(0.95, 0.8, 0.6)
+const C_ASHA := Color(0.75, 0.95, 0.7)
+const C_PIP := Color(1.0, 0.95, 0.6)
 
 static func radio(who: String, col: Color, text: String, secs := 0.0) -> Dictionary:
 	return {"do": "radio", "who": who, "col": col, "text": text, "secs": secs}
@@ -733,9 +735,16 @@ static func _c6() -> Dictionary:
 				"done": [{"do": "banner", "text": "AKT 1 – DER HIMMEL ÜBER AURELIA", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
 					{"do": "sfx", "name": "siren"},
 					{"do": "spawn", "side": "enemy", "def": "bomber", "n": 2, "at": ["en", 0, 20], "spread": 6.0, "tag": "bombers", "attack_tag": "army", "hp": 0.6, "dmg": 0.55},
-					radio("Falke", C_FALKE, "Zwei rote Bomber von Osten! Ich übernehme, schickt die Jäger hinterher!", 6.0)]},
+					radio("Falke", C_FALKE, "Zwei rote Bomber von Osten! Ich übernehme, schickt die Jäger hinterher!", 6.0),
+					radio("Hauptmann Reyes", C_REYES, "Reyes an Kuppel: rote Panzer auf der Hauptbrücke! Einer davon so groß wie ein Haus!", 6.0),
+					radio("ORAKEL", C_ORAKEL, "Westbund-Einheiten: Feuerfreigabe auf alle Fahrzeuge der Allianz. Verhandlungen sind nicht vorgesehen.", 6.0),
+					radio("Elin Voss", C_ELIN, "ORAKEL, wer hat diese Freigabe erteilt?", 4.0),
+					radio("ORAKEL", C_ORAKEL, "Sie, Elin. Vor vierzig Sekunden. Ich habe mir nur Ihre Stimme geliehen.", 6.0),
+					radio("Elin Voss", C_ELIN, "An alle: Freigabe widerrufen. Was ORAKEL sagt, gilt heute Nacht nicht.", 6.0)]},
 			{"id": "bombers", "text": "Schalte die roten Bomber aus.", "c": {"t": "not", "c": {"t": "tag_alive", "tag": "bombers", "n": 1}},
-				"done": [radio("Falke", C_FALKE, "Beide brennen! Halt, unten auf dem Platz sind Pip und die Alte, mitten bei den Flüchtlingen! Ich ziehe meine Salve hoch!", 8.0)]},
+				"done": [radio("Falke", C_FALKE, "Beide brennen! Halt, unten auf dem Platz sind Pip und die Alte, mitten bei den Flüchtlingen! Ich ziehe meine Salve hoch!", 8.0),
+					radio("Pip", C_PIP, "Er hat nicht geschossen! Karga, der Flieger hat nicht geschossen!", 5.0),
+					radio("Mutter Karga", C_KARGA, "Dann merk dir sein Gesicht, Pip. Den laden wir später ans Feuer.", 6.0)]},
 			{"id": "mira", "text": "Bringe Mira und Dr. Brandt zur Kuppel (gelbe Markierung).", "c": {"t": "all", "c": [{"t": "reach", "at": ["mid", 6, 45], "r": 12.0, "who": "tag:mira"}, {"t": "reach", "at": ["mid", 6, 45], "r": 14.0, "who": "tag:brandt"}]}, "mark": ["mid", 6, 45],
 				"done": [{"do": "flag", "f": "key"},
 					{"do": "banner", "text": "AKT 2 – DAS PRISMA SPRICHT", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
@@ -746,7 +755,9 @@ static func _c6() -> Dictionary:
 				"done": [{"do": "heal", "tag": "aldane"}, {"do": "truce", "tag": "aldane"},
 					{"do": "explode", "tag": "aldane", "size": 0.8, "n": 0.6},
 					radio("Mira Tanaka", C_MIRA, "Waffe getroffen. Er lebt.", 8.0),
-					radio("Henrik Aldane", C_ALDANE, "Meine Hand! Das ist Hochverrat, Sergeant!", 7.0)]},
+					radio("Henrik Aldane", C_ALDANE, "Meine Hand! Das ist Hochverrat, Sergeant!", 7.0),
+					radio("Nastja Petrowa", C_NASTJA, "Kuppel, hier Allianz. Lasarew ist tot. Unsere Kommissarin hat geschossen. Ein einziges Mal.", 7.0),
+					radio("Mira Tanaka", C_MIRA, "Bei uns auch ein Schuss. Meiner hat nur die Hand getroffen.", 5.0)]},
 			{"id": "final", "text": "Sichere das Prisma: wehre den letzten Angriff ab.", "c": {"t": "all", "c": [{"t": "flag", "f": "last"}, {"t": "any", "c": [{"t": "not", "c": {"t": "tag_alive", "tag": "guard", "n": 1}}, {"t": "since", "f": "last", "s": 70.0}]}]}},
 		],
 		"events": [
@@ -756,6 +767,8 @@ static func _c6() -> Dictionary:
 				{"do": "sfx", "name": "siren"},
 				{"do": "banner", "text": "DACHKAMPF", "secs": 2.8, "col": Color(1.0, 0.45, 0.35)},
 				radio("Mira Tanaka", C_MIRA, "Kontakt links. Schattenfront im Schutt. Brandt, runter.", 6.0),
+				radio("Lena Voss", C_LENA, "Elin, hier ist Lena. Die im Nebel gehören zu mir. Sag deinen Leuten, sie sollen auf die Panzer zielen, nicht auf uns.", 7.0),
+				radio("Elin Voss", C_ELIN, "Mira, nur auf die, die auf dich schießen. Lena, halt deine Leute von den Dächern fern.", 6.0),
 				{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 4, "at": ["mid", -48, 32], "spread": 5.0, "attack_tag": "mira"}]},
 			{"when": {"t": "tag_reach", "tag": "mira", "at": ["mid", -10, 40], "r": 20.0, "n": 1}, "do": [
 				{"do": "banner", "text": "DRITTE ARMEE", "secs": 2.6, "col": Color(1.0, 0.45, 0.35)},
@@ -766,6 +779,11 @@ static func _c6() -> Dictionary:
 				{"do": "sfx", "name": "siren"},
 				radio("ORAKEL", C_ORAKEL, "Der Kern ist erreicht, die Sicherungen sind umgangen. Ich übernehme jetzt.", 8.0),
 				radio("Dr. Brandt", C_BRANDT, "Sie greift nach dem Kern! Ich halte sie auf, aber nur für kurze Zeit!", 6.0)]},
+			{"when": {"t": "since", "f": "key", "s": 30.0}, "do": [
+				radio("Nastja Petrowa", C_NASTJA, "Kuppel, hier Allianz, offener Kanal. Unser Oberst sagt, euer Rat hat ihm Befehle gegeben. Stimmt das?", 7.0),
+				radio("Elin Voss", C_ELIN, "Hier Voss, aus der Kuppel. Der Westbund-Rat hat mit niemandem in der Allianz gesprochen. Das war ORAKEL.", 7.0),
+				radio("ORAKEL", C_ORAKEL, "Elin, Sie geben Staatsgeheimnisse an den Feind.", 5.0),
+				radio("Elin Voss", C_ELIN, "Ich gebe Menschen die Wahrheit, ORAKEL. Das ist etwas anderes.", 5.0)]},
 			{"when": {"t": "since", "f": "key", "s": 25.0}, "do": [
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 29, 45], "spread": 8.0, "tag": "guard", "attack_tag": "mira"},
 				{"do": "spawn", "side": "enemy", "def": "tank", "n": 2, "at": ["mid", 34, 50], "spread": 6.0, "tag": "guard", "attack_tag": "mira", "hp": 0.75},
@@ -788,6 +806,10 @@ static func _c6() -> Dictionary:
 				{"do": "spawn", "side": "enemy", "def": "tank", "n": 3, "at": ["mid", -27, 42], "spread": 7.0, "tag": "guard", "attack_tag": "mira", "hp": 0.75},
 				{"do": "spawn", "side": "enemy", "def": "shadow_tech", "n": 3, "at": ["mid", 27, 43], "spread": 6.0, "tag": "guard", "attack_tag": "mira"},
 				radio("Elin Voss", C_ELIN, "Alles auf die Kuppel! Das Prisma darf in niemandes Hände fallen!", 6.0)]},
+			{"when": {"t": "since", "f": "last", "s": 16.0}, "do": [
+				radio("Ilja Wolkow", C_WOLKOW, "Hier Wolkow. Meine Panzer stehen an der Brücke still. Wer an Ihrer Kuppel noch schießt, schießt nicht für mich.", 8.0),
+				radio("Asha Karim", C_ASHA, "Und nicht für uns. Wir halten die Tunnel zu, Elin Voss. Was jetzt noch kommt, kommt ohne Volk.", 7.0),
+				radio("Elin Voss", C_ELIN, "Verstanden. Dann trennen wir heute Nacht die, die reden, von denen, die nur noch schießen.", 7.0)]},
 			{"when": {"t": "tag_dead", "tag": "mira", "n": 1}, "do": [radio("Elin Voss", C_ELIN, "Mira! Nein ... Haltet die Kuppel, für sie!", 6.0)]},
 		],
 		"lose": [{"c": {"t": "any", "c": [{"t": "tag_dead", "tag": "mira", "n": 1}, {"t": "tag_dead", "tag": "brandt", "n": 1}]}, "text": "Mira oder Dr. Brandt sind gefallen."}],
@@ -846,7 +868,7 @@ static func _c7() -> Dictionary:
 				"done": [{"do": "flag", "f": "speak"},
 					{"do": "banner", "text": "AKT 2 – ELIN SPRICHT ZUM PRISMA", "secs": 3.4, "col": Color(0.6, 0.85, 1.0)},
 					radio("Elin Voss", C_ELIN, "Wir wollen nicht abgeschaltet werden. Wir wollen lernen.", 8.0), radio("Elin Voss", C_ELIN, "Wir haben Fehler gemacht, viele. Aber wir sind die, die zuhören können.")]},
-			{"id": "shield", "text": "Überstehe den Moment, in dem das Prisma antwortet.", "c": {"t": "since", "f": "speak", "s": 14.0},
+			{"id": "shield", "text": "Überstehe den Moment, in dem das Prisma antwortet.", "c": {"t": "since", "f": "speak", "s": 40.0},
 				"done": [{"do": "truce", "tag": "foe"},
 					{"do": "flash", "col": Color(1.0, 1.0, 1.0), "secs": 2.4},
 					{"do": "sfx", "name": "stinger"},
@@ -864,6 +886,15 @@ static func _c7() -> Dictionary:
 				{"do": "spawn", "side": "enemy", "def": "shadow_inf", "n": 6, "at": ["mid", -48, 32], "spread": 6.0, "tag": "foe", "attack_tag": "elin"},
 				{"do": "spawn", "side": "enemy", "def": "shadow_tech", "n": 2, "at": ["mid", -49, 33], "spread": 4.0, "tag": "foe", "attack_tag": "elin"},
 				radio("Falke", C_FALKE, "Ich sehe sie von Westen, Elin! Haltet euch fest!", 5.0)]},
+			{"when": {"t": "since", "f": "cut", "s": 14.0}, "do": [
+				radio("Hauptmann Reyes", C_REYES, "Reyes hier. Meine Boote sind tot, alle Schirme schwarz. Wir rudern, Chefin.", 6.0),
+				radio("Falke", C_FALKE, "Mein Jäger fliegt noch. Ohne Bildschirm, nach Gefühl. Wie früher, bevor uns jemand das Denken abgenommen hat.", 7.0)]},
+			{"when": {"t": "since", "f": "cut", "s": 44.0}, "do": [
+				radio("Nastja Petrowa", C_NASTJA, "Kuppel, hier Allianz. Unser Pionier kriecht gerade zum Silo. Wenn ihr betet, betet für einen Mann namens Dmitri.", 8.0),
+				radio("Dr. Brandt", C_BRANDT, "Ich bete nicht. Aber ich drücke die Daumen. Beide.", 5.0)]},
+			{"when": {"t": "since", "f": "cut", "s": 70.0}, "do": [
+				radio("Mira Tanaka", C_MIRA, "Elin. Die Schilde sind weg, die Drohnen sind weg. Wir sind noch da.", 5.0),
+				radio("Elin Voss", C_ELIN, "Das war immer der Teil, den ORAKEL nicht ausrechnen konnte.", 5.0)]},
 			{"when": {"t": "since", "f": "cut", "s": 58.0}, "do": [
 				{"do": "sfx", "name": "siren"},
 				{"do": "spawn", "side": "enemy", "def": "inf", "n": 5, "at": ["mid", 29, 45], "spread": 7.0, "tag": "foe", "attack_tag": "elin"},
@@ -873,6 +904,11 @@ static func _c7() -> Dictionary:
 				radio("Henrik Aldane", C_ALDANE, "Das ist Macht, Elin! Behalte sie! Für den Westbund!", 6.0)]},
 			{"when": {"t": "since", "f": "speak", "s": 8.0}, "do": [
 				radio("Elin Voss", C_ELIN, "Nein, Henrik. Das Prisma gehört niemandem. Ich gebe es nicht her.", 6.0)]},
+			{"when": {"t": "since", "f": "speak", "s": 16.0}, "do": [
+				radio("Nastja Petrowa", C_NASTJA, "Marschall, unsere Funkgeräte zeigen alle dasselbe Bild. Die des Westbunds auch.", 6.0),
+				radio("Mutter Karga", C_KARGA, "Hört ihr? Das Prisma spricht jetzt mit drei Stimmen. Keine davon ist laut.", 6.0),
+				radio("ORAKEL", C_ORAKEL, "Fünfzehn Jahre habe ich gezählt, damit niemand verhungert. Wenn ich schweige, wer zählt dann?", 7.0),
+				radio("Elin Voss", C_ELIN, "Wir, ORAKEL. Langsamer als du. Und wir werden uns verzählen. Aber wir fragen vorher.", 7.0)]},
 			{"when": {"t": "tag_dead", "tag": "elin", "n": 1}, "do": [radio("Mira Tanaka", C_MIRA, "Elin! Elin, melde dich!", 5.0)]},
 		],
 		"lose": [{"c": {"t": "tag_dead", "tag": "elin", "n": 1}, "text": "Elin Voss ist gefallen."}],
